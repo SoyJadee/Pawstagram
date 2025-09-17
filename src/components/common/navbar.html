@@ -1,0 +1,71 @@
+<nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+    <!-- Logo -->
+    <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+            <span class="text-white font-bold text-lg">🐾</span>
+        </div>
+        <span class="text-xl font-display font-bold text-gray-800">Pawstagram</span>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <div class="hidden md:flex items-center space-x-6">
+        <a href="/" data-nav="/" class="nav-link">Inicio</a>
+        <a href="/feed" data-nav="/feed" class="nav-link">Feed</a>
+        <a href="/adoption" data-nav="/adoption" class="nav-link">Adopción</a>
+        <a href="/stores" data-nav="/stores" class="nav-link">Tiendas</a>
+        <a href="/notifications" data-nav="/notifications" class="nav-link relative">
+            Notificaciones
+            <span class="notification-badge hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+        </a>
+    </div>
+
+    <!-- User Menu -->
+    <div class="flex items-center space-x-4">
+        <div id="user-menu" class="hidden">
+            <div class="flex items-center space-x-3">
+                <img id="user-avatar" src="/src/assets/images/default-avatar.png" alt="Profile" class="w-8 h-8 rounded-full object-cover">
+                <div class="relative">
+                    <button id="profile-dropdown" class="flex items-center space-x-1 text-gray-700 hover:text-gray-900">
+                        <span id="user-name">Usuario</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        <a href="/profile" data-nav="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="auth-buttons">
+            <a href="/login" data-nav="/login" class="btn-outline mr-2">Iniciar Sesión</a>
+            <a href="/register" data-nav="/register" class="btn-primary">Registrarse</a>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden p-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+    <div class="container mx-auto px-4 py-4 space-y-2">
+        <a href="/" data-nav="/" class="block py-2 text-gray-700 hover:text-primary-600">Inicio</a>
+        <a href="/feed" data-nav="/feed" class="block py-2 text-gray-700 hover:text-primary-600">Feed</a>
+        <a href="/adoption" data-nav="/adoption" class="block py-2 text-gray-700 hover:text-primary-600">Adopción</a>
+        <a href="/stores" data-nav="/stores" class="block py-2 text-gray-700 hover:text-primary-600">Tiendas</a>
+        <a href="/notifications" data-nav="/notifications" class="block py-2 text-gray-700 hover:text-primary-600">Notificaciones</a>
+    </div>
+</div>
+
+<style>
+.nav-link {
+    @apply text-gray-700 hover:text-primary-600 font-medium transition-colors duration-200;
+}
+</style>
