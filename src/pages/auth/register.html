@@ -1,0 +1,261 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl w-full space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+            <div class="flex justify-center items-center space-x-2 mb-4">
+                <div class="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-2xl">🐾</span>
+                </div>
+                <span class="text-2xl font-display font-bold text-gray-800">Pawstagram</span>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">Crear Cuenta</h2>
+            <p class="mt-2 text-sm text-gray-600">
+                ¿Ya tienes cuenta?
+                <a href="/login" data-nav="/login" class="font-medium text-primary-600 hover:text-primary-500">
+                    Inicia sesión aquí
+                </a>
+            </p>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="register-form" data-form="register" class="mt-8 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Pet Information -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Información de la Mascota</h3>
+                    
+                    <div>
+                        <label for="pet-name" class="block text-sm font-medium text-gray-700">
+                            Nombre de la Mascota *
+                        </label>
+                        <input
+                            id="pet-name"
+                            name="pet-name"
+                            type="text"
+                            required
+                            class="input-field"
+                            placeholder="Ej: Max, Luna, Firulais"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="pet-type" class="block text-sm font-medium text-gray-700">
+                            Tipo de Mascota *
+                        </label>
+                        <select id="pet-type" name="pet-type" required class="input-field">
+                            <option value="">Selecciona el tipo</option>
+                            <option value="dog">Perro</option>
+                            <option value="cat">Gato</option>
+                            <option value="bird">Ave</option>
+                            <option value="rabbit">Conejo</option>
+                            <option value="hamster">Hámster</option>
+                            <option value="fish">Pez</option>
+                            <option value="other">Otro</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="pet-breed" class="block text-sm font-medium text-gray-700">
+                            Raza
+                        </label>
+                        <input
+                            id="pet-breed"
+                            name="pet-breed"
+                            type="text"
+                            class="input-field"
+                            placeholder="Ej: Golden Retriever, Persa, etc."
+                        >
+                    </div>
+
+                    <div>
+                        <label for="pet-age" class="block text-sm font-medium text-gray-700">
+                            Edad (años)
+                        </label>
+                        <input
+                            id="pet-age"
+                            name="pet-age"
+                            type="number"
+                            min="0"
+                            max="30"
+                            class="input-field"
+                            placeholder="Ej: 3"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="pet-description" class="block text-sm font-medium text-gray-700">
+                            Descripción
+                        </label>
+                        <textarea
+                            id="pet-description"
+                            name="pet-description"
+                            rows="3"
+                            class="input-field resize-none"
+                            placeholder="Cuéntanos sobre la personalidad de tu mascota..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- Owner Information -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Información del Dueño</h3>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">
+                            Correo Electrónico *
+                        </label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            class="input-field"
+                            placeholder="tu@email.com"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">
+                            Contraseña *
+                        </label>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            required
+                            class="input-field"
+                            placeholder="Mínimo 6 caracteres"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-gray-700">
+                            Confirmar Contraseña *
+                        </label>
+                        <input
+                            id="confirm-password"
+                            name="confirm-password"
+                            type="password"
+                            required
+                            class="input-field"
+                            placeholder="Repite tu contraseña"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="owner-name" class="block text-sm font-medium text-gray-700">
+                            Tu Nombre *
+                        </label>
+                        <input
+                            id="owner-name"
+                            name="owner-name"
+                            type="text"
+                            required
+                            class="input-field"
+                            placeholder="Tu nombre completo"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="owner-type" class="block text-sm font-medium text-gray-700">
+                            Tipo de Usuario *
+                        </label>
+                        <select id="owner-type" name="owner-type" required class="input-field">
+                            <option value="">Selecciona el tipo</option>
+                            <option value="individual">Dueño Individual</option>
+                            <option value="foundation">Fundación/Refugio</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700">
+                            Teléfono
+                        </label>
+                        <input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            class="input-field"
+                            placeholder="+1 (555) 123-4567"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adoption Option -->
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center">
+                    <input
+                        id="available-adoption"
+                        name="available-adoption"
+                        type="checkbox"
+                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    >
+                    <label for="available-adoption" class="ml-2 block text-sm text-gray-900">
+                        Mi mascota está disponible para adopción
+                    </label>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">
+                    Marcar esta opción si tu mascota busca un nuevo hogar
+                </p>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="flex items-center">
+                <input
+                    id="terms"
+                    name="terms"
+                    type="checkbox"
+                    required
+                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                >
+                <label for="terms" class="ml-2 block text-sm text-gray-900">
+                    Acepto los
+                    <a href="#" class="text-primary-600 hover:text-primary-500">Términos y Condiciones</a>
+                    y la
+                    <a href="#" class="text-primary-600 hover:text-primary-500">Política de Privacidad</a>
+                </label>
+            </div>
+
+            <div>
+                <button
+                    type="submit"
+                    class="btn-primary w-full flex justify-center py-3"
+                    id="register-btn"
+                >
+                    <span id="register-text">Crear Cuenta</span>
+                    <div id="register-spinner" class="hidden ml-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700" id="error-text"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div id="success-message" class="hidden bg-green-50 border border-green-200 rounded-md p-4">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">¡Cuenta creada exitosamente! Redirigiendo...</p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
