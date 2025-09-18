@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios para Mascotas - PetAdopt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mint': '#98E4D6',
+                        'light-blue': '#87CEEB',
+                        'soft-mint': '#E8F8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #E8F8F5 0%, #F0F9FF 50%, #E0F2F1 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.15);
+        }
+        .service-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(152, 228, 214, 0.2);
+        }
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.25);
+            border-color: rgba(152, 228, 214, 0.4);
+        }
+        .turquoise-accent {
+            background: linear-gradient(135deg, #40E0D0 0%, #48D1CC 100%);
+        }
+        .rating-stars {
+            color: #FFD700;
+        }
+        .rating-interactive .star {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .rating-interactive .star:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen pt-20">
+    <!-- Barra de navegación -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-light-blue to-mint shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="bg-white rounded-full p-2 shadow-md">
+                        <svg width="32" height="32" viewBox="0 0 32 32" class="text-mint">
+                            <!-- Pata de perro -->
+                            <ellipse cx="12" cy="20" rx="3" ry="4" fill="currentColor"/>
+                            <circle cx="8" cy="14" r="2" fill="currentColor"/>
+                            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                            <circle cx="16" cy="14" r="2" fill="currentColor"/>
+                            <!-- Pata de gato -->
+                            <ellipse cx="22" cy="20" rx="2.5" ry="3.5" fill="#87CEEB"/>
+                            <circle cx="19" cy="15" r="1.5" fill="#87CEEB"/>
+                            <circle cx="22" cy="13" r="1.5" fill="#87CEEB"/>
+                            <circle cx="25" cy="15" r="1.5" fill="#87CEEB"/>
+                            <circle cx="22" cy="16" r="1" fill="#87CEEB"/>
+                        </svg>
+                    </div>
+                    <span class="text-white font-bold text-xl hidden sm:block">PetAdopt</span>
+                </div>
+
+                <!-- Barra de búsqueda (desktop) -->
+                <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input 
+                            type="text" 
+                            placeholder="Buscar servicios, ubicación..." 
+                            class="w-full bg-white/90 backdrop-blur-sm text-gray-700 placeholder-gray-500 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white transition-all duration-300"
+                        >
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-mint transition-colors">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botones de navegación (desktop) -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🏪 Tiendas
+                    </button>
+                    <button class="bg-white/30 text-white px-4 py-2 rounded-full font-medium">
+                        🏥 Salud
+                    </button>
+                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🎉 Eventos
+                    </button>
+                </div>
+
+                <!-- Botones móviles -->
+                <div class="flex md:hidden items-center space-x-2">
+                    <button onclick="toggleMobileSearch()" class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+                    <button onclick="toggleMobileMenu()" class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de búsqueda móvil -->
+            <div id="mobileSearch" class="hidden md:hidden pb-4">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        placeholder="Buscar servicios, ubicación..." 
+                        class="w-full bg-white/90 backdrop-blur-sm text-gray-700 placeholder-gray-500 rounded-full py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white transition-all duration-300"
+                    >
+                    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-mint transition-colors">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Menú móvil -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
+                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-full font-medium transition-all duration-300 text-left">
+                        🏪 Tiendas
+                    </button>
+                    <button class="bg-white/30 text-white px-4 py-3 rounded-full font-medium text-left">
+                        🏥 Salud
+                    </button>
+                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-full font-medium transition-all duration-300 text-left">
+                        🎉 Eventos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-4">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Servicios para Mascotas</h1>
+            <p class="text-xl text-gray-600">Encuentra los mejores veterinarios, peluquerías y spas cerca de ti</p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-3xl card-shadow p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="filterServices('all')" class="filter-btn bg-mint text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🏥 Todos
+                    </button>
+                    <button onclick="filterServices('veterinario')" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🩺 Veterinarios
+                    </button>
+                    <button onclick="filterServices('peluqueria')" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        ✂️ Peluquerías
+                    </button>
+                    <button onclick="filterServices('spa')" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🛁 Spa & Baño
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-gray-600 font-medium">Distancia:</label>
+                    <select class="bg-soft-mint border-0 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-mint">
+                        <option>5 km</option>
+                        <option>10 km</option>
+                        <option>20 km</option>
+                        <option>50 km</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de servicios -->
+        <div id="servicesList" class="space-y-8">
+            <!-- Veterinario 1 -->
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="veterinario">
+                <!-- Header con gradiente turquesa -->
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                🩺
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Dr. Ana Martínez</h3>
+                                <p class="text-white/90">Clínica Veterinaria San Marcos</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-500 px-3 py-1 rounded-full text-sm font-medium">Abierto</span>
+                            <div class="mt-2">
+                                <div class="text-xl font-bold">2.3 km</div>
+                                <div class="text-white/80 text-sm">15 min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Rating y reseñas -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="flex rating-stars text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-gray-700 font-semibold">4.9</span>
+                            <span class="text-gray-500">• 127 reseñas</span>
+                        </div>
+                        <button onclick="showRating('Dr. Ana Martínez')" class="bg-gradient-to-r from-mint to-light-blue text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                            ⭐ Calificar
+                        </button>
+                    </div>
+
+                    <!-- Información en grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">🏥</div>
+                            <div class="text-sm text-gray-600">Especialidad</div>
+                            <div class="font-semibold text-gray-800">Medicina General</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-2xl border border-light-blue/20">
+                            <div class="text-light-blue text-lg mb-1">🕒</div>
+                            <div class="text-sm text-gray-600">Horario</div>
+                            <div class="font-semibold text-gray-800">8:00 - 20:00</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-mint/10 to-light-blue/10 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">💰</div>
+                            <div class="text-sm text-gray-600">Consulta desde</div>
+                            <div class="font-semibold text-gray-800">35€</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">Veterinaria con 15 años de experiencia. Especializada en medicina preventiva, cirugía menor y emergencias. Atención personalizada para perros y gatos con enfoque en el bienestar integral.</p>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">✅ Consultas</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">💉 Vacunación</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🔬 Cirugía</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🚨 Emergencias</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('Dr. Ana Martínez', '+34 912 345 678', 'anamartinez@clinicasanmarcos.es')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                            📞 Contactar
+                        </button>
+                        <button onclick="showMap('Clínica Veterinaria San Marcos', 'Calle Mayor 123, Madrid')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments('Dr. Ana Martínez')" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peluquería 1 -->
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="peluqueria">
+                <!-- Header con gradiente turquesa -->
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                ✂️
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">María José Ruiz</h3>
+                                <p class="text-white/90">Peluquería Canina Bella</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-500 px-3 py-1 rounded-full text-sm font-medium">Abierto</span>
+                            <div class="mt-2">
+                                <div class="text-xl font-bold">1.8 km</div>
+                                <div class="text-white/80 text-sm">12 min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Rating y reseñas -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="flex rating-stars text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-gray-700 font-semibold">4.8</span>
+                            <span class="text-gray-500">• 89 reseñas</span>
+                        </div>
+                        <button onclick="showRating('María José Ruiz')" class="bg-gradient-to-r from-mint to-light-blue text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                            ⭐ Calificar
+                        </button>
+                    </div>
+
+                    <!-- Información en grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">✂️</div>
+                            <div class="text-sm text-gray-600">Especialidad</div>
+                            <div class="font-semibold text-gray-800">Corte y Peinado</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-2xl border border-light-blue/20">
+                            <div class="text-light-blue text-lg mb-1">🕒</div>
+                            <div class="text-sm text-gray-600">Horario</div>
+                            <div class="font-semibold text-gray-800">9:00 - 19:00</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-mint/10 to-light-blue/10 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">💰</div>
+                            <div class="text-sm text-gray-600">Corte desde</div>
+                            <div class="font-semibold text-gray-800">25€</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">Peluquería especializada en todas las razas. Cortes personalizados, tratamientos de belleza y cuidado de uñas. Ambiente relajado y trato cariñoso con más de 10 años de experiencia.</p>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">✂️ Corte</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">💅 Peinado</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🦴 Uñas</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">✨ Tratamientos</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('María José Ruiz', '+34 915 678 901', 'info@peluqueriacaninabella.es')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                            📞 Contactar
+                        </button>
+                        <button onclick="showMap('Peluquería Canina Bella', 'Avenida de la Paz 45, Madrid')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments('María José Ruiz')" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spa 1 -->
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="spa">
+                <!-- Header con gradiente turquesa -->
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                🛁
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Carlos Mendoza</h3>
+                                <p class="text-white/90">Spa Mascotas Relax</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-yellow-500 px-3 py-1 rounded-full text-sm font-medium">Cierra pronto</span>
+                            <div class="mt-2">
+                                <div class="text-xl font-bold">3.1 km</div>
+                                <div class="text-white/80 text-sm">18 min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Rating y reseñas -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="flex rating-stars text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="text-gray-700 font-semibold">4.6</span>
+                            <span class="text-gray-500">• 64 reseñas</span>
+                        </div>
+                        <button onclick="showRating('Carlos Mendoza')" class="bg-gradient-to-r from-mint to-light-blue text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                            ⭐ Calificar
+                        </button>
+                    </div>
+
+                    <!-- Información en grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">🛁</div>
+                            <div class="text-sm text-gray-600">Especialidad</div>
+                            <div class="font-semibold text-gray-800">Baño y Relajación</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-2xl border border-light-blue/20">
+                            <div class="text-light-blue text-lg mb-1">🕒</div>
+                            <div class="text-sm text-gray-600">Horario</div>
+                            <div class="font-semibold text-gray-800">10:00 - 18:00</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-mint/10 to-light-blue/10 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">💰</div>
+                            <div class="text-sm text-gray-600">Baño desde</div>
+                            <div class="font-semibold text-gray-800">45€</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">Centro de bienestar para mascotas. Baños relajantes, aromaterapia, masajes y tratamientos especiales. Ambiente zen para el máximo confort de tu mascota con instalaciones de lujo.</p>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🛁 Baño Premium</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🌸 Aromaterapia</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">💆 Masajes</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">💧 Hidratación</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('Carlos Mendoza', '+34 918 234 567', 'info@spamascotasrelax.com')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                            📞 Contactar
+                        </button>
+                        <button onclick="showMap('Spa Mascotas Relax', 'Calle del Bienestar 78, Madrid')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments('Carlos Mendoza')" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Veterinario 2 -->
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="veterinario">
+                <!-- Header con gradiente turquesa -->
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                🩺
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Dr. Roberto Silva</h3>
+                                <p class="text-white/90">Hospital Veterinario 24h</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-red-500 px-3 py-1 rounded-full text-sm font-medium">Cerrado</span>
+                            <div class="mt-2">
+                                <div class="text-xl font-bold">4.2 km</div>
+                                <div class="text-white/80 text-sm">25 min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Rating y reseñas -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="flex rating-stars text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-gray-700 font-semibold">4.9</span>
+                            <span class="text-gray-500">• 203 reseñas</span>
+                        </div>
+                        <button onclick="showRating('Dr. Roberto Silva')" class="bg-gradient-to-r from-mint to-light-blue text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                            ⭐ Calificar
+                        </button>
+                    </div>
+
+                    <!-- Información en grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">🚨</div>
+                            <div class="text-sm text-gray-600">Especialidad</div>
+                            <div class="font-semibold text-gray-800">Emergencias 24h</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-2xl border border-light-blue/20">
+                            <div class="text-light-blue text-lg mb-1">🕒</div>
+                            <div class="text-sm text-gray-600">Horario</div>
+                            <div class="font-semibold text-gray-800">24 horas</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-mint/10 to-light-blue/10 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">💰</div>
+                            <div class="text-sm text-gray-600">Emergencia desde</div>
+                            <div class="font-semibold text-gray-800">80€</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">Hospital veterinario con atención 24 horas. Especializado en emergencias, cirugía avanzada y cuidados intensivos. Equipo médico completo y tecnología de vanguardia para casos críticos.</p>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🚨 Emergencias</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🔬 Cirugía</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🏥 UCI</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">📊 Diagnóstico</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('Dr. Roberto Silva', '+34 911 999 888', 'emergencias@hospitalvet24h.es')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                            📞 Contactar
+                        </button>
+                        <button onclick="showMap('Hospital Veterinario 24h', 'Plaza de la Salud 12, Madrid')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments('Dr. Roberto Silva')" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peluquería 2 -->
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="peluqueria">
+                <!-- Header con gradiente turquesa -->
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                ✂️
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Laura González</h3>
+                                <p class="text-white/90">Estilo Pet</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-500 px-3 py-1 rounded-full text-sm font-medium">Abierto</span>
+                            <div class="mt-2">
+                                <div class="text-xl font-bold">2.9 km</div>
+                                <div class="text-white/80 text-sm">16 min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Rating y reseñas -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="flex rating-stars text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="text-gray-700 font-semibold">4.7</span>
+                            <span class="text-gray-500">• 156 reseñas</span>
+                        </div>
+                        <button onclick="showRating('Laura González')" class="bg-gradient-to-r from-mint to-light-blue text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                            ⭐ Calificar
+                        </button>
+                    </div>
+
+                    <!-- Información en grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">🏆</div>
+                            <div class="text-sm text-gray-600">Especialidad</div>
+                            <div class="font-semibold text-gray-800">Grooming Profesional</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-2xl border border-light-blue/20">
+                            <div class="text-light-blue text-lg mb-1">🕒</div>
+                            <div class="text-sm text-gray-600">Horario</div>
+                            <div class="font-semibold text-gray-800">8:30 - 18:30</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-mint/10 to-light-blue/10 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">💰</div>
+                            <div class="text-sm text-gray-600">Grooming desde</div>
+                            <div class="font-semibold text-gray-800">40€</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">Peluquería moderna con técnicas de grooming profesional. Especializada en razas de pelo largo y cortes de competición. Productos premium y atención personalizada con certificación internacional.</p>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🏆 Grooming</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🥇 Competición</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">💇 Pelo Largo</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">⭐ Premium</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('Laura González', '+34 916 543 210', 'citas@estilopet.com')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                            📞 Contactar
+                        </button>
+                        <button onclick="showMap('Estilo Pet', 'Calle de la Moda 34, Madrid')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments('Laura González')" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spa 2 -->
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="spa">
+                <!-- Header con gradiente turquesa -->
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                🛁
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Patricia Vega</h3>
+                                <p class="text-white/90">Aqua Pet Center</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-500 px-3 py-1 rounded-full text-sm font-medium">Abierto</span>
+                            <div class="mt-2">
+                                <div class="text-xl font-bold">1.5 km</div>
+                                <div class="text-white/80 text-sm">10 min</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Rating y reseñas -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="flex rating-stars text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-gray-700 font-semibold">4.8</span>
+                            <span class="text-gray-500">• 92 reseñas</span>
+                        </div>
+                        <button onclick="showRating('Patricia Vega')" class="bg-gradient-to-r from-mint to-light-blue text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                            ⭐ Calificar
+                        </button>
+                    </div>
+
+                    <!-- Información en grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">🏊</div>
+                            <div class="text-sm text-gray-600">Especialidad</div>
+                            <div class="font-semibold text-gray-800">Hidroterapia</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-2xl border border-light-blue/20">
+                            <div class="text-light-blue text-lg mb-1">🕒</div>
+                            <div class="text-sm text-gray-600">Horario</div>
+                            <div class="font-semibold text-gray-800">9:00 - 20:00</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-mint/10 to-light-blue/10 p-4 rounded-2xl border border-mint/20">
+                            <div class="text-mint text-lg mb-1">💰</div>
+                            <div class="text-sm text-gray-600">Sesión desde</div>
+                            <div class="font-semibold text-gray-800">60€</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">Centro especializado en hidroterapia y natación para mascotas. Piscinas climatizadas, rehabilitación acuática y programas de ejercicio. Ideal para recuperación y bienestar con equipamiento profesional.</p>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🏊 Hidroterapia</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🏊‍♂️ Natación</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">🏥 Rehabilitación</span>
+                            <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-black px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">💪 Ejercicio</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('Patricia Vega', '+34 917 890 123', 'info@aquapetcenter.es')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                            📞 Contactar
+                        </button>
+                        <button onclick="showMap('Aqua Pet Center', 'Avenida del Agua 56, Madrid')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments('Patricia Vega')" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                            💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de contacto -->
+    <div id="contactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full card-shadow">
+            <div class="text-center">
+                <div class="text-6xl mb-4">📞</div>
+                <h3 id="contactName" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+                <div class="space-y-4">
+                    <div class="bg-soft-mint p-4 rounded-xl">
+                        <div class="text-sm text-gray-600 mb-1">Teléfono</div>
+                        <div id="contactPhone" class="font-semibold text-gray-800 text-lg"></div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-xl">
+                        <div class="text-sm text-gray-600 mb-1">Email</div>
+                        <div id="contactEmail" class="font-semibold text-gray-800"></div>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeContactModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                        Cerrar
+                    </button>
+                    <button onclick="callNow()" class="flex-1 bg-mint text-white py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors">
+                        📞 Llamar ahora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de mapa -->
+    <div id="mapModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow">
+            <div class="text-center">
+                <div class="text-6xl mb-4">🗺️</div>
+                <h3 id="mapTitle" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <p id="mapAddress" class="text-gray-600 mb-6"></p>
+                
+                <!-- Simulación de mapa -->
+                <div class="turquoise-accent rounded-2xl p-8 mb-6 relative overflow-hidden">
+                    <div class="text-white text-center">
+                        <div class="text-4xl mb-2">📍</div>
+                        <div class="font-semibold">Ubicación del servicio</div>
+                        <div class="text-sm opacity-90 mt-2">Mapa interactivo con ruta optimizada</div>
+                    </div>
+                    <!-- Elementos decorativos del mapa -->
+                    <div class="absolute top-4 left-4 w-2 h-2 bg-white rounded-full opacity-60"></div>
+                    <div class="absolute top-8 right-6 w-1 h-1 bg-white rounded-full opacity-40"></div>
+                    <div class="absolute bottom-6 left-8 w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>
+                    <div class="absolute bottom-4 right-4 w-2 h-2 bg-white rounded-full opacity-70"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-xl border border-mint/20">
+                        <div class="text-sm text-gray-600 mb-1">Distancia</div>
+                        <div class="font-semibold text-gray-800">2.3 km</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-xl border border-light-blue/20">
+                        <div class="text-sm text-gray-600 mb-1">Tiempo estimado</div>
+                        <div class="font-semibold text-gray-800">15 minutos</div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeMapModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                        Cerrar
+                    </button>
+                    <button onclick="openDirections()" class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        🧭 Abrir direcciones
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de calificación -->
+    <div id="ratingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full card-shadow">
+            <div class="text-center">
+                <div class="text-6xl mb-4">⭐</div>
+                <h3 id="ratingServiceName" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+                <p class="text-gray-600 mb-6">¿Cómo calificarías este servicio?</p>
+                
+                <!-- Estrellas interactivas -->
+                <div class="rating-interactive flex justify-center gap-2 mb-6">
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="1"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="2"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="3"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="4"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="5"></i>
+                </div>
+
+                <div class="mb-6">
+                    <textarea id="ratingComment" placeholder="Comparte tu experiencia (opcional)..." class="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:border-mint h-24 resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeRatingModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="submitRating()" class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        Enviar calificación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de comentarios -->
+    <div id="commentsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">💬</div>
+                <h3 id="commentsServiceName" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <p class="text-gray-600">Comentarios y reseñas</p>
+            </div>
+
+            <!-- Lista de comentarios -->
+            <div class="space-y-4 mb-6">
+                <div class="bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-mint to-light-blue rounded-full flex items-center justify-center text-white font-bold">
+                            M
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-semibold text-gray-800">María López</span>
+                                <div class="flex text-yellow-400 text-sm">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm">Excelente atención, muy profesional y cariñosa con mi perro. Las instalaciones están muy limpias y el trato es excepcional.</p>
+                            <div class="text-gray-500 text-xs mt-2">Hace 2 días</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-light-blue/5 to-mint/5 p-4 rounded-2xl border border-light-blue/20">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-light-blue to-mint rounded-full flex items-center justify-center text-white font-bold">
+                            C
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-semibold text-gray-800">Carlos Ruiz</span>
+                                <div class="flex text-yellow-400 text-sm">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm">Muy buena experiencia. La doctora se tomó el tiempo necesario para explicarme todo sobre el tratamiento de mi gata.</p>
+                            <div class="text-gray-500 text-xs mt-2">Hace 1 semana</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-mint to-light-blue rounded-full flex items-center justify-center text-white font-bold">
+                            A
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-semibold text-gray-800">Ana García</span>
+                                <div class="flex text-yellow-400 text-sm">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm">Recomiendo totalmente esta clínica. Precios justos, atención rápida y mucha experiencia. Mi perro siempre sale contento.</p>
+                            <div class="text-gray-500 text-xs mt-2">Hace 2 semanas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agregar comentario -->
+            <div class="border-t pt-6">
+                <h4 class="font-semibold text-gray-800 mb-3">Agregar comentario</h4>
+                <div class="space-y-3">
+                    <input type="text" placeholder="Tu nombre" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint">
+                    <textarea placeholder="Comparte tu experiencia..." class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint h-20 resize-none"></textarea>
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600">Tu calificación:</span>
+                        <div class="rating-interactive flex gap-1">
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="1"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="2"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="3"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="4"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeCommentsModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                    Cerrar
+                </button>
+                <button onclick="submitComment()" class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                    Publicar comentario
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRating = 0;
+
+        function filterServices(type) {
+            const cards = document.querySelectorAll('.service-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            // Actualizar botones
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-mint', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('bg-mint', 'text-white');
+            
+            // Filtrar tarjetas
+            cards.forEach(card => {
+                if (type === 'all' || card.dataset.type === type) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function showContact(name, phone, email) {
+            document.getElementById('contactName').textContent = name;
+            document.getElementById('contactPhone').textContent = phone;
+            document.getElementById('contactEmail').textContent = email;
+            document.getElementById('contactModal').classList.remove('hidden');
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.add('hidden');
+        }
+
+        function callNow() {
+            const phone = document.getElementById('contactPhone').textContent;
+            alert(`Llamando a ${phone}...`);
+            closeContactModal();
+        }
+
+        function showMap(title, address) {
+            document.getElementById('mapTitle').textContent = title;
+            document.getElementById('mapAddress').textContent = address;
+            document.getElementById('mapModal').classList.remove('hidden');
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.add('hidden');
+        }
+
+        function openDirections() {
+            const address = document.getElementById('mapAddress').textContent;
+            alert(`Abriendo direcciones a: ${address}`);
+            closeMapModal();
+        }
+
+        function showRating(serviceName) {
+            document.getElementById('ratingServiceName').textContent = serviceName;
+            document.getElementById('ratingModal').classList.remove('hidden');
+            resetRatingStars();
+        }
+
+        function closeRatingModal() {
+            document.getElementById('ratingModal').classList.add('hidden');
+            currentRating = 0;
+            document.getElementById('ratingComment').value = '';
+        }
+
+        function resetRatingStars() {
+            const stars = document.querySelectorAll('#ratingModal .star');
+            stars.forEach(star => {
+                star.classList.remove('text-yellow-400');
+                star.classList.add('text-gray-300');
+            });
+        }
+
+        function submitRating() {
+            if (currentRating === 0) {
+                alert('Por favor selecciona una calificación');
+                return;
+            }
+            const comment = document.getElementById('ratingComment').value;
+            const serviceName = document.getElementById('ratingServiceName').textContent;
+            alert(`¡Gracias por calificar a ${serviceName} con ${currentRating} estrellas!`);
+            closeRatingModal();
+        }
+
+        function showComments(serviceName) {
+            document.getElementById('commentsServiceName').textContent = serviceName;
+            document.getElementById('commentsModal').classList.remove('hidden');
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').classList.add('hidden');
+        }
+
+        function submitComment() {
+            alert('¡Comentario publicado exitosamente!');
+            closeCommentsModal();
+        }
+
+        // Manejo de estrellas interactivas
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('star')) {
+                const rating = parseInt(e.target.dataset.rating);
+                const container = e.target.closest('.rating-interactive');
+                const stars = container.querySelectorAll('.star');
+                
+                // Si es el modal de calificación principal
+                if (container.closest('#ratingModal')) {
+                    currentRating = rating;
+                }
+                
+                // Actualizar estrellas
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('text-gray-300');
+                        star.classList.add('text-yellow-400');
+                    } else {
+                        star.classList.remove('text-yellow-400');
+                        star.classList.add('text-gray-300');
+                    }
+                });
+            }
+        });
+
+        function toggleMobileSearch() {
+            const mobileSearch = document.getElementById('mobileSearch');
+            mobileSearch.classList.toggle('hidden');
+            
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+            
+            if (!mobileSearch.classList.contains('hidden')) {
+                setTimeout(() => {
+                    mobileSearch.querySelector('input').focus();
+                }, 100);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+            
+            const mobileSearch = document.getElementById('mobileSearch');
+            if (!mobileSearch.classList.contains('hidden')) {
+                mobileSearch.classList.add('hidden');
+            }
+        }
+
+        // Cerrar modales al hacer clic fuera
+        document.getElementById('contactModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeContactModal();
+            }
+        });
+
+        document.getElementById('mapModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMapModal();
+            }
+        });
+
+        // Cerrar menús móviles al redimensionar
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                document.getElementById('mobileSearch').classList.add('hidden');
+                document.getElementById('mobileMenu').classList.add('hidden');
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980b0078d6ada4f2',t:'MTc1ODEzNzI1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
