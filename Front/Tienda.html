@@ -1,0 +1,342 @@
+    <!-- Botón Volver fijo -->
+    <a href="index.html" onclick="if(history.length>1){history.back(); return false;}" class="fixed top-6 left-6 z-50 bg-turquesa hover:bg-turquesa/80 text-white px-5 py-2 rounded-full shadow-lg font-semibold flex items-center gap-2 transition-all" style="text-decoration:none;">
+        <span class="text-lg">&#8592;</span> Volver
+    </a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios para Mascotas - PetAdopt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mint': '#98E4D6',
+                        'light-blue': '#87CEEB',
+                        'soft-mint': '#E8F8F5',
+                        'turquesa': '#40E0D0',
+                        'verde-menta': '#98E4D6',
+                        'azul-claro': '#87CEEB'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #E8F8F5 0%, #F0F9FF 50%, #E0F2F1 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.15);
+        }
+        .gradient-border {
+            background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #98E4D6, #87CEEB) border-box;
+            border: 2px solid transparent;
+            border-radius: 2rem;
+        }
+        .store-card {
+            transition: all 0.3s ease;
+        }
+        .store-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.18);
+        }
+        .inner-card {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: 0 2px 8px rgba(152, 228, 214, 0.08);
+        }
+    </style>
+
+    <div class="max-w-7xl mx-auto p-4">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Encuentra tu tienda ideal</h1>
+            <p class="text-xl text-gray-600">Filtra por especie y descubre las mejores tiendas especializadas</p>
+        </div>
+
+        <!-- Filtros -->
+       <!-- Filtros -->
+            <div class="bg-white rounded-3xl shadow-xl p-6 mb-16">
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <button class="filter-btn bg-turquesa text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="todas">
+                        🌟 Todas las tiendas
+                    </button>
+                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="perros">
+                        🐕 Perros
+                    </button>
+                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="gatos">
+                        🐱 Gatos
+                    </button>
+                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="aves">
+                        🐦 Aves
+                    </button>
+                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="peces">
+                        🐠 Peces
+                    </button>
+                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="exoticos">
+                        🦎 Exóticos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tiendas Section -->
+    <section class="pb-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div id="tiendas-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Tienda 1 - Especializada en Perros -->
+                <div class="gradient-border store-card" data-especies="perros">
+                    <div class="inner-card p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-gradient-to-r from-turquesa to-azul-claro rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                <img src="https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg" alt="Perfil tienda" class="object-cover w-full h-full">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">CaninWorld</h3>
+                            <p class="text-turquesa font-semibold">Especialistas en Perros</p>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-gradient-to-r from-turquesa/10 to-azul-claro/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+                                <p class="text-gray-600">Av. Canina 123, Centro</p>
+                                <p class="text-sm text-gray-500">Lun-Sáb: 9:00-19:00</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-verde-menta/10 to-turquesa/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+                                <p class="text-gray-600 text-sm">Alimento premium, juguetes, accesorios y servicios veterinarios para perros de todas las razas.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 bg-gradient-to-r from-turquesa to-azul-claro text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            Ver en Google Maps 📍
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tienda 2 - Especializada en Gatos -->
+                <div class="gradient-border store-card" data-especies="gatos">
+                    <div class="inner-card p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-gradient-to-r from-verde-menta to-turquesa rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                <img src="https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg" alt="Perfil tienda" class="object-cover w-full h-full">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">FelineParadise</h3>
+                            <p class="text-verde-menta font-semibold">Especialistas en Gatos</p>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-gradient-to-r from-verde-menta/10 to-turquesa/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+                                <p class="text-gray-600">Calle Felina 456, Norte</p>
+                                <p class="text-sm text-gray-500">Lun-Dom: 8:00-20:00</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-azul-claro/10 to-verde-menta/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+                                <p class="text-gray-600 text-sm">Arena premium, rascadores, juguetes interactivos y alimento especializado para gatos.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 bg-gradient-to-r from-verde-menta to-turquesa text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            Ver en Google Maps 📍
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tienda 3 - Especializada en Aves -->
+                <div class="gradient-border store-card" data-especies="aves">
+                    <div class="inner-card p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-gradient-to-r from-azul-claro to-verde-menta rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                <img src="https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg" alt="Perfil tienda" class="object-cover w-full h-full">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">BirdHaven</h3>
+                            <p class="text-azul-claro font-semibold">Especialistas en Aves</p>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-gradient-to-r from-azul-claro/10 to-verde-menta/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+                                <p class="text-gray-600">Plaza Aviaria 789, Sur</p>
+                                <p class="text-sm text-gray-500">Mar-Dom: 10:00-18:00</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-turquesa/10 to-azul-claro/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+                                <p class="text-gray-600 text-sm">Jaulas, semillas premium, juguetes y accesorios para aves domésticas y exóticas.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 bg-gradient-to-r from-azul-claro to-verde-menta text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            Ver en Google Maps 📍
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tienda 4 - Especializada en Peces -->
+                <div class="gradient-border store-card" data-especies="peces">
+                    <div class="inner-card p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-gradient-to-r from-turquesa to-azul-claro rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                <img src="https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg" alt="Perfil tienda" class="object-cover w-full h-full">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">AquaWorld</h3>
+                            <p class="text-turquesa font-semibold">Especialistas en Peces</p>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-gradient-to-r from-turquesa/10 to-azul-claro/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+                                <p class="text-gray-600">Av. Acuática 321, Este</p>
+                                <p class="text-sm text-gray-500">Lun-Sáb: 9:30-19:30</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-verde-menta/10 to-turquesa/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+                                <p class="text-gray-600 text-sm">Acuarios, filtros, plantas acuáticas y peces tropicales de agua dulce y salada.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 bg-gradient-to-r from-turquesa to-azul-claro text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            Ver en Google Maps 📍
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tienda 5 - Especializada en Exóticos -->
+                <div class="gradient-border store-card" data-especies="exoticos">
+                    <div class="inner-card p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-gradient-to-r from-verde-menta to-azul-claro rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                <img src="https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg" alt="Perfil tienda" class="object-cover w-full h-full">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">ExoticPets</h3>
+                            <p class="text-verde-menta font-semibold">Especialistas en Exóticos</p>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-gradient-to-r from-verde-menta/10 to-azul-claro/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+                                <p class="text-gray-600">Calle Exótica 654, Oeste</p>
+                                <p class="text-sm text-gray-500">Mié-Dom: 11:00-17:00</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-azul-claro/10 to-turquesa/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+                                <p class="text-gray-600 text-sm">Terrarios, lámparas UV, alimento especializado para reptiles, anfibios y roedores.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 bg-gradient-to-r from-verde-menta to-azul-claro text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            Ver en Google Maps 📍
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tienda 6 - Mixta -->
+                <div class="gradient-border store-card" data-especies="perros gatos">
+                    <div class="inner-card p-8">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-gradient-to-r from-turquesa to-verde-menta rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                <img src="https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg" alt="Perfil tienda" class="object-cover w-full h-full">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">PetMix</h3>
+                            <p class="text-turquesa font-semibold">Perros y Gatos</p>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-gradient-to-r from-turquesa/10 to-verde-menta/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+                                <p class="text-gray-600">Centro Comercial 987, Centro</p>
+                                <p class="text-sm text-gray-500">Lun-Dom: 10:00-22:00</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-verde-menta/10 to-azul-claro/10 p-4 rounded-xl">
+                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+                                <p class="text-gray-600 text-sm">Todo lo necesario para perros y gatos. Alimento, juguetes, camas y servicios de peluquería.</p>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-4 bg-gradient-to-r from-turquesa to-verde-menta text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            Ver en Google Maps 📍
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Sistema de filtros
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const storeCards = document.querySelectorAll('.store-card');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remover clase active y resetear estilos de todos los botones
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.classList.remove('bg-turquesa', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                // Agregar clase active al botón clickeado
+                button.classList.add('active');
+                button.classList.remove('bg-gray-200', 'text-gray-700');
+                button.classList.add('bg-turquesa', 'text-white');
+
+                const filter = button.getAttribute('data-filter');
+
+                storeCards.forEach(card => {
+                    const especies = card.getAttribute('data-especies');
+                    
+                    if (filter === 'todas' || especies.includes(filter)) {
+                        card.style.display = 'block';
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                        }, 100);
+                    } else {
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+
+        // Hacer clic en cualquier carta de tienda lleva a catalogo.html
+        storeCards.forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function(e) {
+                // Evitar que el click en el botón de Google Maps dispare la redirección
+                if (e.target.closest('button')) return;
+                window.location.href = 'catalogo.html';
+            });
+        });
+
+        // Funcionalidad para botones de Google Maps
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('Google Maps')) {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const tienda = this.closest('.store-card').querySelector('h3').textContent;
+                    const ubicacion = this.closest('.store-card').querySelector('p').textContent;
+                    alert(`🗺️ Abriendo ${tienda} en Google Maps\nUbicación: ${ubicacion}`);
+                });
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98144066a56c7487',t:'MTc1ODIzNDI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
