@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,7 +21,9 @@
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .gradient-bg {
             background: linear-gradient(135deg, #E8F8F5 0%, #F0F9FF 100%);
         }
@@ -51,13 +54,13 @@
 
         .main-content {
             min-height: calc(100vh - 400px);
-            padding: 2rem;
+            padding: 1.2rem 0.5rem 0.5rem;
             text-align: center;
             color: #64748b;
         }
 
         .footer {
-            background: linear-gradient(135deg, #40E0D0 0%, #48D1CC 100%);
+            background: linear-gradient(135deg, #036666 0%, #036666 100%);
             color: white;
             position: relative;
             overflow: hidden;
@@ -84,7 +87,7 @@
             z-index: 2;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 3rem 1rem 1rem;
+            padding: 0rem 1rem 1rem;
         }
 
         .footer-top {
@@ -95,8 +98,8 @@
         }
 
         .footer-section h3 {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -104,7 +107,7 @@
         }
 
         .footer-section h3 i {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #fbbf24;
         }
 
@@ -117,7 +120,7 @@
         }
 
         .footer-links a {
-            color: #00F5D4;
+            color: white;
             text-decoration: none;
             transition: all 0.3s ease;
             display: flex;
@@ -251,8 +254,8 @@
 
         .paw-prints {
             display: flex;
-            gap: 0.5rem;
-            margin: 1rem 0;
+            gap: 0.6rem;
+            margin: 0rem;
             justify-content: center;
         }
 
@@ -291,7 +294,7 @@
         .logo-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background: linear-gradient(135deg, white);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -397,9 +400,9 @@
                 <!-- Logo -->
                 <div class="flex items-center space-x-2">
                     <div class="bg-white rounded-full p-2 shadow-md hover:scale-110 transition-transform duration-300">
-                        <img src="{% static 'logo1.png' %}" alt="Logo" class="w-10 h-10 object-cover rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <img src="{% static 'img/logo1.png' %}" alt="Logo" class="w-10 h-10 object-cover rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300">
                     </div>
-                    <span class="text-white font-bold text-xl hidden sm:block drop-shadow-lg">Pawstagram</span>
+                    <span class="text-white font-bold text-xl hidden sm:block drop-shadow-lg">Pawly</span>
                 </div>
 
                 <!-- Barra de búsqueda (desktop) -->
@@ -414,22 +417,22 @@
 
                 <!-- Botones de navegación (desktop) -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                    <button style="background-color:#036666; color:white;" class="px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 border-2 border-[#036666] hover:bg-[#024950]">
                         🏪 Tiendas
                     </button>
-                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                    <button style="background-color:#036666; color:white;" class="px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 border-2 border-[#036666] hover:bg-[#024950]">
                         🏥 Salud
                     </button>
                     <!-- Notificaciones -->
-                    <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
+                    <button style="background-color:#036666; color:white;" class="relative p-2 rounded-full transition-all duration-300 hover:scale-110 border-2 border-[#036666] hover:bg-[#024950]">
                         🔔
                     </button>
-                    <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
+                    <button style="background-color:#036666; color:white;" class="relative p-2 rounded-full transition-all duration-300 hover:scale-110 border-2 border-[#036666] hover:bg-[#024950]">
                         <p>Inicio</p>
                     </button>
                     {% if not user_authenticated %}
-                    <a href="{% url 'login' %}" >
-                    <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
+                    <a href="{% url 'login' %}">
+                    <button style="background-color:#036666; color:white;" class="relative p-2 rounded-full transition-all duration-300 hover:scale-110 border-2 border-[#036666] hover:bg-[#024950]">
                         <p>Iniciar sesión</p>
                     </button>
                     </a>
@@ -437,12 +440,12 @@
                     <!-- Avatar usuario -->
                     <div class="relative group">
                         <img src="dist/assets/4.jpg" alt="Usuario" class="w-9 h-9 rounded-full border-2 border-mint shadow-md cursor-pointer hover:scale-105 transition-transform duration-300">
-                        <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto transition-all duration-500 z-100">
+                        <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-500 z-100">
                             <a href="{% url 'perfil' %}" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Perfil</a>
                             <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Configuración</a>
                             <form method="post" action="{% url 'logout' %}">
                                 {% csrf_token %}
-                                <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</button>
+                                <button type="submit" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</button>
                             </form>
                         </div>
                     </div>
@@ -456,16 +459,25 @@
                         <i class="fas fa-search text-lg"></i>
                     </button>
                     <!-- Icono de perfil móvil -->
+                     {% if user_authenticated %}
                     <div class="relative group">
                     <button class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300">
                         <img src="4.jpg" alt="Usuario" class="w-7 h-7 rounded-full border-2 border-mint shadow-md">
                         <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-500 z-100">
-                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Perfil</a>
+                            <a href="{% url 'perfil' %}" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Perfil</a>
                             <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Configuración</a>
-                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</a>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</button>
+                            </form>
                         </div>
                     </button>
                     </div>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300">
+                        <i class="fas fa-user text-lg"></i>
+                    </a>
+                    {% endif %}
                     <!-- Botón de menú móvil -->
                     <button onclick="toggleMobileMenu()" class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300">
                         <i class="fas fa-bars text-lg"></i>
@@ -490,28 +502,32 @@
             <!-- Menú móvil -->
             <div id="mobileMenu" class="hidden md:hidden pb-4">
                 <div class="flex flex-col space-y-2">
-                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-full font-medium transition-all duration-300">
+                    <button style="background-color:#036666; color:white;" class="px-4 py-3 rounded-full font-medium transition-all duration-300 border-2 border-[#036666] hover:bg-[#024950]">
                         🏪 Tiendas
                     </button>
-                    <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-full font-medium transition-all duration-300">
+                    <button style="background-color:#036666; color:white;" class="px-4 py-3 rounded-full font-medium transition-all duration-300 border-2 border-[#036666] hover:bg-[#024950]">
                         🏥 Salud
                     </button>
-                    <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
+                    <button style="background-color:#036666; color:white;" class="relative p-2 rounded-full transition-all duration-300 hover:scale-110 border-2 border-[#036666] hover:bg-[#024950]">
                         🔔
                     </button>
-                    <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
+                    <button style="background-color:#036666; color:white;" class="relative p-2 rounded-full transition-all duration-300 hover:scale-110 border-2 border-[#036666] hover:bg-[#024950]">
                         <p>Inicio</p>
                     </button>
-                    <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
+                    {% if not user_authenticated %}
+                    <a href="{% url 'login' %}"></a>
+                    <button style="background-color:#036666; color:white;" class="relative p-2 rounded-full transition-all duration-300 hover:scale-110 border-2 border-[#036666] hover:bg-[#024950]">
                         <p>Iniciar sesión</p>
                     </button>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
-    {% block content %}
+ {% block content %}
     {% endblock content %}
-    <!-- Footer -->
+ <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-top">
@@ -544,7 +560,6 @@
                         <li><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
                         <li><a href="#"><i class="fas fa-store"></i> Tienda</a></li>
                         <li><a href="#"><i class="fas fa-heart"></i> Salud</a></li>
-                        <li><a href="#"><i class="fas fa-cog"></i> Configuración</a></li>   
                     </ul>
                 </div>
                 <!-- Newsletter -->
@@ -616,7 +631,6 @@
             </div>
         </div>
     </footer>
-</body>
     <script>
         function toggleMobileSearch() {
             const mobileSearch = document.getElementById('mobileSearch');
@@ -661,7 +675,7 @@
                 document.getElementById('mobileMenu').classList.add('hidden');
             }
         });
-        // Animación de contadores al hacer scroll
+         // Animación de contadores al hacer scroll
         function animateCounters() {
             const counters = document.querySelectorAll('.stat-number');
             const targets = [50000, 200000, 75000];
@@ -712,4 +726,5 @@
     </script>
     {% block extra_scripts %}
     {% endblock extra_scripts %}
+</body>
 </html>

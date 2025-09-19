@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-from dotenv import load_dotenv
 import os
 from pathlib import Path
 from decouple import config
@@ -33,7 +32,8 @@ ALLOWED_HOSTS = []
 SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_KEY = config("SUPABASE_KEY")
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'hide_admin.apps.HideAdminConfig',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
