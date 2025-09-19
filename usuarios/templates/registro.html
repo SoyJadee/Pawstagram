@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+    <title>Registro - Pawstagram</title>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paw-teal': '#3dd5f3',
+                        'paw-green': '#2dd4aa',
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock extra_head %}
+{% block content %}
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-paw-teal to-paw-green p-6 text-center">
+                <div class="w-14 h-14 bg-white rounded-xl mx-auto mb-3 flex items-center justify-center">
+                    <img src="{% static 'img/logo1.png' %}" alt="Logo" class="w-10 h-10 object-cover rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+                </div>
+                <h1 class="text-xl font-bold text-white mb-1">¡Únete a Pawly</h1>
+                <p class="text-white/80 text-sm">Crea tu cuenta y conecta con otros pet lovers</p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="p-6">
+                <form id="registerForm" method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <!-- Nombre completo -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-user text-paw-teal mr-2"></i>{{ form.first_name.label }} y {{ form.last_name.label }}
+                        </label>
+                        {{ form.first_name }} 
+                        {% if form.first_name.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ form.first_name.errors }}</p>
+                        {% endif %}
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ form.last_name.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Username -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-at text-paw-teal mr-2"></i>Nombre de usuario
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ form.username.errors }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">Solo letras, números y guiones bajos</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-envelope text-paw-teal mr-2"></i>{{form.email.label}}
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ form.email.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-phone text-paw-teal mr-2"></i>{{form.phone.label}}
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ form.phone.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-lock text-paw-teal mr-2"></i>Contraseña
+                        </label>
+                        <div class="relative">
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <p class="text-xs text-red-500 mt-1">{{ form.password1.errors }}</p>
+                            {% endif %}
+                            <button 
+                                type="button" 
+                                onclick="togglePassword('password', 'toggleIcon1')"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-paw-teal transition-colors"
+                            >
+                                <i class="fas fa-eye text-sm" id="toggleIcon1"></i>
+                            </button>
+                        </div>
+                        <!-- Indicador de fortaleza -->
+                        <div class="mt-2">
+                            <div class="h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="passwordStrength" class="h-full bg-gray-300 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p id="strengthText" class="text-xs text-gray-500 mt-1">Fortaleza de la contraseña</p>
+                        </div>
+                        <div class="relative">
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <p class="text-xs text-red-500 mt-1">{{ form.password2.errors }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Tipo de mascota -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-paw text-paw-teal mr-2"></i>{{ form.is_foundation.label }}
+                        </label>
+                        {{ form.is_foundation }}
+                        {% if form.is_foundation.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ form.is_foundation.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Botón continuar -->
+                    <button 
+                        type="submit"
+                        class="w-full bg-gradient-to-r from-paw-teal to-paw-green text-white font-semibold py-3 rounded-lg hover:from-paw-green hover:to-paw-teal transform hover:scale-[1.02] transition-all duration-200 mt-6"
+                    >
+                        <i class="fas fa-arrow-right mr-2"></i>Continuar
+                    </button>
+                </form>
+
+                <!-- Login -->
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    ¿Ya tienes cuenta? 
+                    <a href="{% url 'login' %}" class="text-paw-teal hover:text-paw-green font-medium transition-colors">
+                        Inicia sesión
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock content %}
+{% block extra_scripts %}
+    <script src="{% static 'js/auth.js' %}"></script>
+{% endblock extra_scripts %}

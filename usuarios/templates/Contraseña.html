@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Pawstagram</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paw-teal': '#3dd5f3',
+                        'paw-green': '#2dd4aa',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <!-- Paso 1: Solicitar email -->
+            <div id="step1">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-paw-teal to-paw-green p-8 text-center">
+                    <div class="w-16 h-16 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-key text-2xl text-paw-teal"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white mb-2">¿Olvidaste tu contraseña?</h1>
+                    <p class="text-white/80 text-sm">No te preocupes, te ayudamos a recuperarla</p>
+                </div>
+
+                <!-- Formulario -->
+                <div class="p-8">
+                    <form id="recoveryForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-envelope text-paw-teal mr-2"></i>Email de tu cuenta
+                            </label>
+                            <input 
+                                type="email" 
+                                id="recoveryEmail" 
+                                required
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-paw-teal focus:border-transparent transition-all"
+                                placeholder="tu@email.com"
+                            >
+                            <p class="text-xs text-gray-500 mt-2">
+                                Te enviaremos un enlace para restablecer tu contraseña
+                            </p>
+                        </div>
+
+                        <button 
+                            type="submit"
+                            class="w-full bg-gradient-to-r from-paw-teal to-paw-green text-white font-semibold py-3 rounded-xl hover:from-paw-green hover:to-paw-teal transform hover:scale-[1.02] transition-all duration-200"
+                        >
+                            <i class="fas fa-paper-plane mr-2"></i>Enviar enlace de recuperación
+                        </button>
+                    </form>
+
+                    <!-- Volver -->
+                    <p class="text-center text-sm text-gray-600 mt-6">
+                        <a href="Login.html" class="text-paw-teal hover:text-paw-green font-medium transition-colors">
+                            <i class="fas fa-arrow-left mr-1"></i>Volver al login
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Paso 2: Confirmación -->
+            <div id="step2" class="hidden">
+                <div class="bg-gradient-to-r from-green-400 to-green-500 p-8 text-center">
+                    <div class="w-16 h-16 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-check text-2xl text-green-500"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white mb-2">¡Email enviado!</h1>
+                    <p class="text-white/80 text-sm">Revisa tu bandeja de entrada</p>
+                </div>
+
+                <div class="p-8 text-center">
+                    <div class="mb-6">
+                        <div class="w-20 h-20 bg-green-50 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-envelope-open text-3xl text-green-500"></i>
+                        </div>
+                        <p class="text-gray-600 mb-2">
+                            Hemos enviado un enlace de recuperación a:
+                        </p>
+                        <p class="font-semibold text-gray-800" id="sentEmail"></p>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-xl mb-6">
+                        <h3 class="font-medium text-blue-800 mb-2">Próximos pasos:</h3>
+                        <ol class="text-sm text-blue-700 text-left space-y-1">
+                            <li>1. Revisa tu bandeja de entrada</li>
+                            <li>2. Busca el email de Pawstagram</li>
+                            <li>3. Haz clic en el enlace de recuperación</li>
+                            <li>4. Crea tu nueva contraseña</li>
+                        </ol>
+                    </div>
+
+                    <!-- Reenviar -->
+                    <button 
+                        id="resendBtn"
+                        onclick="resendEmail()"
+                        class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors mb-4"
+                        disabled
+                    >
+                        <i class="fas fa-redo mr-2"></i>
+                        <span id="resendText">Reenviar en <span id="countdown">60</span>s</span>
+                    </button>
+
+                    <p class="text-sm text-gray-500">
+                        ¿No encuentras el email? Revisa tu carpeta de spam o 
+                        <a href="#" onclick="showStep1()" class="text-paw-teal hover:underline">intenta con otro email</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
