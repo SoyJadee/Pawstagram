@@ -437,10 +437,13 @@
                     <!-- Avatar usuario -->
                     <div class="relative group">
                         <img src="dist/assets/4.jpg" alt="Usuario" class="w-9 h-9 rounded-full border-2 border-mint shadow-md cursor-pointer hover:scale-105 transition-transform duration-300">
-                        <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-500 z-100">
+                        <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto transition-all duration-500 z-100">
                             <a href="{% url 'perfil' %}" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Perfil</a>
                             <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Configuración</a>
-                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</a>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</button>
+                            </form>
                         </div>
                     </div>
                     {% endif %}
