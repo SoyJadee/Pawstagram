@@ -1,7 +1,14 @@
 from django.db import models
 from usuarios.models import UserProfile
+
+class Animals(models.Model):
+    nombre = models.CharField(max_length=50, verbose_name="Nombre del tipo de animal")
+    descripcion = models.TextField(max_length=200, null=True, blank=True, verbose_name="Descripción")
+
+    def __str__(self):
+        return self.nombre
+
 class Pet(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="ID de mascota")
     creator = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,
@@ -9,14 +16,8 @@ class Pet(models.Model):
         verbose_name="ID de la persona que publica",
         default=None
     )
-    owner = models.ForeignKey(
-        UserProfile,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='owned_pets'
-    )
     age = models.IntegerField(null=True, blank=True,verbose_name="Edad")
+    tipoAnimal = models.ForeignKey(Animals, on_delete=models.DO_NOTHING, verbose_name="Tipo de Animal", default=None,)
     breed = models.CharField(max_length=50,verbose_name="Raza",default="Meztizo")
     gender = models.CharField(max_length=10, choices=[
         ('male', 'Macho'),

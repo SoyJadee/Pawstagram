@@ -34,7 +34,7 @@ def mascotaDetailsView(request, pet_id):
         if adoption_form.is_valid():
             new_adoption = adoption_form.save(commit=False)
             # adopter es un UserProfile en el modelo Adoption
-            new_adoption.adopter = getattr(request.user, 'userprofile', None)
+            new_adoption.responsable = mascota.creator
             new_adoption.pet = mascota
             # si el modelo Adoption usa choices con 'pending', asegúrate que exista
             try:
