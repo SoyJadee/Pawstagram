@@ -1,5 +1,5 @@
 from django.db import models
-from usuarios.models import User
+from django.contrib.auth.models import User
 from mascota.models import Pet
 
 class Post(models.Model):

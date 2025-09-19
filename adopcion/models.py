@@ -27,7 +27,7 @@ class Adoption(models.Model):
         verbose_name='Adoptante'
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, null=True, blank=True, verbose_name='Estado')
-    message = models.TextField(null=True, blank=True, verbose_name='Mensaje')
+    message = models.TextField(max_length=150,null=True, blank=True, verbose_name='Mensaje')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
 
     class Meta:
