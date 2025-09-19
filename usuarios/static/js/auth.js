@@ -128,40 +128,7 @@ function showNotification(message, type = 'success') {
 
 // Event Listeners cuando el DOM carga
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // LOGIN FORM
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Validaciones básicas
-            if (!email || !password) {
-                showNotification('Por favor completa todos los campos', 'error');
-                return;
-            }
-            
-            // Simular login
-            const loginBtn = loginForm.querySelector('button[type="submit"]');
-            const originalText = loginBtn.innerHTML;
-            
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
-            loginBtn.disabled = true;
-            
-            setTimeout(() => {
-                // Simular éxito
-                showNotification('¡Bienvenido de vuelta!');
-                // Aquí irá la ruta de la página principal
-                
-                loginBtn.innerHTML = originalText;
-                loginBtn.disabled = false;
-            }, 2000);
-        });
-    }
-    
+        
     // REGISTER FORM
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
