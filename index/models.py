@@ -4,8 +4,8 @@ from mascota.models import Pet
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID de post")
-    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, verbose_name='mascota')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='autor')
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, verbose_name='mascota', related_name='index_posts')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='autor', related_name='index_posts')
     content = models.TextField(null=True, blank=True, verbose_name="Contenido del post")
     photo_url = models.URLField(null=True, blank=True, verbose_name="URL de la foto")
     created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Fecha de creación")
