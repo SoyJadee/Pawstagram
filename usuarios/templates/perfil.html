@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Perfil de Usuario</h1>
+<p>Nombre de usuario: {{ user.username }}</p>
+<p>Correo electrónico: {{ user.email }}</p>
+<p>Teléfono: {{ user.userprofile.phone }}</p>
+<p>¿Es fundación?: {{ user.userprofile.is_foundation|yesno:"Sí,No" }}</p>
+{% endblock content %}
