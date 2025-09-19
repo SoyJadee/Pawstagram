@@ -76,6 +76,8 @@
         .footer-section h3 i {
             font-size: 1rem;
             color: #fbbf24;
+            text-align: center;
+            align-items: center;
         }
 
         .footer-links {
@@ -312,6 +314,10 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .footer-section h3 {
+                text-align: center;
+                justify-content: center;
+            }
             .footer-top {
                 grid-template-columns: 1fr;
                 gap: 2rem;
@@ -327,10 +333,19 @@
                 gap: 1rem;
             }
 
-            .social-icons {
+            .footer-section {
+                text-align: center;
+                align-items: center;
+            }
+            .footer-links {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .share {
+                display: flex;
                 justify-content: center;
             }
-
             .footer-legal {
                 flex-direction: column;
                 gap: 0.5rem;
