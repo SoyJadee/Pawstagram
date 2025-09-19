@@ -3977,27 +3977,56 @@ video {
             // end: Sidebar
 
             // Instagram card interactivity
-            document.querySelectorAll('.instagram-card').forEach(function(card) {
-                const likeBtn = card.querySelector('.like-btn');
-                const likeCount = card.querySelector('.like-count');
-                let liked = false;
-                let count = parseInt(likeCount.textContent);
-                likeBtn.addEventListener('click', function() {
-                    liked = !liked;
-                    if (liked) {
-                        likeBtn.classList.add('text-red-500');
-                        likeBtn.classList.remove('text-gray-500');
-                        count++;
-                    } else {
-                        likeBtn.classList.remove('text-red-500');
-                        likeBtn.classList.add('text-gray-500');
-                        count--;
-                    }
-                    likeCount.textContent = count + ' Me gusta';
-                });
-            });
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.instagram-card').forEach(function(card) {
+          const likeBtn = card.querySelector('.like-btn');
+          const likeCount = card.querySelector('.like-count');
+          let liked = likeBtn.classList.contains('text-red-500');
+          let count = parseInt(likeCount.textContent);
+          likeBtn.addEventListener('click', function() {
+            liked = !liked;
+            if (liked) {
+              likeBtn.classList.add('text-red-500');
+              likeBtn.classList.remove('text-gray-500');
+              likeBtn.classList.remove('hover:text-pink-500');
+              count++;
+            } else {
+              likeBtn.classList.remove('text-red-500');
+              likeBtn.classList.add('text-gray-500');
+              count--;
+            }
+            likeCount.textContent = count + ' Me gusta';
+          });
+        });
+      });
     </script>
-  <!-- Funciones para menú y búsqueda móvil -->
+    </script>
+    <!-- Script de likes: asegurado al final del body -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('Script de likes cargado');
+        document.querySelectorAll('.instagram-card').forEach(function(card) {
+          const likeBtn = card.querySelector('.like-btn');
+          const likeCount = card.querySelector('.like-count');
+          let liked = likeBtn.classList.contains('text-red-500');
+          let count = parseInt(likeCount.textContent);
+          likeBtn.addEventListener('click', function() {
+            liked = !liked;
+            if (liked) {
+              likeBtn.classList.add('text-red-500');
+              likeBtn.classList.remove('text-gray-500');
+              likeBtn.classList.remove('hover:text-pink-500');
+              count++;
+            } else {
+              likeBtn.classList.remove('text-red-500');
+              likeBtn.classList.add('text-gray-500');
+              count--;
+            }
+            likeCount.textContent = count + ' Me gusta';
+          });
+        });
+      });
+    </script>
   <script>
     function toggleMobileSearch() {
       const mobileSearch = document.getElementById('mobileSearch');
