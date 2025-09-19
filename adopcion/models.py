@@ -8,8 +8,6 @@ class Adoption(models.Model):
         ('pending', 'Pendiente'),
         ('adopted', 'Adoptado'),
     ]
-
-    id = models.AutoField(primary_key=True, verbose_name="ID de adopción")
     pet = models.ForeignKey(
         Pet,
         on_delete=models.SET_NULL,
@@ -18,14 +16,17 @@ class Adoption(models.Model):
         related_name='adoptions',
         verbose_name='Mascota'
     )
-    adopter = models.ForeignKey(
+    responsable = models.ForeignKey(
         UserProfile,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='adoptions',
-        verbose_name='Adoptante'
+        related_name='responsible_adoptions',
+        verbose_name='Responsable'
     )
+    adopterName = models.CharField(max_length=40, null=True, blank=True, verbose_name='Nombre del adoptante')
+    adopterEmail = models.EmailField(max_length=100, null=True, blank=True, verbose_name='Email del adoptante')
+    adopterPhone = models.CharField(max_length=20, null=True, blank=True, verbose_name='Teléfono del adoptante')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, null=True, blank=True, verbose_name='Estado')
     message = models.TextField(max_length=150,null=True, blank=True, verbose_name='Mensaje')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')

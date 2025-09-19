@@ -1,4 +1,4 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django import forms
 from django.contrib.auth.models import User
 
@@ -59,3 +59,24 @@ class UserCreationForm(UserCreationForm):
         for fname, ac in mapping_autocomplete.items():
             if fname in self.fields:
                 self.fields[fname].widget.attrs["autocomplete"] = ac
+
+class LoginForm(AuthenticationForm):
+    """Formulario de login con estilos Tailwind.
+
+    Nota: AuthenticationForm no respeta Meta.widgets, por lo que configuramos attrs en __init__.
+    """
+
+    def __init__(self, request=None, *args, **kwargs):
+        super().__init__(request=request, *args, **kwargs)
+        username_widget = self.fields['username'].widget
+        password_widget = self.fields['password'].widget
+
+        username_widget.attrs.setdefault('class', 'w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-paw-teal focus:border-transparent transition-all')
+        username_widget.attrs.setdefault('placeholder', 'Tu email o usuario')
+        username_widget.attrs.setdefault('maxlength', '150')
+        username_widget.attrs.setdefault('autocomplete', 'username')
+
+        password_widget.attrs.setdefault('class', 'w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-paw-teal focus:border-transparent transition-all')
+        password_widget.attrs.setdefault('placeholder', '••••••••')
+        password_widget.attrs.setdefault('maxlength', '20')
+        password_widget.attrs.setdefault('autocomplete', 'current-password')

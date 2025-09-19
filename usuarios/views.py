@@ -1,12 +1,17 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .forms import UserCreationForm
+from .forms import UserCreationForm, LoginForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db import IntegrityError, transaction
 from .models import UserProfile
 
 # Create your views here.
+
+def userAuthenticated(request):
+    return request.user.is_authenticated
 
 def register_view(request):
     if request.method == "POST":
@@ -20,6 +25,7 @@ def register_view(request):
                         user=user,
                         phone=form.cleaned_data.get("phone"),
                         is_foundation=form.cleaned_data.get("is_foundation"),
+                        
                     )
                 messages.success(request, "Usuario registrado correctamente. Ahora puedes iniciar sesión.")
                 return redirect("login")
@@ -33,4 +39,59 @@ def register_view(request):
     return render(request, "Registro.html", {"form": form})
 
 def login_view(request):
-    return render(request, "login.html")
+    """Vista de login segura.
+    """
+
+    if request.user.is_authenticated:
+        if request.user.is_staff and request.user.is_superuser:
+            return redirect('/admin/')  # Redirigir a la página de Django admin si es admin
+        else:
+            return redirect('perfil')  # Redirigir a la página principal u otra página adecuada
+    
+    form = LoginForm()
+
+    if request.method == 'POST':
+        print("Intento de login")
+        # Enlazar el formulario con los datos enviados
+        form = LoginForm(request, data=request.POST)
+
+        # Permitir email: si el usuario ingresó email en 'username', intentar resolverlo a username real
+        username_input = request.POST.get('username', '').strip()
+        if '@' in username_input:
+            try:
+                related_user = User.objects.get(email__iexact=username_input)
+                # Construir un dict de datos para el form, sin modificar request.POST
+                data = request.POST.copy()
+                data['username'] = related_user.username
+                form = LoginForm(request, data=data)
+            except User.DoesNotExist:
+                print("No existe usuario con ese email")
+                # Dejar que el form falle normalmente con el username ingresado
+                pass
+
+        if form.is_valid():
+            print("Formulario válido")
+            user = form.get_user()
+            login(request, user)
+            # Recordarme: si no se marca, la sesión expira al cerrar navegador
+            if not request.POST.get('remember'):
+                request.session.set_expiry(0)
+            messages.success(request, 'Has iniciado sesión correctamente.')
+            if request.user.is_staff and request.user.is_superuser:
+                return redirect('/admin/')  # Redirigir a la página de Django admin si es admin
+            else:
+                return redirect('perfil')
+        else:
+            print(form.errors)
+            messages.error(request, 'Usuario o contraseña incorrectos.')
+
+    return render(request, 'login.html', {'form': form, })
+
+@login_required
+def perfil_view(request):
+    user_profile = getattr(request.user, 'userprofile', None)
+    if not user_profile:
+        messages.error(request, "El perfil de usuario no existe.")
+        return redirect('login')
+
+    return render(request, 'perfil.html', {'user': user_profile,'user_authenticated': userAuthenticated(request)})

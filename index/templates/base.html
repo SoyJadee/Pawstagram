@@ -427,18 +427,23 @@
                     <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
                         <p>Inicio</p>
                     </button>
+                    {% if not user_authenticated %}
+                    <a href="{% url 'login' %}" >
                     <button class="relative bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 hover:scale-110">
                         <p>Iniciar sesión</p>
                     </button>
+                    </a>
+                    {% else %}
                     <!-- Avatar usuario -->
                     <div class="relative group">
                         <img src="dist/assets/4.jpg" alt="Usuario" class="w-9 h-9 rounded-full border-2 border-mint shadow-md cursor-pointer hover:scale-105 transition-transform duration-300">
                         <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-500 z-100">
-                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Perfil</a>
+                            <a href="{% url 'perfil' %}" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Perfil</a>
                             <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Configuración</a>
-                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</a>
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-mint/20">Cerrar sesión</a>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
 
                 <!-- Botones móviles -->
