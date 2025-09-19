@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+from dotenv import load_dotenv
 import os
 from pathlib import Path
 from decouple import config
@@ -29,7 +30,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Application definition
-
+SUPABASE_URL = config("SUPABASE_URL")
+SUPABASE_KEY = config("SUPABASE_KEY")
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -80,14 +82,14 @@ WSGI_APPLICATION = 'pawstagram.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default':{
-       'ENGINE': 'django.db.backends.postgresql',
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'HOST': config('DB_HOST'),
         'PASSWORD': config('DB_PASSWORD'),
-        'PORT': config('DB_PORT'), 
-    } 
+        'PORT': config('DB_PORT'),
+    }
 }
 
 
