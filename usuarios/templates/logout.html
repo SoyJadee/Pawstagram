@@ -1,12 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}
     <title>Pawly</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -81,8 +76,9 @@
         }
     </style>
 </head>
-
-<body class="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 relative overflow-x-hidden overflow-y-auto">
+{% endblock extra_head %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 relative overflow-x-hidden overflow-y-auto">
 
     <!-- Contenedor principal -->
     <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
@@ -142,8 +138,10 @@
         </div>
     </div>
     </div>
-
-    <script>
+</div>
+{% endblock content %}
+{% block extra_scripts %}
+<script>
         // Tips motivacionales
         const dailyTips = [
             "Recuerda llevar a tu mascota al veterinario regularmente para mantener su salud al día.",
@@ -198,6 +196,4 @@
             localStorage.removeItem('tempUserData');
         });
     </script>
-</body>
-
-</html>
+{% endblock extra_scripts %}

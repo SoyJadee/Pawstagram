@@ -36,6 +36,4 @@ class Adoption(models.Model):
         verbose_name_plural = 'Adopciones'
 
     def __str__(self):
-        pet_name = getattr(self.pet, 'name', None) or 'Mascota'
-        adopter_name = getattr(getattr(self.adopter, 'user', None), 'username', None) or 'Usuario'
-        return f"Adopción de {pet_name} por {adopter_name}"
+        return f"Adopción de {self.pet.name} por {self.adopterName if self.adopterName else 'Desconocido'}"

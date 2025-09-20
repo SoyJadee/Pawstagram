@@ -3,7 +3,7 @@ from .models import Pet, Animals
 
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'creator_first_name', 'creator_last_name', 'breed', 'age', 'gender', 'is_available_for_adoption')
+    list_display = ('idPet', 'name', 'creator_first_name', 'creator_last_name', 'breed', 'age', 'gender', 'is_available_for_adoption')
     list_filter = ('gender', 'is_available_for_adoption')
     search_fields = ('name', 'breed', 'description', 'creator__user__first_name', 'creator__user__last_name')
 
