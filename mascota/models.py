@@ -19,7 +19,7 @@ class Pet(models.Model):
     )
     age = models.IntegerField(null=True, blank=True,verbose_name="Edad")
     tipoAnimal = models.ForeignKey(Animals, on_delete=models.DO_NOTHING, verbose_name="Tipo de Animal", default=None,)
-    breed = models.CharField(max_length=50,verbose_name="Raza",default="Meztizo")
+    breed = models.CharField(max_length=50,verbose_name="Raza",default="Mestizo")
     gender = models.CharField(max_length=10, choices=[
         ('male', 'Macho'),
         ('female', 'Hembra'),
