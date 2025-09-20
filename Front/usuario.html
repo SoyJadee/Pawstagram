@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - PetAdopt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mint': '#98E4D6',
+                        'turquoise': '#40E0D0',
+                        'light-mint': '#E8F8F5',
+                        'dark-mint': '#7DD3C0'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #E8F8F5 50%, #F0FDFA 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.1);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.15);
+        }
+        .turquoise-gradient {
+            background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
+        }
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        .input-focus:focus {
+            border-color: #40E0D0;
+            box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
+            color: white;
+        }
+        .tab-inactive {
+            background: white;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+        }
+        .tab-inactive:hover {
+            background: #E8F8F5;
+            color: #40E0D0;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Header eliminado -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Profile Header -->
+        <div class="bg-white rounded-2xl card-shadow p-8 mb-8">
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                <!-- Avatar -->
+                <div class="relative">
+                    <div class="w-32 h-32 turquoise-gradient rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                        M
+                    </div>
+                    <button class="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all">
+                        <i class="fas fa-camera text-turquoise"></i>
+                    </button>
+                </div>
+
+                <!-- User Info -->
+                <div class="flex-1 text-center md:text-left">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">María López</h1>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-4 text-sm">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-heart text-red-500"></i>
+                            <span class="text-gray-600">12 adopciones exitosas</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-paw text-turquoise"></i>
+                            <span class="text-gray-600">3 mascotas en adopción</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="flex flex-col space-y-3">
+                    <button onclick="showAddPetModal()" class="turquoise-gradient text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover-lift">
+                        <i class="fas fa-plus mr-2"></i>
+                        Agregar Mascota
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="flex flex-wrap gap-2 mb-8">
+            <button onclick="switchTab('profile')" id="profileTab" class="tab-active px-6 py-3 rounded-xl font-semibold transition-all">
+                <i class="fas fa-user mr-2"></i>
+                Datos Personales
+            </button>
+            <button onclick="switchTab('pets')" id="petsTab" class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all">
+                <i class="fas fa-paw mr-2"></i>
+                Mis Mascotas
+            </button>
+            <button onclick="switchTab('settings')" id="settingsTab" class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all">
+                <i class="fas fa-cog mr-2"></i>
+                Configuración
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent">
+            <!-- Profile Tab -->
+            <div id="profileContent" class="tab-content">
+                <div class="max-w-2xl mx-auto">
+                    <!-- Personal Information -->
+                    <div class="bg-white rounded-2xl card-shadow p-6 hover-lift">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">Información Personal</h3>
+                            <button onclick="toggleEdit('personal')" id="editPersonalBtn" class="text-turquoise hover:text-dark-mint transition-colors">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        
+                        <form id="personalForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                                    <input type="text" value="María" disabled class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Apellidos</label>
+                                    <input type="text" value="López García" disabled class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" value="maria.lopez@email.com" disabled class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                <input type="tel" value="+34 612 345 678" disabled class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                                <input type="text" value="Calle Mayor 123, Madrid" disabled class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50">
+                            </div>
+                            
+                            <div class="hidden" id="personalActions">
+                                <div class="flex gap-3 pt-4">
+                                    <button type="button" onclick="savePersonal()" class="turquoise-gradient text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg transition-all">
+                                        Guardar
+                                    </button>
+                                    <button type="button" onclick="cancelEdit('personal')" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pets Tab -->
+            <div id="petsContent" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Pet Card 1 -->
+                    <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift">
+                        <div class="relative">
+                            <div class="h-48 bg-gradient-to-br from-mint to-turquoise flex items-center justify-center text-6xl">
+                                🐕
+                            </div>
+                            <div class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                En adopción
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Max</h4>
+                            <p class="text-gray-600 text-sm mb-4">Golden Retriever • 3 años • Macho</p>
+                            <p class="text-gray-700 text-sm mb-4">Perro muy cariñoso y juguetón, ideal para familias con niños.</p>
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="editPet('max')" class="flex-1 bg-light-mint text-turquoise py-2 rounded-lg font-semibold hover:bg-mint hover:text-white transition-all">
+                                    Editar
+                                </button>
+                                <button onclick="showPublishModal('max')" class="flex-1 turquoise-gradient text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+                                    Publicar
+                                </button>
+                            </div>
+                            <button onclick="viewPetProfile('max')" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-all">
+                                <i class="fas fa-eye mr-2"></i>Ver Perfil
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pet Card 2 -->
+                    <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift">
+                        <div class="relative">
+                            <div class="h-48 bg-gradient-to-br from-turquoise to-mint flex items-center justify-center text-6xl">
+                                🐱
+                            </div>
+                            <div class="absolute top-4 right-4 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                En proceso
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Luna</h4>
+                            <p class="text-gray-600 text-sm mb-4">Gata Persa • 2 años • Hembra</p>
+                            <p class="text-gray-700 text-sm mb-4">Gata tranquila y elegante, perfecta para apartamentos.</p>
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="editPet('luna')" class="flex-1 bg-light-mint text-turquoise py-2 rounded-lg font-semibold hover:bg-mint hover:text-white transition-all">
+                                    Editar
+                                </button>
+                                <button onclick="showPublishModal('luna')" class="flex-1 turquoise-gradient text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+                                    Publicar
+                                </button>
+                            </div>
+                            <button onclick="viewPetProfile('luna')" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-all">
+                                <i class="fas fa-eye mr-2"></i>Ver Perfil
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add Pet Card -->
+                    <div class="bg-white rounded-2xl card-shadow border-2 border-dashed border-mint hover-lift cursor-pointer" onclick="showAddPetModal()">
+                        <div class="h-full flex flex-col items-center justify-center p-6 text-center">
+                            <div class="w-16 h-16 bg-light-mint rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-plus text-2xl text-turquoise"></i>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">Agregar Mascota</h4>
+                            <p class="text-gray-600 text-sm">Publica una nueva mascota para adopción</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Settings Tab -->
+            <div id="settingsContent" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Privacy Settings -->
+                    <div class="bg-white rounded-2xl card-shadow p-6 hover-lift">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Privacidad</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Mostrar email</h4>
+                                    <p class="text-sm text-gray-600">Permite que otros vean tu dirección de email</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-turquoise"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Notificaciones por email</h4>
+                                    <p class="text-sm text-gray-600">Recibe actualizaciones sobre adopciones</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-turquoise"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Settings -->
+                    <div class="bg-white rounded-2xl card-shadow p-6 hover-lift">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Cuenta</h3>
+                        
+                        <div class="space-y-4">
+                            <button class="w-full text-left p-4 border border-gray-200 rounded-xl hover:border-mint transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Cambiar contraseña</h4>
+                                        <p class="text-sm text-gray-600">Actualiza tu contraseña de acceso</p>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </button>
+                            
+                            <button class="w-full text-left p-4 border border-red-200 rounded-xl hover:border-red-300 transition-colors text-red-600">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-medium">Eliminar cuenta</h4>
+                                        <p class="text-sm text-red-500">Esta acción no se puede deshacer</p>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-red-400"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Pet Modal -->
+    <div id="editPetModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">🐾</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Editar Mascota</h3>
+                <p class="text-gray-600">Actualiza la información de tu mascota</p>
+            </div>
+
+            <form id="editPetForm" class="space-y-6">
+                <!-- Basic Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                        <input type="text" id="editPetName" value="Max" required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación *</label>
+                        <input type="text" id="editPetLocation" value="Madrid, España" required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus">
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado *</label>
+                    <select id="editPetStatus" required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus">
+                        <option value="adopcion">En adopción</option>
+                        <option value="hogar">Feliz en un hogar</option>
+                    </select>
+                </div>
+
+                <!-- Vaccines -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Vacunas</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Rabia</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Parvovirus</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Moquillo</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Hepatitis</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Parainfluenza</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Bordetella</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción de la mascota</label>
+                    <textarea id="editPetDescription" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus h-32 resize-none" placeholder="Describe la personalidad, comportamiento y características especiales de la mascota...">Perro muy cariñoso y juguetón, ideal para familias con niños. Le encanta correr en el parque y es muy obediente.</textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closeEditPetModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 turquoise-gradient text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Publish Pet Modal -->
+    <div id="publishModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">📸</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Nueva Publicación</h3>
+                <p class="text-gray-600">Comparte una foto de <span id="publishPetName">tu mascota</span></p>
+            </div>
+
+            <form id="publishForm" class="space-y-6">
+                <!-- Photo Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Foto *</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-mint transition-colors cursor-pointer">
+                        <i class="fas fa-camera text-3xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 mb-2">Selecciona una foto de tu mascota</p>
+                        <p class="text-sm text-gray-500">Formato JPG o PNG</p>
+                        <input type="file" accept="image/*" required class="hidden" id="publishPhoto">
+                    </div>
+                </div>
+
+                <!-- Caption -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pie de foto</label>
+                    <textarea id="publishCaption" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus h-24 resize-none" placeholder="Escribe algo sobre esta foto... ¿Qué está haciendo tu mascota? ¿Cómo se siente hoy?"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closePublishModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 turquoise-gradient text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-share mr-2"></i>Publicar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Pet Modal -->
+    <div id="addPetModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">🐾</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Agregar Nueva Mascota</h3>
+                <p class="text-gray-600">Completa la información para publicar tu mascota en adopción</p>
+            </div>
+
+            <form id="addPetForm" class="space-y-6">
+                <!-- Basic Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                        <input type="text" required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus" placeholder="Ej: Max">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
+                        <select required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus">
+                            <option value="">Seleccionar tipo</option>
+                            <option value="perro">🐕 Perro</option>
+                            <option value="gato">🐱 Gato</option>
+                            <option value="conejo">🐰 Conejo</option>
+                            <option value="ave">🐦 Ave</option>
+                            <option value="otro">🐾 Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Raza</label>
+                        <input type="text" class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus" placeholder="Ej: Golden Retriever">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Edad *</label>
+                        <input type="text" required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus" placeholder="Ej: 3 años">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sexo *</label>
+                        <select required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus">
+                            <option value="">Seleccionar</option>
+                            <option value="macho">Macho</option>
+                            <option value="hembra">Hembra</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción *</label>
+                    <textarea required class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus h-32 resize-none" placeholder="Describe la personalidad, comportamiento y características especiales de la mascota..."></textarea>
+                </div>
+
+                <!-- Health Info -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Estado de salud</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Vacunado</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Esterilizado</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Desparasitado</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Microchip</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Characteristics -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Características</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Bueno con niños</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Sociable con otros animales</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Entrenado</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Activo</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Tranquilo</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-turquoise focus:ring-turquoise">
+                            <span class="text-sm text-gray-700">Cariñoso</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Photo Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Fotos</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-mint transition-colors cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 mb-2">Arrastra las fotos aquí o haz clic para seleccionar</p>
+                        <p class="text-sm text-gray-500">Máximo 5 fotos, formato JPG o PNG</p>
+                        <input type="file" multiple accept="image/*" class="hidden">
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closeAddPetModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 turquoise-gradient text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        Publicar Mascota
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.add('hidden'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('[id$="Tab"]');
+            tabs.forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + 'Content').classList.remove('hidden');
+            
+            // Add active class to selected tab
+            const activeTab = document.getElementById(tabName + 'Tab');
+            activeTab.classList.remove('tab-inactive');
+            activeTab.classList.add('tab-active');
+        }
+
+        // Edit functionality
+        function toggleEdit(section) {
+            const form = document.getElementById(section + 'Form');
+            const inputs = form.querySelectorAll('input, textarea, select');
+            const actions = document.getElementById(section + 'Actions');
+            const editBtn = document.getElementById('edit' + section.charAt(0).toUpperCase() + section.slice(1) + 'Btn');
+            
+            const isDisabled = inputs[0].disabled;
+            
+            inputs.forEach(input => {
+                input.disabled = !isDisabled;
+                if (!isDisabled) {
+                    input.classList.add('disabled:bg-gray-50');
+                } else {
+                    input.classList.remove('disabled:bg-gray-50');
+                }
+            });
+            
+            if (isDisabled) {
+                actions.classList.remove('hidden');
+                editBtn.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                actions.classList.add('hidden');
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            }
+        }
+
+        function cancelEdit(section) {
+            toggleEdit(section);
+            // Here you would restore original values
+        }
+
+        function savePersonal() {
+            alert('Información personal guardada exitosamente');
+            toggleEdit('personal');
+        }
+
+        function saveAbout() {
+            alert('Información "Sobre mí" guardada exitosamente');
+            toggleEdit('about');
+        }
+
+        // Pet management
+        function showAddPetModal() {
+            document.getElementById('addPetModal').classList.remove('hidden');
+        }
+
+        function closeAddPetModal() {
+            document.getElementById('addPetModal').classList.add('hidden');
+            document.getElementById('addPetForm').reset();
+        }
+
+        function editPet(petId) {
+            // Cargar datos de la mascota en el modal
+            if (petId === 'max') {
+                document.getElementById('editPetName').value = 'Max';
+                document.getElementById('editPetLocation').value = 'Madrid, España';
+                document.getElementById('editPetStatus').value = 'adopcion';
+                document.getElementById('editPetDescription').value = 'Perro muy cariñoso y juguetón, ideal para familias con niños. Le encanta correr en el parque y es muy obediente.';
+            } else if (petId === 'luna') {
+                document.getElementById('editPetName').value = 'Luna';
+                document.getElementById('editPetLocation').value = 'Madrid, España';
+                document.getElementById('editPetStatus').value = 'adopcion';
+                document.getElementById('editPetDescription').value = 'Gata tranquila y elegante, perfecta para apartamentos. Muy cariñosa con sus dueños.';
+            }
+            document.getElementById('editPetModal').classList.remove('hidden');
+        }
+
+        function closeEditPetModal() {
+            document.getElementById('editPetModal').classList.add('hidden');
+        }
+
+        function showPublishModal(petId) {
+            const petNames = {
+                'max': 'Max',
+                'luna': 'Luna'
+            };
+            document.getElementById('publishPetName').textContent = petNames[petId] || 'tu mascota';
+            document.getElementById('publishModal').classList.remove('hidden');
+        }
+
+        function closePublishModal() {
+            document.getElementById('publishModal').classList.add('hidden');
+            document.getElementById('publishForm').reset();
+        }
+
+        function viewPetProfile(petId) {
+            alert(`Abriendo perfil de: ${petId.charAt(0).toUpperCase() + petId.slice(1)}`);
+            // Aquí se abriría el perfil individual de la mascota
+        }
+
+        // Form submission
+        document.getElementById('addPetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Mascota agregada exitosamente! Se publicará después de la revisión.');
+            closeAddPetModal();
+        });
+
+        document.getElementById('publishForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const petName = document.getElementById('publishPetName').textContent;
+            const caption = document.getElementById('publishCaption').value;
+            const photo = document.getElementById('publishPhoto').files[0];
+            
+            if (photo) {
+                alert(`¡Publicación creada para ${petName}! ${caption ? 'Con pie de foto: "' + caption + '"' : 'Sin pie de foto'}`);
+                closePublishModal();
+            }
+        });
+
+        document.getElementById('editPetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const status = document.getElementById('editPetStatus').value;
+            const statusText = status === 'adopcion' ? 'En adopción' : 'Feliz en un hogar';
+            alert(`¡Información actualizada! Estado: ${statusText}`);
+            closeEditPetModal();
+        });
+
+        // File upload simulation
+        document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                alert(`${files.length} foto(s) seleccionada(s)`);
+            }
+        });
+
+        // Photo upload click handlers
+        document.querySelector('#publishModal .cursor-pointer').addEventListener('click', function() {
+            document.getElementById('publishPhoto').click();
+        });
+
+        document.getElementById('publishPhoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const uploadArea = this.parentElement;
+                uploadArea.innerHTML = `
+                    <i class="fas fa-check-circle text-3xl text-green-500 mb-3"></i>
+                    <p class="text-green-600 mb-2">Foto seleccionada: ${file.name}</p>
+                    <p class="text-sm text-gray-500">Haz clic para cambiar</p>
+                `;
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('addPetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddPetModal();
+            }
+        });
+
+        document.getElementById('editPetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditPetModal();
+            }
+        });
+
+        document.getElementById('publishModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePublishModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981a3f23a44e8f20',t:'MTc1ODI5NzEwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
