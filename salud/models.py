@@ -29,6 +29,7 @@ class ServicesHealth(models.Model):
     specialties = models.TextField(max_length=200, null=True, blank=True, verbose_name="Especialidades")
     valoration = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True, editable=False, verbose_name="Valoración")
     comments = models.TextField(max_length=1000, null=True, blank=True, editable=False, verbose_name="Comentarios")
+    coordinates = models.CharField(max_length=100, null=True, blank=True, verbose_name="Coordenadas")
 
     def __str__(self):
         return self.name

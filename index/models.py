@@ -49,7 +49,7 @@ class Comment(models.Model):
     def __str__(self):
         return f"Comentario de {self.user} en post {self.post_id}"
     
-class Notification(models.Model):
+class Notifications(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID de notificación")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='notifications', verbose_name='post relacionado')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', verbose_name='usuario de la acción')
