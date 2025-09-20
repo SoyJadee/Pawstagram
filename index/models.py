@@ -2,32 +2,50 @@ from django.db import models
 from django.contrib.auth.models import User
 from mascota.models import Pet
 
+
 class Post(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID de post")
-    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, verbose_name='mascota', related_name='index_posts')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='autor', related_name='index_posts')
-    content = models.TextField(null=True, blank=True, verbose_name="Contenido del post")
-    photo_url = models.URLField(null=True, blank=True, verbose_name="URL de la foto")
-    created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Fecha de creación")
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE,
+                            verbose_name='mascota', related_name='index_posts')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name='autor', related_name='index_posts')
+    content = models.TextField(
+        null=True, blank=True, verbose_name="Contenido del post")
+    photo_url = models.URLField(
+        null=True, blank=True, verbose_name="URL de la foto")
+    created_at = models.DateTimeField(
+        auto_now_add=True, null=True, verbose_name="Fecha de creación")
 
     def __str__(self):
         return f"Post de {self.author} - {self.created_at}"
 
+
 class Like(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID de like")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes', verbose_name='post')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes', verbose_name='usuario')
-    created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Fecha de creación")
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name='likes', verbose_name='post')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='likes', verbose_name='usuario')
+    created_at = models.DateTimeField(
+        auto_now_add=True, null=True, verbose_name="Fecha de creación")
 
     def __str__(self):
         return f"Like de {self.user} en post {self.post_id}"
 
+
 class Comment(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID de comentario")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name='post')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments', verbose_name='usuario')
-    content = models.TextField(null=True, blank=True, verbose_name="Contenido del comentario")
-    created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Fecha de creación")
+    content = models.TextField(
+        null=True, blank=True, verbose_name="Contenido del comentario")
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha de creación")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='comments', db_column='user_id', verbose_name='usuario')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,
+                             related_name='comments', db_column='post_id', verbose_name='post')
+
+    class Meta:
+        db_table = 'index_comment'
 
     def __str__(self):
         return f"Comentario de {self.user} en post {self.post_id}"
