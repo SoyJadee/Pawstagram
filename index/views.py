@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from mascota.models import Pet
 from .models import Post
 from adopcion.forms import AdoptionForm
+from adopcion.models import Adoption
 from django.contrib import messages
 from supabase import create_client
 from django.conf import settings
@@ -19,10 +20,6 @@ try:
 except Exception as e:
     logger.error(f"Error al inicializar Supabase: {e}")
     supabase = None
-
-
-def userAuthenticated(request):
-    return request.user.is_authenticated
 
 
 def principal(request):
@@ -154,7 +151,6 @@ def principal(request):
         messages.error(request, 'Error al cargar las publicaciones.')
     
     return render(request, 'Principal.html', {
-        'user_authenticated': userAuthenticated(request),
         'mascotas_usuario': mascotas,
         'posts': posts,
         'adoption_form': form,
