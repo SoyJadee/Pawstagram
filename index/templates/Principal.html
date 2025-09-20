@@ -98,10 +98,18 @@ Pawly
       {% for post in posts %}
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 instagram-card">
         <div class="flex items-center px-6 py-4">
-          <img src="{% static 'img/logo1.png' %}" alt="Usuario"
+          {% if post.pet.profile_photo_url %}
+          <img src="{{ post.pet.profile_photo_url }}" alt="{{ post.pet.name }}"
             class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+          {% else %}
+          <img src="{% static 'img/logo1.png' %}" alt="Patita azul"
+            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+          {% endif %}
           <div class="flex-1">
-            <a href="#" class="font-semibold text-gray-900">{{ post.author.username }}</a>
+            <a href="#">
+              <span class="font-semibold text-gray-900">{{ post.pet.name }}</span>
+              <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
+            </a>
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
           {% if post.pet.is_available_for_adoption %}
@@ -140,22 +148,43 @@ Pawly
           <div class="mb-4 comments-box">
             {% if post.comments.count > 5 %}
             {% for comment in post.comments.all|slice:":5" %}
-            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
-                }}</span> {{ comment.content }}</p>
+            <p class="text-sm text-gray-800 mb-1">
+              <span class="font-semibold text-gray-900">
+                {% if comment.user and comment.user.username %}
+                {{ comment.user.username }}
+                {% else %}
+                Usuario
+                {% endif %}
+              </span> {{ comment.content }}
+            </p>
             {% endfor %}
             <a href="#" class="text-sm text-gray-500 mb-2"
               onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
               comentarios... </a>
             <div style="display:none;">
               {% for comment in post.comments.all|slice:"5:" %}
-              <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
-                  }}</span> {{ comment.content }}</p>
+              <p class="text-sm text-gray-800 mb-1">
+                <span class="font-semibold text-gray-900">
+                  {% if comment.user and comment.user.username %}
+                  {{ comment.user.username }}
+                  {% else %}
+                  Usuario
+                  {% endif %}
+                </span> {{ comment.content }}
+              </p>
               {% endfor %}
             </div>
             {% else %}
             {% for comment in post.comments.all %}
-            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
-                }}</span> {{ comment.content }}</p>
+            <p class="text-sm text-gray-800 mb-1">
+              <span class="font-semibold text-gray-900">
+                {% if comment.user and comment.user.username %}
+                {{ comment.user.username }}
+                {% else %}
+                Usuario
+                {% endif %}
+              </span> {{ comment.content }}
+            </p>
             {% endfor %}
             {% endif %}
           </div>
