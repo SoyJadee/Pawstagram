@@ -179,16 +179,40 @@ def principal(request):
                 from django.http import JsonResponse
                 return JsonResponse({'success': False})
             return redirect('principal')
-        # Adopción
+        
+        form = AdoptionForm(request.POST)
+        if form.is_valid():
+            try:
+                adoption = form.save(commit=False)
+                # obtener pet id enviado desde el modal (limpiar y manejar varios casos)
+                pet_id = (request.POST.get('pet_id') or request.POST.get('mascota_id') or '').strip()
+                pet = None
+                if pet_id:
+                    # intentar por campo idPet (PK nombrado) primero
+                    pet = Pet.objects.filter(idPet=pet_id).first()
+                    if not pet:
+                        # intentar por pk numérico por si se usa otra convención
+                        try:
+                            pet = Pet.objects.filter(pk=int(pet_id)).first()
+                        except Exception:
+                            pet = None
+                if not pet:
+                    logger.warning(f"Solicitud de adopción: pet_id recibido='{pet_id}' no corresponde a ninguna Mascota")
+                    messages.error(request, 'Mascota inválida. No se pudo procesar la solicitud de adopción.')
+                else:
+                    adoption.pet = pet
+                    # responsable es el creador de la mascota (UserProfile)
+                    adoption.responsable = getattr(pet, 'creator', None)
+                    adoption.status = 'pending'
+                    adoption.save()
+                    adoption_success = True
+            except Exception as e:
+                logger.error(f"Error al guardar adopción: {e}")
+                messages.error(request, 'Error al procesar la solicitud de adopción. Inténtalo de nuevo.')
+            # No redirigir, mostrar mensaje en modal
         else:
-            form = AdoptionForm(request.POST)
-            if form.is_valid():
-                form.save()
-                adoption_success = True
-                # No redirigir, mostrar mensaje en modal
-            else:
-                messages.error(
-                    request, 'Error en el formulario de adopción. Revisa los datos ingresados.')
+            messages.error(
+                request, 'Error en el formulario de adopción. Revisa los datos ingresados.')
 
     # GET request or after POST handling, always render the page
     posts = Post.objects.all().order_by('-created_at').prefetch_related(

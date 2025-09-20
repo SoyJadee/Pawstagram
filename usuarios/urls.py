@@ -1,12 +1,11 @@
 from django.urls import path, include
 from . import views
-
-from django.contrib.auth.views import PasswordChangeView, PasswordResetConfirmView, PasswordResetCompleteView, PasswordResetDoneView
+from django.contrib.auth.views import PasswordChangeView, PasswordResetConfirmView, PasswordResetCompleteView, PasswordResetDoneView, LogoutView
 
 urlpatterns = [
     path('iniciar_sesion/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
-    path('logout/', views.custom_logout, name='logout'),
+    path('logout/', LogoutView.as_view(template_name='logout.html'), name='logout'),
     path('change_password/', PasswordChangeView.as_view(
         template_name='change_password.html', success_url='/'), name='change_password'),
     path('reset_password_sent/', PasswordResetDoneView.as_view(
