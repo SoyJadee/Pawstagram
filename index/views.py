@@ -1,15 +1,39 @@
-
 from django.shortcuts import render, redirect
-from mascota.models import Pet
-from .models import Post, Comment
-from adopcion.forms import AdoptionForm
-from adopcion.models import Adoption
-from django.contrib import messages
-from supabase import create_client
-from django.conf import settings
-import os
-import uuid
 import logging
+import uuid
+import os
+from django.conf import settings
+from supabase import create_client
+from django.contrib import messages
+from adopcion.models import Adoption
+from adopcion.forms import AdoptionForm
+from .models import Post, Comment
+from mascota.models import Pet
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .models import Like
+
+
+@require_POST
+def like_post(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'not_authenticated'})
+    post_id = request.POST.get('post_id')
+    if not post_id:
+        return JsonResponse({'success': False, 'error': 'no_post'})
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'not_found'})
+    like, created = Like.objects.get_or_create(post=post, user=request.user)
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+    likes_count = Like.objects.filter(post=post).count()
+    return JsonResponse({'success': True, 'liked': liked, 'likes': likes_count})
+
 
 # Configurar logging
 logger = logging.getLogger(__name__)
