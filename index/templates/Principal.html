@@ -105,10 +105,10 @@
             class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
           {% endif %}
           <div class="flex-1">
-            <a href="#">
-              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a></span>
-              <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
-            </a>
+            <span class="font-semibold text-gray-900">
+              <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
+            </span>
+            <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
           {% if post.pet.is_available_for_adoption %}
@@ -125,9 +125,29 @@
           <div class="flex items-center mb-4">
             {% if user_authenticated %}
             <button
-              class="like-btn text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1">
+              class="like-btn {% if post.id in user_liked_post_ids %}text-red-500{% else %}text-gray-500{% endif %} hover:text-red-500 p-2 rounded-full hover:bg-red-50 mr-1">
               <i class="fas fa-heart text-xl"></i>
             </button>
+            <style>
+              /* Animación pop rápida para el botón de like */
+              .like-pop {
+                animation: like-pop-anim 0.18s cubic-bezier(.4, 2, .6, 1);
+              }
+
+              @keyframes like-pop-anim {
+                0% {
+                  transform: scale(1);
+                }
+
+                60% {
+                  transform: scale(1.35);
+                }
+
+                100% {
+                  transform: scale(1);
+                }
+              }
+            </style>
             {% else %}
             <a href="{% url 'login' %}"
               class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
@@ -145,7 +165,9 @@
 
           <div class="mb-4">
             <p class="text-gray-900">
-              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a></span>
+              <span class="font-semibold text-gray-900">
+                <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
+              </span>
               {% if post.content %} {{ post.content }}{% endif %}
             </p>
           </div>
@@ -566,32 +588,6 @@
       });
     }
 
-    document.querySelectorAll('.instagram-card').forEach(function (card) {
-      const likeBtn = card.querySelector('.like-btn');
-      const likeCount = card.querySelector('.like-count');
-
-      if (likeBtn && likeCount) {
-        let liked = likeBtn.classList.contains('text-red-500');
-        let count = parseInt(likeCount.textContent) || 0;
-
-        likeBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          liked = !liked;
-
-          if (liked) {
-            likeBtn.classList.add('text-red-500');
-            likeBtn.classList.remove('text-gray-500');
-            count++;
-          } else {
-            likeBtn.classList.remove('text-red-500');
-            likeBtn.classList.add('text-gray-500');
-            count--;
-          }
-
-          likeCount.textContent = count + ' Me gusta';
-        });
-      }
-    });
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {

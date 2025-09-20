@@ -1,5 +1,5 @@
-{% extends 'base.html' %} 
-{% load static %} 
+{% extends 'base.html' %}
+{% load static %}
 {% load mascota_extras %}
 {% block extra_head %}
 <title>{{ mascota.name }} - Perfil de Adopción</title>
@@ -8,20 +8,24 @@
   .gradient-bg {
     background: linear-gradient(135deg, #e8f8f5 0%, #f0f9ff 100%);
   }
+
   .card-shadow {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
+
   .heart-animation {
     transition: all 0.3s ease;
   }
+
   .heart-animation:hover {
     transform: scale(1.2);
   }
+
   .liked {
     color: #ef4444;
   }
 </style>
-{% endblock extra_head %} 
+{% endblock extra_head %}
 {% block content %}
 
 <div class="max-w-4xl mx-auto p-4">
@@ -30,26 +34,17 @@
     <div class="flex flex-col md:flex-row items-center gap-8">
       <!-- Foto principal -->
       <div class="relative">
-        <div
-          class="w-48 h-48 rounded-full overflow-hidden border-4 border-mint"
-        >
-        {% if mascota.profile_photo_url %}
-          <img
-            src="{{ mascota.profile_photo_url }}"
-            alt="Foto de perfil de {{ mascota.name }}"
-            class="w-full h-full object-cover"
-          />
-        {% else %}
-          <img
-            src="{{ post.photo_url|last }}"
-            alt="Foto de perfil de {{ mascota.name }}"
-            class="w-full h-full object-cover"
-          />
-        {% endif %}
+        <div class="w-48 h-48 rounded-full overflow-hidden border-4 border-mint">
+          {% if mascota.profile_photo_url %}
+          <img src="{{ mascota.profile_photo_url }}" alt="Foto de perfil de {{ mascota.name }}"
+            class="w-full h-full object-cover" />
+          {% else %}
+          <img src="{{ post.photo_url|last }}" alt="Foto de perfil de {{ mascota.name }}"
+            class="w-full h-full object-cover" />
+          {% endif %}
         </div>
         <div
-          class="absolute -bottom-2 -right-2 bg-mint text-white rounded-full w-12 h-12 flex items-center justify-center text-xl"
-        >
+          class="absolute -bottom-2 -right-2 bg-mint text-white rounded-full w-12 h-12 flex items-center justify-center text-xl">
           <i class="fas fa-paw"></i>
         </div>
       </div>
@@ -89,15 +84,13 @@
           <div class="bg-blue-50 p-3 rounded-xl">
             <div class="text-sm text-gray-600">Responsable</div>
             <div class="font-semibold text-gray-700">
-                {{ mascota.creator.user.first_name }} {{ mascota.creator.user.last_name }}
+              {{ mascota.creator.user.first_name }} {{ mascota.creator.user.last_name }}
             </div>
           </div>
         </div>
         {% if mascota.is_available_for_adoption %}
-        <button
-          onclick="showInterest('{{ mascota.pk }}')"
-          class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
-        >
+        <button onclick="showInterest('{{ mascota.pk }}')"
+          class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
           💕 ¡Me interesa adoptar!
         </button>
         {% endif %}
@@ -118,212 +111,207 @@
     <h2 class="text-2xl font-bold text-gray-800 text-center">
       Publicaciones de {{ mascota.name }}
     </h2>
-  {% if posts %}
+    {% if posts %}
     {% for post in posts %}
-     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 instagram-card">
-    <div class="flex items-center px-6 py-4">
-          {% if post.pet.profile_photo_url %}
-          <img src="{{ post.pet.profile_photo_url }}" alt="{{ post.pet.name }}"
-            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
-          {% else %}
-          <img src="{% static 'img/logo1.png' %}" alt="Patita azul"
-            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
-          {% endif %}
-          <div class="flex-1">
-            <a href="#">
-              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a></span>
-              <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
-            </a>
-            <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
-          </div>
-          {% if post.pet.is_available_for_adoption %}
-          <button onclick="showInterest('{{ mascota.pk }}')"
-            class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
-            💕 ¡Me interesa adoptar!
-          </button>
-          {% endif %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 instagram-card">
+      <div class="flex items-center px-6 py-4">
+        {% if post.pet.profile_photo_url %}
+        <img src="{{ post.pet.profile_photo_url }}" alt="{{ post.pet.name }}"
+          class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+        {% else %}
+        <img src="{% static 'img/logo1.png' %}" alt="Patita azul"
+          class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+        {% endif %}
+        <div class="flex-1">
+          <a href="#">
+            <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name
+                }}</a></span>
+            <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
+          </a>
+          <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
         </div>
-        <div class="w-full bg-gray-100">
-          <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
-        </div>
-        <div class="px-6 py-4">
-          <div class="flex items-center mb-4">
-            {% if user_authenticated %}
-            <button
-              class="like-btn text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1">
-              <i class="fas fa-heart text-xl"></i>
-            </button>
-            {% else %}
-            <a href="{% url 'login' %}"
-              class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
-              <i class="fas fa-heart text-xl"></i>
-            </a>
-            {% endif %}
-            <button
-              class="text-gray-500 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition-all duration-300 mr-1">
-              <i class="fas fa-comment text-xl"></i>
-              <span class="ml-1 text-xs align-middle font-semibold">{{ post.comments.count }}</span>
-            </button>
-            <!-- Botón de compartir eliminado -->
-            <span class="ml-auto text-sm font-semibold text-gray-700 like-count">{{ post.likes.count }} Me gusta</span>
-          </div>
-
-          <div class="mb-4">
-            <p class="text-gray-900">
-              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a></span>
-              {% if post.content %} {{ post.content }}{% endif %}
-            </p>
-          </div>
-
-          {% if post.comments.count > 0 %}
-          <div class="mb-4 comments-box">
-            {% if post.comments.count > 5 %}
-            {% for comment in post.comments.all|slice:":5" %}
-            <p class="text-sm text-gray-800 mb-1">
-              <span class="font-semibold text-gray-900">
-                {% if comment.user and comment.user.username %}
-                {{ comment.user.username }}
-                {% else %}
-                Usuario
-                {% endif %}
-              </span> {{ comment.content }}
-            </p>
-            {% endfor %}
-            <a href="#" class="text-sm text-gray-500 mb-2"
-              onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
-              comentarios... </a>
-            <div style="display:none;">
-              {% for comment in post.comments.all|slice:"5:" %}
-              <p class="text-sm text-gray-800 mb-1">
-                <span class="font-semibold text-gray-900">
-                  {% if comment.user and comment.user.username %}
-                  {{ comment.user.username }}
-                  {% else %}
-                  Usuario
-                  {% endif %}
-                </span> {{ comment.content }}
-              </p>
-              {% endfor %}
-            </div>
-            {% else %}
-            {% for comment in post.comments.all %}
-            <p class="text-sm text-gray-800 mb-1">
-              <span class="font-semibold text-gray-900">
-                {% if comment.user and comment.user.username %}
-                {{ comment.user.username }}
-                {% else %}
-                Usuario
-                {% endif %}
-              </span> {{ comment.content }}
-            </p>
-            {% endfor %}
-            {% endif %}
-          </div>
-          {% endif %}
-
-          <form method="post" action="" class="comment-form flex items-center border-t border-gray-100 pt-4 gap-3">
-            {% csrf_token %}
-            <img src="{% static 'img/logo1.png' %}" alt="Tu perfil"
-              class="w-8 h-8 rounded-full border border-[#00F5D4] object-cover">
-            <input type="hidden" name="comment_post_id" value="{{ post.id }}">
-            <input type="text" name="comment_content"
-              class="flex-1 bg-gray-50 border-0 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300"
-              placeholder="Añade un comentario..." {% if not user_authenticated %}disabled{% endif %} required>
-            <span class="comment-msg hidden text-green-600 text-xs ml-2"></span>
-            {% if not user_authenticated %}
-            <a href="{% url 'login' %}"
-              class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</a>
-            {% else %}
-            <button type="submit"
-              class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</button>
-            {% endif %}
-          </form>
-        </div>
-      </div>
-      {% endfor %}
-   {% else %}
-      <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div class="text-6xl mb-6">🐾</div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay publicaciones aún</h3>
-        <p class="text-gray-500 mb-8 max-w-md mx-auto">Sé el primero en compartir una foto de tu mascota y conecta con
-          otros amantes de los animales</p>
-        {% if not user_authenticated %}
-        <a href="{% url 'login' %}"
-          class="inline-flex items-center space-x-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white px-8 py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300">
-          <i class="fas fa-sign-in-alt"></i>
-          <span>Iniciar sesión para publicar</span>
-        </a>
+        {% if post.pet.is_available_for_adoption %}
+        <button onclick="showInterest('{{ mascota.pk }}')"
+          class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
+          💕 ¡Me interesa adoptar!
+        </button>
         {% endif %}
       </div>
-      {% endif %}
-  <!-- Footer -->
-   {% if mascota.is_available_for_adoption %}
-  <div class="text-center mt-12 p-6">
-    <div class="bg-white rounded-2xl card-shadow p-6">
-      <h3 class="text-xl font-bold text-gray-800 mb-2">
-        ¿Listo para darle un hogar a {{mascota.name}}?
-      </h3>
-      <p class="text-gray-600 mb-4">
-        Contacta con {{mascota.creator.first_name}} {{mascota.creator.last_name}} para conocer más sobre el proceso de adopción
-      </p>
-      <button
-  onclick="showInterest('{{ mascota.pk }}')"
-        class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
-      >
-        💕 ¡Quiero adoptar a {{mascota.name}}!
-      </button>
-    </div>
-  </div>
-    {% endif %}
-</div>
+      <div class="w-full bg-gray-100">
+        <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
+      </div>
+      <div class="px-6 py-4">
+        <div class="flex items-center mb-4">
+          {% if user_authenticated %}
+          <button
+            class="like-btn {% if post.id in user_liked_post_ids %}text-red-500{% else %}text-gray-500{% endif %} hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1">
+            <i class="fas fa-heart text-xl"></i>
+          </button>
+          {% else %}
+          <a href="{% url 'login' %}"
+            class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
+            <i class="fas fa-heart text-xl"></i>
+          </a>
+          {% endif %}
+          <button
+            class="text-gray-500 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition-all duration-300 mr-1">
+            <i class="fas fa-comment text-xl"></i>
+            <span class="ml-1 text-xs align-middle font-semibold">{{ post.comments.count }}</span>
+          </button>
+          <!-- Botón de compartir eliminado -->
+          <span class="ml-auto text-sm font-semibold text-gray-700 like-count">{{ post.likes.count }} Me gusta</span>
+        </div>
 
-<!-- Modal de interés -->
-<div
-  id="interestModal"
-  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
->
-  <div class="bg-white rounded-3xl p-8 max-w-md w-full card-shadow">
-    <div class="text-center">
-      <div class="text-6xl mb-4">🐕💕</div>
-      <h3 class="text-2xl font-bold text-gray-800 mb-4">
-        ¡Gracias por tu interés!
-      </h3>
-      <p class="text-gray-600 mb-6">
-        {{ mascota.creator.first_name }} {{ mascota.creator.last_name }} se pondrá en contacto contigo pronto para coordinar una visita con
-        {{ mascota.name }}.
-      </p>
-      <div class="space-y-3">
-        <form method="post">
+        <div class="mb-4">
+          <p class="text-gray-900">
+            <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name
+                }}</a></span>
+            {% if post.content %} {{ post.content }}{% endif %}
+          </p>
+        </div>
+
+        {% if post.comments.count > 0 %}
+        <div class="mb-4 comments-box">
+          {% if post.comments.count > 5 %}
+          {% for comment in post.comments.all|slice:":5" %}
+          <p class="text-sm text-gray-800 mb-1">
+            <span class="font-semibold text-gray-900">
+              {% if comment.user and comment.user.username %}
+              {{ comment.user.username }}
+              {% else %}
+              Usuario
+              {% endif %}
+            </span> {{ comment.content }}
+          </p>
+          {% endfor %}
+          <a href="#" class="text-sm text-gray-500 mb-2"
+            onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
+            comentarios... </a>
+          <div style="display:none;">
+            {% for comment in post.comments.all|slice:"5:" %}
+            <p class="text-sm text-gray-800 mb-1">
+              <span class="font-semibold text-gray-900">
+                {% if comment.user and comment.user.username %}
+                {{ comment.user.username }}
+                {% else %}
+                Usuario
+                {% endif %}
+              </span> {{ comment.content }}
+            </p>
+            {% endfor %}
+          </div>
+          {% else %}
+          {% for comment in post.comments.all %}
+          <p class="text-sm text-gray-800 mb-1">
+            <span class="font-semibold text-gray-900">
+              {% if comment.user and comment.user.username %}
+              {{ comment.user.username }}
+              {% else %}
+              Usuario
+              {% endif %}
+            </span> {{ comment.content }}
+          </p>
+          {% endfor %}
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="" class="comment-form flex items-center border-t border-gray-100 pt-4 gap-3">
+          {% csrf_token %}
+          <img src="{% static 'img/logo1.png' %}" alt="Tu perfil"
+            class="w-8 h-8 rounded-full border border-[#00F5D4] object-cover">
+          <input type="hidden" name="comment_post_id" value="{{ post.id }}">
+          <input type="text" name="comment_content"
+            class="flex-1 bg-gray-50 border-0 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300"
+            placeholder="Añade un comentario..." {% if not user_authenticated %}disabled{% endif %} required>
+          <span class="comment-msg hidden text-green-600 text-xs ml-2"></span>
+          {% if not user_authenticated %}
+          <a href="{% url 'login' %}"
+            class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</a>
+          {% else %}
+          <button type="submit"
+            class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</button>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div class="text-6xl mb-6">🐾</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay publicaciones aún</h3>
+      <p class="text-gray-500 mb-8 max-w-md mx-auto">Sé el primero en compartir una foto de tu mascota y conecta con
+        otros amantes de los animales</p>
+      {% if not user_authenticated %}
+      <a href="{% url 'login' %}"
+        class="inline-flex items-center space-x-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white px-8 py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Iniciar sesión para publicar</span>
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+    <!-- Footer -->
+    {% if mascota.is_available_for_adoption %}
+    <div class="text-center mt-12 p-6">
+      <div class="bg-white rounded-2xl card-shadow p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-2">
+          ¿Listo para darle un hogar a {{mascota.name}}?
+        </h3>
+        <p class="text-gray-600 mb-4">
+          Contacta con {{mascota.creator.first_name}} {{mascota.creator.last_name}} para conocer más sobre el proceso de
+          adopción
+        </p>
+        <button onclick="showInterest('{{ mascota.pk }}')"
+          class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
+          💕 ¡Quiero adoptar a {{mascota.name}}!
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Modal de interés -->
+  <div id="interestModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full card-shadow">
+      <div class="text-center">
+        <div class="text-6xl mb-4">🐕💕</div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">
+          ¡Gracias por tu interés!
+        </h3>
+        <p class="text-gray-600 mb-6">
+          {{ mascota.creator.first_name }} {{ mascota.creator.last_name }} se pondrá en contacto contigo pronto para
+          coordinar una visita con
+          {{ mascota.name }}.
+        </p>
+        <div class="space-y-3">
+          <form method="post">
             {% csrf_token %}
             <input type="hidden" name="pet_id" id="adoption-pet-id" value="{{ mascota.pk }}">
             {{ adoption_form.as_p }}
             {% if adoption_form.errors %}
-                <div class="text-red-600 text-sm mb-2">
-                    {{ adoption_form.errors }}
-                </div>
+            <div class="text-red-600 text-sm mb-2">
+              {{ adoption_form.errors }}
+            </div>
             {% endif %}
-            <button
-            type="submit"
-          class="flex-1 bg-mint text-white py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors"
-        >
-          Enviar
-        </button>
-        </form>
-      </div>
-      <div class="flex gap-3 mt-6">
-        <button
-          onclick="closeModal()"
-          class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
-        >
-          Cancelar
-        </button>
-        
+            <button type="submit"
+              class="flex-1 bg-mint text-white py-3 rounded-xl font-semibold hover:bg-green-400 transition-colors">
+              Enviar
+            </button>
+          </form>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button onclick="closeModal()"
+            class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+            Cancelar
+          </button>
+
+        </div>
       </div>
     </div>
   </div>
 </div>
-</div>
-{% endblock content %} 
+{% endblock content %}
 {% block extra_scripts %}
 <script>
   function toggleLike(button) {
@@ -440,7 +428,7 @@
       else if (window.addEventListener)
         document.addEventListener("DOMContentLoaded", c);
       else {
-        var e = document.onreadystatechange || function () {};
+        var e = document.onreadystatechange || function () { };
         document.onreadystatechange = function (b) {
           e(b);
           "loading" !== document.readyState &&
@@ -544,7 +532,7 @@
   function closeModal() {
     document.getElementById("interestModal").classList.add("hidden");
   }
-   document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
     if (typeof Swiper !== 'undefined') {
       const swiper = new Swiper('.swiper', {
         slidesPerView: 'auto',
