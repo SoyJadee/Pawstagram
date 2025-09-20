@@ -9,6 +9,7 @@ class Animals(models.Model):
         return self.nombre
 
 class Pet(models.Model):
+    idPet = models.AutoField(primary_key=True, verbose_name="ID de la mascota")
     creator = models.ForeignKey(
         UserProfile,
         on_delete=models.CASCADE,

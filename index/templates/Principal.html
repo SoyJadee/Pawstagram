@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}
-Pawly
-{% endblock title %}
-
+{% block extra_head %}
+<title>Pawly</title>
+{% endblock extra_head %}
 {% block content %}
 <main class="pt-4">
   <div class="container mx-auto px-4 max-w-4xl">
@@ -107,13 +106,13 @@ Pawly
           {% endif %}
           <div class="flex-1">
             <a href="#">
-              <span class="font-semibold text-gray-900">{{ post.pet.name }}</span>
+              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.idPet %}">{{ post.pet.name }}</a></span>
               <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
             </a>
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
           {% if post.pet.is_available_for_adoption %}
-          <button onclick="showInterest()"
+          <button onclick="showInterest('{{ post.pet.idPet }}')"
             class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
             💕 ¡Me interesa adoptar!
           </button>
@@ -146,7 +145,7 @@ Pawly
 
           <div class="mb-4">
             <p class="text-gray-900">
-              <span class="font-semibold text-gray-900">{{ post.pet.name }}</span>
+              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.idPet %}">{{ post.pet.name }}</a></span>
               {% if post.content %} {{ post.content }}{% endif %}
             </p>
           </div>
@@ -235,8 +234,6 @@ Pawly
     </div>
   </div>
 </main>
-
-<!-- Sidenav de notificaciones -->
 
 <div id="modal-publicando" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 hidden">
   <div class="bg-white rounded-lg shadow-lg flex flex-col items-center px-8 py-6">
@@ -347,6 +344,7 @@ Pawly
         <div class="flex gap-2 mt-6">
           <button type="button" onclick="closeModal()"
             class="flex-1 bg-gray-50 text-gray-500 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-colors border border-gray-200">Cancelar</button>
+          <input type="hidden" name="pet_id" id="adoption-pet-id" value="">
           <button type="submit"
             class="flex-1 bg-mint text-white py-2.5 rounded-lg font-semibold hover:bg-mint/90 transition-colors">Enviar</button>
         </div>
@@ -443,11 +441,17 @@ Pawly
     }
   }
 </style>
-
-{% block extra_js %}
+{% block extra_scripts %}
 <script>
   function showInterest() {
     document.getElementById("interestModal").classList.remove("hidden");
+  }
+
+  function showInterest(petId) {
+    const modal = document.getElementById("interestModal");
+    if (modal) modal.classList.remove('hidden');
+    const hidden = document.getElementById('adoption-pet-id');
+    if (hidden && petId) hidden.value = petId;
   }
 
   function closeModal() {

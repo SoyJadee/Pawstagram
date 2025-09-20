@@ -10,19 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 
-
-def custom_logout(request):
-    logout(request)
-    return render(request, 'logout.html')
-
-
 # Create your views here.
-
-
-def userAuthenticated(request):
-    return request.user.is_authenticated
-
-
 def register_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
