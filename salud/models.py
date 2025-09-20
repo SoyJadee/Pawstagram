@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 
@@ -33,3 +30,14 @@ class ServicesHealth(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Reviews(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID de reseña")
+    service = models.ForeignKey(ServicesHealth, on_delete=models.CASCADE, related_name='reviews', verbose_name="Servicio de salud")
+    user = models.CharField(max_length=40, verbose_name="Usuario")
+    rating = models.DecimalField(max_digits=3, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))], verbose_name="Valoración")
+    comment = models.TextField(max_length=500, verbose_name="Comentario")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+
+    def __str__(self):
+        return f"Reseña de {self.user} para {self.service.name}"

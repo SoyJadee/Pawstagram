@@ -3,8 +3,13 @@ from .models import Like
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.db.models import Q, QuerySet
 from mascota.models import Pet
 from .models import Post, Comment, Notifications as Notification
+from tienda.models import Store, Product
+from salud.models import ServicesHealth
 from adopcion.forms import AdoptionForm
 from adopcion.models import Adoption
 from django.contrib import messages
@@ -12,6 +17,7 @@ from supabase import create_client
 from django.conf import settings
 import os
 import uuid
+import re
 import logging
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.timesince import timesince
@@ -289,12 +295,105 @@ def principal(request):
     }
     return render(request, 'Principal.html', context)
 
+def search_with_rank(model: QuerySet, fields: list, query: str, config: str = "spanish", threshold: float = 0.06):
+    """
+    Realiza una búsqueda con rank en un modelo dado.
+
+    :param model: QuerySet del modelo a buscar.
+    :param fields: Lista de campos a incluir en el vector de búsqueda.
+    :param query: Término de búsqueda.
+    :param config: Configuración del idioma para la búsqueda.
+    :param threshold: Umbral mínimo de relevancia para incluir resultados.
+    :return: QuerySet con los resultados ordenados por relevancia.
+    """
+    search_vector = SearchVector(*fields, config=config)
+    search_query = SearchQuery(query, search_type="websearch", config=config)
+    return model.annotate(rank=SearchRank(search_vector, search_query)).filter(rank__gte=threshold).order_by("-rank")
+
 
 def search(request):
-    query = request.GET.get('q', '').strip()
-    results = []
-    if query:
-        pets = Pet.objects.filter(name__icontains=query).select_related(
-            'creator__user').order_by('-created_at')
-        results = pets
-    return render(request, 'search_results.html', {'query': query, 'results': pets})
+    querysearch = request.GET.get("search", "").strip()
+
+    context = {
+        "mascots": [],
+        "stores": [],
+        "services": [],
+        "products": [],
+        "query": querysearch,
+    }
+
+    # Retornar vacío si no hay término
+    if not querysearch:
+        return render(request, "results.html", context)
+
+    # Validaciones básicas
+    if len(querysearch) > 50:
+        messages.error(request, "El término de búsqueda es demasiado largo.")
+        return render(request, "results.html", context)
+    if not re.match(r"^[a-zA-Z0-9\s]*$", querysearch):
+        messages.error(request, "La búsqueda solo puede contener letras, números y espacios.")
+        return render(request, "results.html", context)
+    if len(querysearch) < 3:
+        messages.warning(request, "Ingresa al menos 3 caracteres para buscar.")
+        return render(request, "results.html", context)
+
+    # Búsquedas con rank (evalúan al iterar)
+    # tipoAnimal es FK: usar el campo relacionado 'nombre' para el vector
+    mascotas_qs = search_with_rank(Pet.objects, ["name", "tipoAnimal__nombre", "breed"], querysearch)
+    servicios_qs = search_with_rank(ServicesHealth.objects, ["name", "type", "services", "owner"], querysearch)
+    tiendas_qs = search_with_rank(Store.objects, ["name"], querysearch)
+    # Fix: faltaba la coma entre "name" y "description"
+    productos_qs = search_with_rank(Product.objects, ["name", "description"], querysearch)
+
+    # Materializar en listas (evita reevaluaciones)
+    # Paginación individual por tipo (param: page_j, page_e, page_c, page_a)
+    def paginate(qs, param, per_page=10):
+        paginator = Paginator(qs, per_page)
+        page = request.GET.get(param, 1)
+        try:
+            return paginator.page(page)
+        except PageNotAnInteger:
+            return paginator.page(1)
+        except EmptyPage:
+            return paginator.page(paginator.num_pages)
+
+    mascotas_page = paginate(mascotas_qs, 'page_m')
+    servicios_page = paginate(servicios_qs, 'page_s')
+    tiendas_page = paginate(tiendas_qs, 'page_t')
+    productos_page = paginate(productos_qs, 'page_p')
+
+    mascotas = list(mascotas_page.object_list)
+    servicios = list(servicios_page.object_list)
+    tiendas = list(tiendas_page.object_list)
+    productos = list(productos_page.object_list)
+
+    for mascota in mascotas:
+        # Asignar un atributo calculado 'estado' para usar en la plantilla
+        adoption = Adoption.objects.filter(pet=mascota).only('status').first()
+        mascota.estado = getattr(adoption, 'status', 'available')
+    # Contadores para filtros
+    mascotas_count = mascotas_qs.count()
+    servicios_count = servicios_qs.count()
+    tiendas_count = tiendas_qs.count()
+    productos_count = productos_qs.count()
+    total_count = mascotas_count + servicios_count + tiendas_count + productos_count
+
+    context.update({
+        "query": querysearch,
+    "mascotas": mascotas,
+    "servicios": servicios,
+    "tiendas": tiendas,
+    "productos": productos,
+    "mascotas_page": mascotas_page,
+    "servicios_page": servicios_page,
+    "tiendas_page": tiendas_page,
+    "productos_page": productos_page,
+    "mascotas_count": mascotas_count,
+    "servicios_count": servicios_count,
+    "tiendas_count": tiendas_count,
+    "productos_count": productos_count,
+    "total_count": total_count,
+    })
+
+    # Renderizar plantilla correcta
+    return render(request, "resultados.html", context)
