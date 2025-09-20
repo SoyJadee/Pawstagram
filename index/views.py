@@ -1,17 +1,58 @@
 from django.shortcuts import render, redirect
-import logging
-import uuid
-import os
-from django.conf import settings
-from supabase import create_client
-from django.contrib import messages
-from adopcion.models import Adoption
-from adopcion.forms import AdoptionForm
-from .models import Post, Comment
-from mascota.models import Pet
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 from .models import Like
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from mascota.models import Pet
+from .models import Post, Comment, Notifications as Notification
+from adopcion.forms import AdoptionForm
+from adopcion.models import Adoption
+from django.contrib import messages
+from supabase import create_client
+from django.conf import settings
+import os
+import uuid
+import logging
+from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.timesince import timesince
+# Endpoint AJAX para obtener notificaciones del usuario autenticado
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_GET
+
+
+@login_required
+@require_GET
+def notificaciones_json(request):
+    notificaciones = Notification.objects.filter(
+        user=request.user).order_by('-created_at')[:30]
+    data = []
+    for n in notificaciones:
+        # Si la notificación tiene post relacionado, obtener photo_url
+        photo_url = None
+        if hasattr(n, 'post') and n.post and hasattr(n.post, 'photo_url'):
+            photo_url = n.post.photo_url
+        data.append({
+            'id': n.id,
+            'type': n.type,
+            'message': n.message,
+            'is_read': n.is_read,
+            'created_at': timesince(n.created_at) + ' atrás',
+            'photo_url': photo_url,
+        })
+    return JsonResponse({'notificaciones': data}, encoder=DjangoJSONEncoder)
+
+
+# Marcar notificaciones como leídas
+
+
+@csrf_exempt
+@require_POST
+def marcar_notificaciones_leidas(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'not_authenticated'})
+    Notification.objects.filter(
+        user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'success': True})
 
 
 @require_POST
@@ -31,6 +72,16 @@ def like_post(request):
         liked = False
     else:
         liked = True
+        # Crear notificación solo si el autor no es el mismo usuario
+        if post.author != request.user:
+            Notification.objects.create(
+                post=post,
+                user=post.author,
+                referenceLike=like,
+                type='like',
+                message=f'{request.user.username} le dio like a tu post.',
+                is_read=False
+            )
     likes_count = Like.objects.filter(post=post).count()
     return JsonResponse({'success': True, 'liked': liked, 'likes': likes_count})
 
@@ -159,7 +210,16 @@ def principal(request):
                         user=request.user,
                         content=comment_content
                     )
-                    # Notificación eliminada para evitar error de importación
+                    # Crear notificación solo si el autor no es el mismo usuario
+                    if post.author != request.user:
+                        Notification.objects.create(
+                            post=post,
+                            user=post.author,
+                            referenceComment=comment,
+                            type='comment',
+                            message=f'{request.user.username} comentó en tu post.',
+                            is_read=False
+                        )
                     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                         from django.http import JsonResponse
                         return JsonResponse({
@@ -179,13 +239,14 @@ def principal(request):
                 from django.http import JsonResponse
                 return JsonResponse({'success': False})
             return redirect('principal')
-        
+
         form = AdoptionForm(request.POST)
         if form.is_valid():
             try:
                 adoption = form.save(commit=False)
                 # obtener pet id enviado desde el modal (limpiar y manejar varios casos)
-                pet_id = (request.POST.get('pet_id') or request.POST.get('mascota_id') or '').strip()
+                pet_id = (request.POST.get('pet_id')
+                          or request.POST.get('mascota_id') or '').strip()
                 pet = None
                 if pet_id:
                     # intentar por campo idPet (PK nombrado) primero
@@ -197,8 +258,10 @@ def principal(request):
                         except Exception:
                             pet = None
                 if not pet:
-                    logger.warning(f"Solicitud de adopción: pet_id recibido='{pet_id}' no corresponde a ninguna Mascota")
-                    messages.error(request, 'Mascota inválida. No se pudo procesar la solicitud de adopción.')
+                    logger.warning(
+                        f"Solicitud de adopción: pet_id recibido='{pet_id}' no corresponde a ninguna Mascota")
+                    messages.error(
+                        request, 'Mascota inválida. No se pudo procesar la solicitud de adopción.')
                 else:
                     adoption.pet = pet
                     # responsable es el creador de la mascota (UserProfile)
@@ -208,7 +271,8 @@ def principal(request):
                     adoption_success = True
             except Exception as e:
                 logger.error(f"Error al guardar adopción: {e}")
-                messages.error(request, 'Error al procesar la solicitud de adopción. Inténtalo de nuevo.')
+                messages.error(
+                    request, 'Error al procesar la solicitud de adopción. Inténtalo de nuevo.')
             # No redirigir, mostrar mensaje en modal
         else:
             messages.error(
@@ -225,10 +289,12 @@ def principal(request):
     }
     return render(request, 'Principal.html', context)
 
+
 def search(request):
     query = request.GET.get('q', '').strip()
     results = []
     if query:
-        pets = Pet.objects.filter(name__icontains=query).select_related('creator__user').order_by('-created_at')
+        pets = Pet.objects.filter(name__icontains=query).select_related(
+            'creator__user').order_by('-created_at')
         results = pets
     return render(request, 'search_results.html', {'query': query, 'results': pets})
