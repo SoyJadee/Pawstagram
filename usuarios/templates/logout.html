@@ -1,8 +1,203 @@
-{% extends "base.html" %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="es">
 
-{% block content %}
-<h1>Has cerrado sesión correctamente.</h1>
-<a href="{% url 'login' %}" class="text-paw-teal hover:underline">Iniciar sesión de nuevo</a>
-<a href="{% url 'principal' %}" class="text-paw-teal hover:underline">Volver a la página principal</a>
-{% endblock content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pawly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paw-teal': '#3dd5f3',
+                        'paw-green': '#2dd4aa',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .wave-bg {
+            background: linear-gradient(135deg, #3dd5f3 0%, #2dd4aa 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+            background-size: 50px 50px;
+            animation: sparkle 20s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .pulse-icon {
+            animation: pulse-custom 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-custom {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 relative overflow-x-hidden overflow-y-auto">
+
+    <!-- Contenedor principal -->
+    <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <!-- Card de logout -->
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden slide-up">
+            <!-- Header espectacular -->
+            <div class="wave-bg p-8 text-center relative">
+                <!-- Icono principal -->
+                <div
+                    class="w-20 h-20 bg-white rounded-2xl mx-auto mb-6 flex items-center justify-center pulse-icon relative">
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-white-400 to-white-400 rounded-2xl blur opacity-25">
+                    </div>
+                    <i
+                        class="fas fa-paw text-4xl bg-gradient-to-r from-paw-teal to-paw-green bg-clip-text text-transparent relative z-10"></i>
+                </div>
+
+                <!-- Mensaje principal -->
+                <h1 class="text-2xl font-bold text-white mb-3">¡Hasta pronto!</h1>
+                <p class="text-white/90 text-sm leading-relaxed">
+                    Gracias por usar Pawly.<br>
+                    Esperamos verte de nuevo muy pronto 🐕
+                </p>
+            </div>
+
+            <!-- Cuerpo -->
+            <div class="p-8 text-center">
+                <!-- Mensaje de confirmación -->
+                <div class="mb-8">
+                    <div class="w-16 h-16 bg-green-50 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-2xl text-green-500"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Sesión cerrada correctamente</h2>
+                    <p class="text-gray-600 text-sm">Tu cuenta está segura y protegida</p>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="space-y-3">
+                    <!-- Iniciar sesión nuevamente -->
+                    <a href="{% url 'login' %}"
+                        class="block w-full bg-gradient-to-r from-paw-teal to-paw-green text-white font-semibold py-3 rounded-xl hover:from-paw-green hover:to-paw-teal transform hover:scale-[1.02] transition-all duration-200 shadow-lg text-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión Nuevamente
+                    </a>
+                </div>
+
+                <!-- Mensaje motivacional -->
+                <div class="mt-8 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <div class="flex items-center justify-center mb-2">
+                        <span class="text-2xl mr-2">💡</span>
+                        <span class="font-medium text-yellow-800">¡Tip del día!</span>
+                    </div>
+                    <p class="text-sm text-yellow-700" id="dailyTip">
+                        Recuerda llevar a tu mascota al veterinario regularmente para mantener su salud al día.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Tips motivacionales
+        const dailyTips = [
+            "Recuerda llevar a tu mascota al veterinario regularmente para mantener su salud al día.",
+            "El ejercicio diario es fundamental para la felicidad de tu mascota. ¡Sal a caminar!",
+            "Una alimentación balanceada es clave para la longevidad de tu compañero peludo.",
+            "El cepillado regular ayuda a mantener el pelaje de tu mascota saludable y brillante.",
+            "Las vacunas al día protegen a tu mascota de enfermedades graves. ¡No las olvides!",
+            "El amor y la atención son los mejores regalos que puedes darle a tu mascota.",
+            "Los juguetes interactivos mantienen a tu mascota mentalmente estimulada y feliz."
+        ];
+
+        // Mostrar tip aleatorio
+        function showRandomTip() {
+            const tipElement = document.getElementById('dailyTip');
+            const randomTip = dailyTips[Math.floor(Math.random() * dailyTips.length)];
+            tipElement.textContent = randomTip;
+        }
+
+        // Mostrar notificación de despedida
+        function showFarewellNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-paw-teal to-paw-green text-white px-6 py-3 rounded-full shadow-lg z-50 transition-all duration-500 -translate-y-16';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">🐾</span>
+                    <span class="font-medium">¡Gracias por visitarnos!</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(-50%) translateY(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(-50%) translateY(-64px)';
+                setTimeout(() => document.body.removeChild(notification), 500);
+            }, 3000);
+        }
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function () {
+            showRandomTip();
+            generateSessionStats();
+
+            // Mostrar notificación después de un pequeño delay
+            setTimeout(showFarewellNotification, 1000);
+
+            // Limpiar datos de sesión (simulado)
+            localStorage.removeItem('userSession');
+            localStorage.removeItem('tempUserData');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,25 +1,36 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from .forms import UserCreationForm, LoginForm
-from adopcion.models import Adoption
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib import messages
-from django.db import IntegrityError, transaction
 from .models import UserProfile
+from django.db import IntegrityError, transaction
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate, login
+from adopcion.models import Adoption
+from .forms import UserCreationForm, LoginForm
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
+
+def custom_logout(request):
+    logout(request)
+    return render(request, 'logout.html')
+
 
 # Create your views here.
+
 
 def userAuthenticated(request):
     return request.user.is_authenticated
 
+
 def register_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
-            return redirect('/admin/')  # Redirigir a la página de Django admin si es admin
+            # Redirigir a la página de Django admin si es admin
+            return redirect('/admin/')
         else:
-            return redirect('perfil')  # Redirigir a la página principal u otra página adecuada
+            # Redirigir a la página principal u otra página adecuada
+            return redirect('perfil')
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -31,18 +42,22 @@ def register_view(request):
                         user=user,
                         phone=form.cleaned_data.get("phone"),
                         is_foundation=form.cleaned_data.get("is_foundation"),
-                        
+
                     )
-                messages.success(request, "Usuario registrado correctamente. Ahora puedes iniciar sesión.")
+                messages.success(
+                    request, "Usuario registrado correctamente. Ahora puedes iniciar sesión.")
                 return redirect("login")
             except IntegrityError:
-                messages.error(request, "No se pudo crear el cliente (teléfono o cédula ya existe).")
+                messages.error(
+                    request, "No se pudo crear el cliente (teléfono o cédula ya existe).")
         else:
-            messages.error(request, "Por favor corrige los errores en el formulario.")
+            messages.error(
+                request, "Por favor corrige los errores en el formulario.")
     else:
         form = UserCreationForm()
 
     return render(request, "Registro.html", {"form": form})
+
 
 def login_view(request):
     """Vista de login segura.
@@ -50,10 +65,12 @@ def login_view(request):
 
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
-            return redirect('/admin/')  # Redirigir a la página de Django admin si es admin
+            # Redirigir a la página de Django admin si es admin
+            return redirect('/admin/')
         else:
-            return redirect('perfil')  # Redirigir a la página principal u otra página adecuada
-    
+            # Redirigir a la página principal u otra página adecuada
+            return redirect('perfil')
+
     form = LoginForm()
 
     if request.method == 'POST':
@@ -84,7 +101,8 @@ def login_view(request):
                 request.session.set_expiry(0)
             messages.success(request, 'Has iniciado sesión correctamente.')
             if request.user.is_staff and request.user.is_superuser:
-                return redirect('/admin/')  # Redirigir a la página de Django admin si es admin
+                # Redirigir a la página de Django admin si es admin
+                return redirect('/admin/')
             else:
                 return redirect('perfil')
         else:
@@ -93,9 +111,11 @@ def login_view(request):
 
     return render(request, 'login.html', {'form': form, })
 
+
 @login_required
 def perfil_view(request):
-    user_profile = UserProfile.objects.select_related('user').filter(user=request.user).first()
+    user_profile = UserProfile.objects.select_related(
+        'user').filter(user=request.user).first()
     if not user_profile:
         messages.error(request, "El perfil de usuario no existe.")
         return redirect('login')
