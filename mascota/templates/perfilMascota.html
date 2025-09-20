@@ -95,7 +95,7 @@
         </div>
         {% if mascota.is_available_for_adoption %}
         <button
-          onclick="showInterest('{{ mascota.idPet }}')"
+          onclick="showInterest('{{ mascota.pk }}')"
           class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
         >
           💕 ¡Me interesa adoptar!
@@ -131,13 +131,13 @@
           {% endif %}
           <div class="flex-1">
             <a href="#">
-              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.idPet %}">{{ post.pet.name }}</a></span>
+              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a></span>
               <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
             </a>
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
           {% if post.pet.is_available_for_adoption %}
-          <button onclick="showInterest('{{ mascota.idPet }}')"
+          <button onclick="showInterest('{{ mascota.pk }}')"
             class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
             💕 ¡Me interesa adoptar!
           </button>
@@ -170,7 +170,7 @@
 
           <div class="mb-4">
             <p class="text-gray-900">
-              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.idPet %}">{{ post.pet.name }}</a></span>
+              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a></span>
               {% if post.content %} {{ post.content }}{% endif %}
             </p>
           </div>
@@ -267,7 +267,7 @@
         Contacta con {{mascota.creator.first_name}} {{mascota.creator.last_name}} para conocer más sobre el proceso de adopción
       </p>
       <button
-        onclick="showInterest('{{ mascota.idPet }}')"
+  onclick="showInterest('{{ mascota.pk }}')"
         class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
       >
         💕 ¡Quiero adoptar a {{mascota.name}}!
@@ -295,7 +295,7 @@
       <div class="space-y-3">
         <form method="post">
             {% csrf_token %}
-            <input type="hidden" name="pet_id" id="adoption-pet-id" value="{{ mascota.idPet }}">
+            <input type="hidden" name="pet_id" id="adoption-pet-id" value="{{ mascota.pk }}">
             {{ adoption_form.as_p }}
             {% if adoption_form.errors %}
                 <div class="text-red-600 text-sm mb-2">
