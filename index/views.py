@@ -97,7 +97,7 @@ def principal(request):
                     messages.error(request, 'Perfil de usuario no encontrado.')
                     return redirect('principal')
                 mascota = Pet.objects.filter(
-                    id=mascota_id, creator=user_profile).first()
+                    idPet=mascota_id, creator=user_profile).first()
                 if not mascota:
                     messages.error(
                         request, 'Mascota no encontrada o no tienes permisos.')
