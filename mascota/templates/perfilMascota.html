@@ -33,16 +33,24 @@
         <div
           class="w-48 h-48 rounded-full overflow-hidden border-4 border-mint"
         >
+        {% if mascota.profile_photo_url %}
           <img
-            src="{% static 'perfil.jpg' %}"
+            src="{{ mascota.profile_photo_url }}"
             alt="Foto de perfil de {{ mascota.name }}"
             class="w-full h-full object-cover"
           />
+        {% else %}
+          <img
+            src="{{ post.photo_url|last }}"
+            alt="Foto de perfil de {{ mascota.name }}"
+            class="w-full h-full object-cover"
+          />
+        {% endif %}
         </div>
         <div
           class="absolute -bottom-2 -right-2 bg-mint text-white rounded-full w-12 h-12 flex items-center justify-center text-xl"
         >
-          🐕
+          <i class="fas fa-paw"></i>
         </div>
       </div>
 
@@ -81,13 +89,13 @@
           <div class="bg-blue-50 p-3 rounded-xl">
             <div class="text-sm text-gray-600">Responsable</div>
             <div class="font-semibold text-gray-700">
-              {{ mascota.owner.first_name }} {{ mascota.owner.last_name }}
+                {{ mascota.creator.user.first_name }} {{ mascota.creator.user.last_name }}
             </div>
           </div>
         </div>
         {% if mascota.is_available_for_adoption %}
         <button
-          onclick="showInterest()"
+          onclick="showInterest('{{ mascota.idPet }}')"
           class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
         >
           💕 ¡Me interesa adoptar!
@@ -102,7 +110,7 @@
     <h2 class="text-2xl font-bold text-gray-800 mb-4">
       Sobre {{ mascota.name }}
     </h2>
-    <p class="text-gray-600 leading-relaxed">{{ mascota.description }}</p>
+    <p class="text-gray-600 leading-relaxed">{{ mascota.description|default:"Sin descripción" }}</p>
   </div>
 
   <!-- Publicaciones -->
@@ -110,101 +118,144 @@
     <h2 class="text-2xl font-bold text-gray-800 text-center">
       Publicaciones de {{ mascota.name }}
     </h2>
+  {% if posts %}
     {% for post in posts %}
-    <!-- Publicación 1 -->
-    <div class="bg-white rounded-3xl card-shadow overflow-hidden">
-      <div class="p-6 border-b border-gray-100">
-        <div class="flex items-center gap-3">
-          <div
-            class="w-12 h-12 bg-mint rounded-full flex items-center justify-center"
-          >
-            <i class="fas fa-user text-white"></i>
+     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 instagram-card">
+    <div class="flex items-center px-6 py-4">
+          {% if post.pet.profile_photo_url %}
+          <img src="{{ post.pet.profile_photo_url }}" alt="{{ post.pet.name }}"
+            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+          {% else %}
+          <img src="{% static 'img/logo1.png' %}" alt="Patita azul"
+            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+          {% endif %}
+          <div class="flex-1">
+            <a href="#">
+              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.idPet %}">{{ post.pet.name }}</a></span>
+              <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
+            </a>
+            <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
-          <div>
-            <div class="font-semibold text-gray-800">{{ post.author.first_name }} {{ post.author.last_name }}</div>
-            <div class="text-sm text-gray-500">{{ post.created_at|timeago }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="aspect-square bg-gradient-to-br from-light-blue to-mint flex items-center justify-center"
-      >
-        <img
-          src="{{ post.photo_url }}"
-          class="w-full h-full max-w-sm object-cover"
-        />
-      </div>
-
-      <div class="p-6">
-        <p class="text-gray-700 mb-4">
-          {{ post.content }}
-        </p>
-
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <button
-              onclick="toggleLike(this)"
-              class="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors heart-animation"
-            >
-              <i class="far fa-heart text-xl"></i>
-              <span>{{ post.likes.count }}</span>
-            </button>
-            <button
-              onclick="toggleComments(1)"
-              class="flex items-center gap-2 text-gray-600 hover:text-light-blue transition-colors"
-            >
-              <i class="far fa-comment text-xl"></i>
-              <span>{{ comentarios|get_item:post.id|length }}</span>
-            </button>
-          </div>
-          {% if mascota.is_available_for_adoption %}
-          <button
-            onclick="showInterest()"
-            class="text-mint hover:text-green-600 font-semibold"
-          >
-            ¿Te interesa adoptar?
+          {% if post.pet.is_available_for_adoption %}
+          <button onclick="showInterest('{{ mascota.idPet }}')"
+            class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
+            💕 ¡Me interesa adoptar!
           </button>
-            {% endif %}
+          {% endif %}
         </div>
-        
-  <div id="comments-{{ post.id }}" class="hidden mt-4 pt-4 border-t border-gray-100">
-          <div class="space-y-3">
-            {% for comment in comentarios|get_item:post.id %}
-            <div class="flex gap-3">
-              <div
-                class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center"
-              >
-                <i class="fas fa-user text-xs text-gray-600"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-sm">{{ comment.user.first_name }} {{ comment.user.last_name }}</div>
-                <div class="text-gray-600 text-sm">
-                  {{ comment.content }}
-                </div>
-              </div>
-            </div>    
+        <div class="w-full bg-gray-100">
+          <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
+        </div>
+        <div class="px-6 py-4">
+          <div class="flex items-center mb-4">
+            {% if user_authenticated %}
+            <button
+              class="like-btn text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1">
+              <i class="fas fa-heart text-xl"></i>
+            </button>
+            {% else %}
+            <a href="{% url 'login' %}"
+              class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
+              <i class="fas fa-heart text-xl"></i>
+            </a>
+            {% endif %}
+            <button
+              class="text-gray-500 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition-all duration-300 mr-1">
+              <i class="fas fa-comment text-xl"></i>
+              <span class="ml-1 text-xs align-middle font-semibold">{{ post.comments.count }}</span>
+            </button>
+            <!-- Botón de compartir eliminado -->
+            <span class="ml-auto text-sm font-semibold text-gray-700 like-count">{{ post.likes.count }} Me gusta</span>
           </div>
-          <div class="mt-4">
-            <form  method="post">
-              {% csrf_token %}
-              {{ form.as_p }}
-              {% if form.errors %}
-                <div class="text-red-600 text-sm mb-2">
-                    {{ form.errors }}
-                </div>
-              {% endif %}
-              <input type="hidden" name="post" value="{{ post.id }}">
-              <button type="submit" class="bg-mint text-white px-4 py-2 rounded-full font-semibold hover:bg-green-400 transition-colors mt-2">
-                Enviar
-              </button>
-            </form>
+
+          <div class="mb-4">
+            <p class="text-gray-900">
+              <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.idPet %}">{{ post.pet.name }}</a></span>
+              {% if post.content %} {{ post.content }}{% endif %}
+            </p>
           </div>
+
+          {% if post.comments.count > 0 %}
+          <div class="mb-4 comments-box">
+            {% if post.comments.count > 5 %}
+            {% for comment in post.comments.all|slice:":5" %}
+            <p class="text-sm text-gray-800 mb-1">
+              <span class="font-semibold text-gray-900">
+                {% if comment.user and comment.user.username %}
+                {{ comment.user.username }}
+                {% else %}
+                Usuario
+                {% endif %}
+              </span> {{ comment.content }}
+            </p>
+            {% endfor %}
+            <a href="#" class="text-sm text-gray-500 mb-2"
+              onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
+              comentarios... </a>
+            <div style="display:none;">
+              {% for comment in post.comments.all|slice:"5:" %}
+              <p class="text-sm text-gray-800 mb-1">
+                <span class="font-semibold text-gray-900">
+                  {% if comment.user and comment.user.username %}
+                  {{ comment.user.username }}
+                  {% else %}
+                  Usuario
+                  {% endif %}
+                </span> {{ comment.content }}
+              </p>
+              {% endfor %}
+            </div>
+            {% else %}
+            {% for comment in post.comments.all %}
+            <p class="text-sm text-gray-800 mb-1">
+              <span class="font-semibold text-gray-900">
+                {% if comment.user and comment.user.username %}
+                {{ comment.user.username }}
+                {% else %}
+                Usuario
+                {% endif %}
+              </span> {{ comment.content }}
+            </p>
+            {% endfor %}
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <form method="post" action="" class="comment-form flex items-center border-t border-gray-100 pt-4 gap-3">
+            {% csrf_token %}
+            <img src="{% static 'img/logo1.png' %}" alt="Tu perfil"
+              class="w-8 h-8 rounded-full border border-[#00F5D4] object-cover">
+            <input type="hidden" name="comment_post_id" value="{{ post.id }}">
+            <input type="text" name="comment_content"
+              class="flex-1 bg-gray-50 border-0 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300"
+              placeholder="Añade un comentario..." {% if not user_authenticated %}disabled{% endif %} required>
+            <span class="comment-msg hidden text-green-600 text-xs ml-2"></span>
+            {% if not user_authenticated %}
+            <a href="{% url 'login' %}"
+              class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</a>
+            {% else %}
+            <button type="submit"
+              class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</button>
+            {% endif %}
+          </form>
         </div>
       </div>
-    </div>
-
-   
+      {% endfor %}
+   {% else %}
+      <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div class="text-6xl mb-6">🐾</div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay publicaciones aún</h3>
+        <p class="text-gray-500 mb-8 max-w-md mx-auto">Sé el primero en compartir una foto de tu mascota y conecta con
+          otros amantes de los animales</p>
+        {% if not user_authenticated %}
+        <a href="{% url 'login' %}"
+          class="inline-flex items-center space-x-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white px-8 py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Iniciar sesión para publicar</span>
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
   <!-- Footer -->
    {% if mascota.is_available_for_adoption %}
   <div class="text-center mt-12 p-6">
@@ -216,7 +267,7 @@
         Contacta con {{mascota.creator.first_name}} {{mascota.creator.last_name}} para conocer más sobre el proceso de adopción
       </p>
       <button
-        onclick="showInterest()"
+        onclick="showInterest('{{ mascota.idPet }}')"
         class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
       >
         💕 ¡Quiero adoptar a {{mascota.name}}!
@@ -244,6 +295,7 @@
       <div class="space-y-3">
         <form method="post">
             {% csrf_token %}
+            <input type="hidden" name="pet_id" id="adoption-pet-id" value="{{ mascota.idPet }}">
             {{ adoption_form.as_p }}
             {% if adoption_form.errors %}
                 <div class="text-red-600 text-sm mb-2">
@@ -269,6 +321,7 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 {% endblock content %} 
 {% block extra_scripts %}
@@ -296,6 +349,13 @@
 
   function showInterest() {
     document.getElementById("interestModal").classList.remove("hidden");
+  }
+
+  function showInterest(petId) {
+    const modal = document.getElementById("interestModal");
+    if (modal) modal.classList.remove('hidden');
+    const hidden = document.getElementById('adoption-pet-id');
+    if (hidden && petId) hidden.value = petId;
   }
 
   function closeModal() {
@@ -390,4 +450,147 @@
     }
   })();
 </script>
+
+<style>
+  .animate-fadein {
+    animation: fadein 0.3s;
+  }
+
+  .animate-slideup {
+    animation: slideup 0.4s cubic-bezier(.4, 2, .6, 1) 0.05s;
+  }
+
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideup {
+    from {
+      transform: translateY(40px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .text-mint {
+    color: #00F5D4;
+  }
+
+  .bg-mint {
+    background: #00F5D4;
+  }
+
+  .bg-mint\/90 {
+    background: rgba(0, 245, 212, 0.9);
+  }
+
+  /* Minimalista para los inputs */
+  #interestModal input,
+  #interestModal textarea {
+    background: #f7fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    color: #222;
+    padding: 0.75rem 1rem;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: none;
+    outline: none;
+  }
+
+  #interestModal input:focus,
+  #interestModal textarea:focus {
+    border-color: #00F5D4;
+    background: #fff;
+  }
+
+  #interestModal textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+</style>
+
+<style>
+  .animate-bounce-brown {
+    animation: bounce-brown 0.7s infinite alternate;
+    display: inline-block;
+  }
+
+  @keyframes bounce-brown {
+    0% {
+      transform: translateY(0);
+    }
+
+    100% {
+      transform: translateY(-16px);
+    }
+  }
+</style>
+<script>
+  function showInterest() {
+    document.getElementById("interestModal").classList.remove("hidden");
+  }
+
+  function closeModal() {
+    document.getElementById("interestModal").classList.add("hidden");
+  }
+   document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Swiper !== 'undefined') {
+      const swiper = new Swiper('.swiper', {
+        slidesPerView: 'auto',
+        spaceBetween: 12,
+        freeMode: true,
+        grabCursor: true
+      });
+    }
+
+    document.querySelectorAll('.instagram-card').forEach(function (card) {
+      const likeBtn = card.querySelector('.like-btn');
+      const likeCount = card.querySelector('.like-count');
+
+      if (likeBtn && likeCount) {
+        let liked = likeBtn.classList.contains('text-red-500');
+        let count = parseInt(likeCount.textContent) || 0;
+
+        likeBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          liked = !liked;
+
+          if (liked) {
+            likeBtn.classList.add('text-red-500');
+            likeBtn.classList.remove('text-gray-500');
+            count++;
+          } else {
+            likeBtn.classList.remove('text-red-500');
+            likeBtn.classList.add('text-gray-500');
+            count--;
+          }
+
+          likeCount.textContent = count + ' Me gusta';
+        });
+      }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      const modal = document.getElementById('modal-publicando');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    }
+  });
+</script>
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/comments.js' %}"></script>
+<script src="{% static 'js/like.js' %}"></script>
 {% endblock extra_scripts %}
