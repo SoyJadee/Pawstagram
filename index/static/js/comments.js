@@ -10,16 +10,20 @@ document.addEventListener('DOMContentLoaded', function () {
       const content = contentInput.value.trim();
       if (!content) return;
       const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      // Buscar el .comments-box más cercano hacia arriba
-      let commentsBox = null;
-      let parent = form.parentElement;
-      while (parent && !commentsBox) {
-        commentsBox = parent.querySelector('.comments-box');
-        parent = parent.parentElement;
+      // Buscar el .instagram-card más cercano y su .comments-box
+      let postCard = form;
+      while (postCard && !postCard.classList.contains('instagram-card')) {
+        postCard = postCard.parentElement;
       }
+      let commentsBox = null;
+      if (postCard) {
+        commentsBox = postCard.querySelector('.comments-box');
+      }
+      // Si no existe, crearla justo antes del form
       if (!commentsBox) {
-        // Si no se encuentra, buscar en todo el documento el más cercano por el postId
-        commentsBox = document.querySelector('.comments-box');
+        commentsBox = document.createElement('div');
+        commentsBox.className = 'mb-4 comments-box';
+        form.parentNode.insertBefore(commentsBox, form);
       }
       fetch('', {
         method: 'POST',

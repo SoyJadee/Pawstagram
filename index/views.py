@@ -135,14 +135,7 @@ def principal(request):
                         user=request.user,
                         content=comment_content
                     )
-                    # Notificación solo si el que comenta NO es el autor del post
-                    if post.author != request.user:
-                        from .comment_notifications import CommentNotification
-                        CommentNotification.objects.create(
-                            user=post.author,
-                            comment=comment,
-                            post=post
-                        )
+                    # Notificación eliminada para evitar error de importación
                     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                         from django.http import JsonResponse
                         return JsonResponse({
