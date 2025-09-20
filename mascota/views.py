@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 def mascotaDetailsView(request, idPet):
     mascota = get_object_or_404(Pet, idPet=idPet)
     # Obtener posts relacionados a la mascota (por instancia)
-    posts = Post.objects.filter(pet=mascota).all()
+    posts = Post.objects.filter(pet=mascota).order_by('-created_at').all()
     comentarios = {}
     likes = {}
     for post in posts:
