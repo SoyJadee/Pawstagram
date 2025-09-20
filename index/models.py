@@ -62,3 +62,13 @@ class Notifications(models.Model):
 
     def __str__(self):
         return f"Notificación para {self.user} - {'Leído' if self.is_read else 'No leído'}"
+
+class Histories(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID de historia")
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, verbose_name='mascota', related_name='histories')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='autor', related_name='histories')
+    photo_url = models.URLField(null=True, blank=True, verbose_name="URL de la foto")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+
+    def __str__(self):
+        return f"Historia de {self.author} - {self.created_at}"
