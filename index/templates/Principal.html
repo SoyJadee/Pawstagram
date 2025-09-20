@@ -136,28 +136,25 @@ Pawly
             </p>
           </div>
 
-          {% if post.comments.count > 5 %}
-          <div class="mb-4">
+          {% if post.comments.count > 0 %}
+          <div class="mb-4 comments-box">
+            {% if post.comments.count > 5 %}
             {% for comment in post.comments.all|slice:":5" %}
-            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
-                }}</span> {{ comment.content }}</p>
+      <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{% if comment.user %}{{ comment.user.username }}{% else %}Usuario{% endif %}</span> {{ comment.content }}</p>
             {% endfor %}
             <a href="#" class="text-sm text-gray-500 mb-2"
               onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
               comentarios... </a>
             <div style="display:none;">
               {% for comment in post.comments.all|slice:"5:" %}
-              <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
-                  }}</span> {{ comment.content }}</p>
+        <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{% if comment.user %}{{ comment.user.username }}{% else %}Usuario{% endif %}</span> {{ comment.content }}</p>
               {% endfor %}
             </div>
-          </div>
-          {% elif post.comments.count > 0 %}
-          <div class="mb-4 comments-box">
+            {% else %}
             {% for comment in post.comments.all %}
-            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
-                }}</span> {{ comment.content }}</p>
+      <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{% if comment.user %}{{ comment.user.username }}{% else %}Usuario{% endif %}</span> {{ comment.content }}</p>
             {% endfor %}
+            {% endif %}
           </div>
           {% endif %}
 
@@ -275,8 +272,7 @@ Pawly
         <div class="space-y-4">
           {% for field in form.visible_fields %}
           <div>
-            <label for="{{ field.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ field.label
-              }}</label>
+            <label for="{{ field.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ field.label }}</label>
             <div class="flex items-center">
               {% if field.name == 'adopterName' %}
               <i class="fas fa-user text-gray-300 mr-2"></i>
