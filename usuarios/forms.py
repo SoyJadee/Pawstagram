@@ -33,17 +33,64 @@ class UserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Atributos comunes para todos los campos
+        # Unificar clases e IDs y manejar correctamente el atributo required
+        common_classes = getattr(self.Meta, 'common_classes', 'w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-paw-teal focus:border-transparent transition-all text-sm bg-white placeholder-gray-400 outline-none')
+
+        id_mapping = {
+            'username': 'username',
+            'email': 'email',
+            'first_name': 'first_name',
+            'last_name': 'last_name',
+            'phone': 'phone',
+            'password1': 'password',  # para toggle/medidor de fuerza
+            'password2': 'password2',
+            'is_foundation': 'is_foundation',
+        }
+
         for name, field in self.fields.items():
-            existing = field.widget.attrs
-            existing.setdefault("class", "input-field")
-            existing["required"] = "required" if field.required else ""
+            widget = field.widget
+            # IDs consistentes para integración con JS/HTML
+            if name in id_mapping:
+                widget.attrs['id'] = id_mapping[name]
+
+            # Marcar required solo cuando realmente lo es; eliminar si no
+            if field.required:
+                widget.attrs['required'] = ''
+            else:
+                widget.attrs.pop('required', None)
+
+            # Aplicar clases tailwind uniformes a entradas de texto/email/password
+            if not isinstance(widget, (forms.CheckboxInput,)):
+                # Si ya hay clases, las sustituimos para asegurar uniformidad
+                widget.attrs['class'] = common_classes
+
+            # Accesibilidad
+            widget.attrs.setdefault('aria-label', field.label or name)
+
         # Tipos y patrones específicos
-        self.fields["email"].widget.attrs["type"] = "email"
-        self.fields["phone"].widget.attrs["pattern"] = "[0-9]+"
-        # Accesibilidad: labels asociadas
-        for name, field in self.fields.items():
-            field.widget.attrs.setdefault("aria-label", field.label or name)
+        self.fields['email'].widget.attrs['type'] = 'email'
+        self.fields['phone'].widget.attrs['pattern'] = '[0-9]+'
+
+        # Asegurar attrs específicos en passwords (UserCreationForm no siempre respeta Meta.widgets)
+        p1 = self.fields.get('password1')
+        if p1 is not None:
+            p1.widget.attrs.update({
+                'autocomplete': 'new-password',
+                'placeholder': 'Contraseña (mín. 8 caracteres)',
+                'maxlength': '20',
+                'id': 'password',  # imprescindible para el toggle/medidor
+                'class': common_classes,
+            })
+
+        p2 = self.fields.get('password2')
+        if p2 is not None:
+            p2.widget.attrs.update({
+                'autocomplete': 'new-password',
+                'placeholder': 'Repite la contraseña',
+                'maxlength': '20',
+                'id': 'password2',
+                'class': common_classes,
+            })
 
     # Placeholders y autocomplete semántico
 
