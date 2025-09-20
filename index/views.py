@@ -43,6 +43,7 @@ def principal(request):
             messages.error(request, 'Error al cargar tus mascotas.')
 
     form = AdoptionForm()
+    adoption_success = False
 
     if request.method == 'POST':
         # Publicar un post
@@ -166,9 +167,8 @@ def principal(request):
             form = AdoptionForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.success(
-                    request, 'Formulario de adopción enviado con éxito.')
-                return redirect('principal')
+                adoption_success = True
+                # No redirigir, mostrar mensaje en modal
             else:
                 messages.error(
                     request, 'Error en el formulario de adopción. Revisa los datos ingresados.')
@@ -180,5 +180,6 @@ def principal(request):
         'mascotas_usuario': mascotas,
         'form': form,
         'posts': posts,
+        'adoption_success': adoption_success,
     }
     return render(request, 'Principal.html', context)
