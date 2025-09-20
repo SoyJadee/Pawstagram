@@ -287,13 +287,20 @@ def principal(request):
     # GET request or after POST handling, always render the page
     posts = Post.objects.all().order_by('-created_at').prefetch_related(
         'comments__user', 'pet', 'author')
+    # IDs de posts que el usuario ya ha dado like
+    user_liked_post_ids = set()
+    if request.user.is_authenticated:
+        user_liked_post_ids = set(Like.objects.filter(
+            user=request.user).values_list('post_id', flat=True))
     context = {
         'mascotas_usuario': mascotas,
         'form': form,
         'posts': posts,
         'adoption_success': adoption_success,
+        'user_liked_post_ids': user_liked_post_ids,
     }
     return render(request, 'Principal.html', context)
+
 
 def search_with_rank(model: QuerySet, fields: list, query: str, config: str = "spanish", threshold: float = 0.06):
     """
@@ -331,7 +338,8 @@ def search(request):
         messages.error(request, "El término de búsqueda es demasiado largo.")
         return render(request, "results.html", context)
     if not re.match(r"^[a-zA-Z0-9\s]*$", querysearch):
-        messages.error(request, "La búsqueda solo puede contener letras, números y espacios.")
+        messages.error(
+            request, "La búsqueda solo puede contener letras, números y espacios.")
         return render(request, "results.html", context)
     if len(querysearch) < 3:
         messages.warning(request, "Ingresa al menos 3 caracteres para buscar.")
@@ -339,11 +347,14 @@ def search(request):
 
     # Búsquedas con rank (evalúan al iterar)
     # tipoAnimal es FK: usar el campo relacionado 'nombre' para el vector
-    mascotas_qs = search_with_rank(Pet.objects, ["name", "tipoAnimal__nombre", "breed"], querysearch)
-    servicios_qs = search_with_rank(ServicesHealth.objects, ["name", "type", "services", "owner"], querysearch)
+    mascotas_qs = search_with_rank(
+        Pet.objects, ["name", "tipoAnimal__nombre", "breed"], querysearch)
+    servicios_qs = search_with_rank(ServicesHealth.objects, [
+                                    "name", "type", "services", "owner"], querysearch)
     tiendas_qs = search_with_rank(Store.objects, ["name"], querysearch)
     # Fix: faltaba la coma entre "name" y "description"
-    productos_qs = search_with_rank(Product.objects, ["name", "description"], querysearch)
+    productos_qs = search_with_rank(
+        Product.objects, ["name", "description"], querysearch)
 
     # Materializar en listas (evita reevaluaciones)
     # Paginación individual por tipo (param: page_j, page_e, page_c, page_a)
@@ -380,19 +391,19 @@ def search(request):
 
     context.update({
         "query": querysearch,
-    "mascotas": mascotas,
-    "servicios": servicios,
-    "tiendas": tiendas,
-    "productos": productos,
-    "mascotas_page": mascotas_page,
-    "servicios_page": servicios_page,
-    "tiendas_page": tiendas_page,
-    "productos_page": productos_page,
-    "mascotas_count": mascotas_count,
-    "servicios_count": servicios_count,
-    "tiendas_count": tiendas_count,
-    "productos_count": productos_count,
-    "total_count": total_count,
+        "mascotas": mascotas,
+        "servicios": servicios,
+        "tiendas": tiendas,
+        "productos": productos,
+        "mascotas_page": mascotas_page,
+        "servicios_page": servicios_page,
+        "tiendas_page": tiendas_page,
+        "productos_page": productos_page,
+        "mascotas_count": mascotas_count,
+        "servicios_count": servicios_count,
+        "tiendas_count": tiendas_count,
+        "productos_count": productos_count,
+        "total_count": total_count,
     })
 
     # Renderizar plantilla correcta

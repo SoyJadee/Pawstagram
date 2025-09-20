@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404,redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Pet
 from index.models import Post, Comment, Like
 from index.forms import CommentForm
@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 import logging
 # Create your views here.
+
 
 @require_POST
 def like_post(request):
@@ -30,8 +31,10 @@ def like_post(request):
     likes_count = Like.objects.filter(post=post).count()
     return JsonResponse({'success': True, 'liked': liked, 'likes': likes_count})
 
+
 # Configurar logging
 logger = logging.getLogger(__name__)
+
 
 def mascotaDetailsView(request, idPet):
     mascota = get_object_or_404(Pet, idPet=idPet)
@@ -39,6 +42,12 @@ def mascotaDetailsView(request, idPet):
     posts = Post.objects.filter(pet=mascota).order_by('-created_at').all()
     comentarios = {}
     likes = {}
+    user_liked_post_ids = set()
+    if request.user.is_authenticated:
+        user_liked_post_ids = set(
+            Like.objects.filter(user=request.user, post__in=posts).values_list(
+                'post_id', flat=True)
+        )
     for post in posts:
         comentarios[post.id] = Comment.objects.filter(post=post).all()
         likes[post.id] = Like.objects.filter(post=post).count()
@@ -82,7 +91,6 @@ def mascotaDetailsView(request, idPet):
                 from django.http import JsonResponse
                 return JsonResponse({'success': False})
             return redirect('perfil_mascota', idPet=mascota.idPet)
-        
 
         if adoption_form.is_valid():
             try:
@@ -95,11 +103,13 @@ def mascotaDetailsView(request, idPet):
                     pet_obj = Pet.objects.filter(idPet=pet_id).first()
                     if not pet_obj:
                         try:
-                            pet_obj = Pet.objects.filter(pk=int(pet_id)).first()
+                            pet_obj = Pet.objects.filter(
+                                pk=int(pet_id)).first()
                         except Exception:
                             pet_obj = None
                 if pet_id and not pet_obj:
-                    logger.warning(f"Solicitud de adopción (perfil): pet_id recibido='{pet_id}' no corresponde a ninguna Mascota")
+                    logger.warning(
+                        f"Solicitud de adopción (perfil): pet_id recibido='{pet_id}' no corresponde a ninguna Mascota")
                     messages.error(request, 'Mascota no válida para adopción.')
                     return redirect('perfil_mascota', idPet=mascota.idPet)
                 if pet_obj:
@@ -112,10 +122,13 @@ def mascotaDetailsView(request, idPet):
                 new_adoption.status = new_adoption.status or 'pending'
                 new_adoption.save()
                 adoption_form = AdoptionForm()  # Resetear el formulario después de guardar
-                messages.success(request, 'Solicitud de adopción enviada correctamente.')
+                messages.success(
+                    request, 'Solicitud de adopción enviada correctamente.')
             except Exception as e:
-                logger.error(f"Error al guardar adopción en vista mascota: {e}")
-                messages.error(request, 'Error al procesar la solicitud de adopción.')
+                logger.error(
+                    f"Error al guardar adopción en vista mascota: {e}")
+                messages.error(
+                    request, 'Error al procesar la solicitud de adopción.')
 
     return render(
         request,
@@ -127,5 +140,6 @@ def mascotaDetailsView(request, idPet):
             "likes": likes,
             "form": form,
             "adoption_form": adoption_form,
+            "user_liked_post_ids": user_liked_post_ids,
         },
     )
