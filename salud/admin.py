@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import ServicesHealth
-
+# Register your models here.
 @admin.register(ServicesHealth)
 class ServicesHealthAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'phone', 'consultPrice')
-    list_editable = ('consultPrice',)
-    search_fields = ('name', 'type', 'phone', 'email')
+    list_display = ('id', 'name', 'owner', 'consultPrice')
+    search_fields = ('name', 'owner')
+    list_filter = ('type',)
