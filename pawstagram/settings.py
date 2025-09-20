@@ -29,9 +29,11 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Application definition
-
+SUPABASE_URL = config("SUPABASE_URL")
+SUPABASE_KEY = config("SUPABASE_KEY")
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'hide_admin.apps.HideAdminConfig',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -68,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'index.context_processors.user_authenticated',
             ],
         },
     },
@@ -80,14 +83,14 @@ WSGI_APPLICATION = 'pawstagram.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default':{
-       'ENGINE': 'django.db.backends.postgresql',
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'HOST': config('DB_HOST'),
         'PASSWORD': config('DB_PASSWORD'),
-        'PORT': config('DB_PORT'), 
-    } 
+        'PORT': config('DB_PORT'),
+    }
 }
 
 
