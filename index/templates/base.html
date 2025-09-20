@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <style>
       /* Oculta el cuadro de sugerencias */
@@ -3390,7 +3390,7 @@ video {
                 </div>
 
                 <!-- Barra de búsqueda -->
-                <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                <form method="get" action="{% url 'search' %}" class="hidden md:flex items-center flex-1 max-w-md mx-8">
                     <div class="relative w-full">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
@@ -3399,9 +3399,11 @@ video {
                             type="text" 
                             placeholder="Buscar mascotas, refugios..." 
                             class="w-full bg-gray-50 border-0 rounded-full py-3 pl-12 pr-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300"
+                            name="search" 
+                            value="{{ request.GET.search }}
                         >
                 </div>
-                </div>
+                </form>
 
                 <!-- Acciones del usuario -->
                 <div class="flex items-center space-x-3">

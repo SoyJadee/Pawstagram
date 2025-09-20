@@ -224,3 +224,11 @@ def principal(request):
         'adoption_success': adoption_success,
     }
     return render(request, 'Principal.html', context)
+
+def search(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    if query:
+        pets = Pet.objects.filter(name__icontains=query).select_related('creator__user').order_by('-created_at')
+        results = pets
+    return render(request, 'search_results.html', {'query': query, 'results': pets})
