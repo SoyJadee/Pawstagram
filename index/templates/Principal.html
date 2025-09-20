@@ -139,24 +139,24 @@ Pawly
           {% if post.comments.count > 5 %}
           <div class="mb-4">
             {% for comment in post.comments.all|slice:":5" %}
-            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{
-                comment.user.username|default:'Usuario' }}</span> {{ comment.content }}</p>
+            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
+                }}</span> {{ comment.content }}</p>
             {% endfor %}
             <a href="#" class="text-sm text-gray-500 mb-2"
               onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
               comentarios... </a>
             <div style="display:none;">
               {% for comment in post.comments.all|slice:"5:" %}
-              <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{
-                  comment.user.username|default:'Usuario' }}</span> {{ comment.content }}</p>
+              <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
+                  }}</span> {{ comment.content }}</p>
               {% endfor %}
             </div>
           </div>
           {% elif post.comments.count > 0 %}
           <div class="mb-4 comments-box">
             {% for comment in post.comments.all %}
-            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{
-                comment.user.username|default:'Usuario' }}</span> {{ comment.content }}</p>
+            <p class="text-sm text-gray-800 mb-1"><span class="font-semibold text-gray-900">{{ comment.user.username
+                }}</span> {{ comment.content }}</p>
             {% endfor %}
           </div>
           {% endif %}

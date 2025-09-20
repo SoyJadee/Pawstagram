@@ -45,6 +45,22 @@ document.addEventListener('DOMContentLoaded', function () {
           p.innerHTML = `<span class=\"font-semibold text-gray-900\">${data.username}</span> ${data.content}`;
           box.appendChild(p);
           contentInput.value = '';
+          // Actualizar contador de comentarios
+          // Buscar el botón de comentarios dentro del mismo post
+          let postCard = form;
+          while (postCard && !postCard.classList.contains('instagram-card')) {
+            postCard = postCard.parentElement;
+          }
+          if (postCard) {
+            const commentBtn = postCard.querySelector('.fa-comment')?.parentElement;
+            if (commentBtn) {
+              const countSpan = commentBtn.querySelector('span');
+              if (countSpan) {
+                let count = parseInt(countSpan.textContent) || 0;
+                countSpan.textContent = (count + 1);
+              }
+            }
+          }
           showToast('Comentario publicado');
         } else {
           showToast('Error al publicar');
