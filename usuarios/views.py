@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import UserCreationForm, LoginForm
-from django.contrib.auth import authenticate, login, logout
+from adopcion.models import Adoption
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db import IntegrityError, transaction
@@ -94,9 +95,8 @@ def login_view(request):
 
 @login_required
 def perfil_view(request):
-    user_profile = getattr(request.user, 'userprofile', None)
+    user_profile = UserProfile.objects.select_related('user').filter(user=request.user).first()
     if not user_profile:
         messages.error(request, "El perfil de usuario no existe.")
         return redirect('login')
-
-    return render(request, 'perfil.html', {'user': user_profile,'user_authenticated': userAuthenticated(request)})
+    return render(request, 'perfil.html', {'user': user_profile})
