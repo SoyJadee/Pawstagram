@@ -124,10 +124,17 @@ Pawly
         </div>
         <div class="px-6 py-4">
           <div class="flex items-center mb-4">
+            {% if user_authenticated %}
             <button
               class="like-btn text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1">
               <i class="fas fa-heart text-xl"></i>
             </button>
+            {% else %}
+            <a href="{% url 'login' %}"
+              class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
+              <i class="fas fa-heart text-xl"></i>
+            </a>
+            {% endif %}
             <button
               class="text-gray-500 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition-all duration-300 mr-1">
               <i class="fas fa-comment text-xl"></i>
@@ -594,4 +601,5 @@ Pawly
 {% endblock %}
 <script src="{% static 'js/toast.js' %}"></script>
 <script src="{% static 'js/comments.js' %}"></script>
+<script src="{% static 'js/like.js' %}"></script>
 {% endblock content %}
