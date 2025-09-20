@@ -123,11 +123,10 @@
           class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
         {% endif %}
         <div class="flex-1">
-          <a href="#">
-            <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name
-                }}</a></span>
-            <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
-          </a>
+          <span class="font-semibold text-gray-900">
+            <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
+          </span>
+          <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
           <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
         </div>
         {% if post.pet.is_available_for_adoption %}
@@ -164,8 +163,7 @@
 
         <div class="mb-4">
           <p class="text-gray-900">
-            <span class="font-semibold text-gray-900"><a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name
-                }}</a></span>
+            <span class="font-semibold text-gray-900">{{ post.pet.name }}</span>
             {% if post.content %} {{ post.content }}{% endif %}
           </p>
         </div>
