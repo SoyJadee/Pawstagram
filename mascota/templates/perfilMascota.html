@@ -51,18 +51,28 @@
 
       <!-- Información básica -->
       <div class="flex-1 text-center md:text-left">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+        <div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2 inline-block align-middle">
           {{ mascota.name }}
         </h1>
+        <div class="inline-block bg-blue-100 text-blue-700 rounded-full px-4 py-1 text-sm font-semibold mr-3 align-middle">
+          {{ mascota.tipoAnimal.nombre }}
+        </div>
         <p class="text-xl text-gray-600 mb-4">
-          {{ mascota.breed }} • {{ mascota.age }} años
+          {{ mascota.breed }} • {{ mascota.age }} años • {% if mascota.gender == 'male' %}
+          Macho
+          {% elif mascota.gender == 'female' %}
+          Hembra
+          {% else %}
+          Desconocido
+          {% endif %}
         </p>
 
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div class="bg-soft-mint p-3 rounded-xl">
             <div class="text-sm text-gray-600">Estado</div>
             {% if mascota.is_available_for_adoption %}
-            <div class="font-semibold text-mint">🟢 Disponible</div>
+            <div class="font-semibold text-green-600">🟢 Disponible</div>
             {% else %}
             <div class="font-semibold text-red-600">🔴 No disponible</div>
             {% endif %}
@@ -86,6 +96,30 @@
             <div class="font-semibold text-gray-700">
               {{ mascota.creator.user.first_name }} {{ mascota.creator.user.last_name }}
             </div>
+          </div>
+          <div class="bg-soft-mint p-3 rounded-xl">
+            <div class="text-sm text-gray-600">Desparasitacion</div>
+            {% if mascota.desparasitacion %}
+            <div class="font-semibold text-green-600">✅ Al día</div>
+            {% else %}
+            <div class="font-semibold text-red-600">❌ No al día</div>
+            {% endif %}
+          </div>
+          <div class="bg-soft-mint p-3 rounded-xl">
+            <div class="text-sm text-gray-600">Microchip</div>
+            {% if mascota.microchip %}
+            <div class="font-semibold text-green-600">✅ Implantado</div>
+            {% else %}
+            <div class="font-semibold text-red-600">❌ No implantado</div>
+            {% endif %}
+          </div>
+          <div class="bg-soft-mint p-3 rounded-xl">
+            <div class="text-sm text-gray-600">Esterilización</div>
+            {% if mascota.sterilization %}
+            <div class="font-semibold text-green-600">✅ Esterilizado</div>
+            {% else %}
+            <div class="font-semibold text-red-600">❌ No esterilizado</div>
+            {% endif %}
           </div>
         </div>
         {% if mascota.is_available_for_adoption %}

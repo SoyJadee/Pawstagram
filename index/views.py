@@ -249,7 +249,7 @@ def principal(request):
                     return redirect('principal')
                 post_obj = Post.objects.create(
                     pet=mascota,
-                    author=request.user,
+                    author=user_profile,
                     content=descripcion,
                     photo_url=url
                 )
