@@ -1,8 +1,10 @@
-from .models import Product
+from .models import Product, Store
+from django.shortcuts import get_object_or_404
 
-def catalogo(request):
-	products = Product.objects.select_related('store').all().order_by('-id')
-	return render(request, 'catalogo.html', {'products': products})
+def catalogo(request, store_id):
+	store = get_object_or_404(Store, id=store_id)
+	products = Product.objects.filter(store_id=store_id).order_by('-id')
+	return render(request, 'catalogo.html', {'products': products, 'store': store})
 
 from django.shortcuts import render
 
