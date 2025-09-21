@@ -125,9 +125,11 @@
       {{ form.non_field_errors }}
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Imagen de perfil</label
-        >
+          >Imagen de perfil</label>
         {{ form.profile_photo_url }}
+        {% if form.profile_photo_url.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.profile_photo_url.errors|first }}</div>
+        {% endif %}
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -135,6 +137,11 @@
             >Nombre *</label
           >
           {{ form.name }}
+          {% if form.name.errors %}
+          <div class="text-red-500 text-sm mt-1">
+            {{ form.name.errors|first }}
+          </div>
+          {% endif %}
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -149,12 +156,22 @@
             >Especie *</label
           >
           {{ form.tipoAnimal }}
+          {% if form.tipoAnimal.errors %}
+          <div class="text-red-500 text-sm mt-1">
+            {{ form.tipoAnimal.errors|first }}
+          </div>
+          {% endif %}
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2"
             >Raza *</label
           >
           {{ form.breed }}
+          {% if form.breed.errors %}
+          <div class="text-red-500 text-sm mt-1">
+            {{ form.breed.errors|first }} 
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,12 +180,22 @@
             >Género *</label
           >
           {{ form.gender }}
+          {% if form.gender.errors %}
+          <div class="text-red-500 text-sm mt-1">
+            {{ form.gender.errors|first }}
+          </div>
+          {% endif %}
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2"
             >Edad *</label
           >
           {{ form.age }}
+          {% if form.age.errors %}
+          <div class="text-red-500 text-sm mt-1">
+            {{ form.age.errors|first }}
+          </div>
+          {% endif %}
         </div>
       </div>
       <div>
@@ -176,24 +203,49 @@
           >Vacunas</label
         >
         {{ form.vacunas }}
+        {% if form.vacunas.errors %}
+        <div class="text-red-500 text-sm mt-1">
+          {{ form.vacunas.errors|first }}
+        </div>
+        {% endif %}
         <label class="block text-sm font-medium text-gray-700 mb-3"
           >Desparasitación</label
         >
         {{ form.desparasitacion }}
+        {% if form.desparasitacion.errors %}
+        <div class="text-red-500 text-sm mt-1">
+          {{ form.desparasitacion.errors|first }}
+        </div>
+        {% endif %}
         <label class="block text-sm font-medium text-gray-700 mb-3"
           >Esterilización</label
         >
         {{ form.sterilization }}
+        {% if form.sterilization.errors %}
+        <div class="text-red-500 text-sm mt-1">
+          {{ form.sterilization.errors|first }}
+        </div>
+        {% endif %}
         <label class="block text-sm font-medium text-gray-700 mb-3"
           >Microchip</label
         >
         {{ form.microchip }}
+        {% if form.microchip.errors %}
+        <div class="text-red-500 text-sm mt-1">
+          {{ form.microchip.errors|first }}
+        </div>
+        {% endif %}
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2"
           >Descripción de la mascota</label
         >
         {{ form.description }}
+        {% if form.description.errors %}
+        <div class="text-red-500 text-sm mt-1">
+          {{ form.description.errors|first }}
+        </div>
+        {% endif %}
       </div>
       <div class="flex gap-4 pt-6">
         <button
@@ -229,82 +281,99 @@
     </div>
     <form method="post" enctype="multipart/form-data" class="space-y-6">
       {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="text-red-500 text-sm mb-2">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
       <input
         type="hidden"
         name="pet_id"
         value="{{ form.instance.idPet|default:'' }}"
       />
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Imagen de perfil</label
-        >
+        <label class="block text-sm font-medium text-gray-700 mb-2">Imagen de perfil</label>
         {{ form.profile_photo_url }}
+        {% if form.profile_photo_url.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.profile_photo_url.errors|first }}</div>
+        {% endif %}
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Nombre *</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
           {{ form.name }}
+          {% if form.name.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.name.errors|first }}</div>
+          {% endif %}
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Disponible para adopción</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2">Disponible para adopción</label>
           {{ form.is_available_for_adoption }}
+          {% if form.is_available_for_adoption.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.is_available_for_adoption.errors|first }}</div>
+          {% endif %}
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Especie *</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2">Especie *</label>
           {{ form.tipoAnimal }}
+          {% if form.tipoAnimal.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.tipoAnimal.errors|first }}</div>
+          {% endif %}
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Raza *</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2">Raza *</label>
           {{ form.breed }}
+          {% if form.breed.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.breed.errors|first }}</div>
+          {% endif %}
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Género *</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2">Género *</label>
           {{ form.gender }}
+          {% if form.gender.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.gender.errors|first }}</div>
+          {% endif %}
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Edad *</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2">Edad *</label>
           {{ form.age }}
+          {% if form.age.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.age.errors|first }}</div>
+          {% endif %}
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-3"
-          >Vacunas</label
-        >
+        <label class="block text-sm font-medium text-gray-700 mb-3">Vacunas</label>
         {{ form.vacunas }}
-        <label class="block text-sm font-medium text-gray-700 mb-3"
-          >Desparasitación</label
-        >
+        {% if form.vacunas.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.vacunas.errors|first }}</div>
+        {% endif %}
+        <label class="block text-sm font-medium text-gray-700 mb-3">Desparasitación</label>
         {{ form.desparasitacion }}
-        <label class="block text-sm font-medium text-gray-700 mb-3"
-          >Esterilización</label
-        >
+        {% if form.desparasitacion.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.desparasitacion.errors|first }}</div>
+        {% endif %}
+        <label class="block text-sm font-medium text-gray-700 mb-3">Esterilización</label>
         {{ form.sterilization }}
-        <label class="block text-sm font-medium text-gray-700 mb-3"
-          >Microchip</label
-        >
+        {% if form.sterilization.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.sterilization.errors|first }}</div>
+        {% endif %}
+        <label class="block text-sm font-medium text-gray-700 mb-3">Microchip</label>
         {{ form.microchip }}
+        {% if form.microchip.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.microchip.errors|first }}</div>
+        {% endif %}
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Descripción de la mascota</label
-        >
+        <label class="block text-sm font-medium text-gray-700 mb-2">Descripción de la mascota</label>
         {{ form.description }}
+        {% if form.description.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.description.errors|first }}</div>
+        {% endif %}
       </div>
       <div class="flex gap-4 pt-6">
         <button
@@ -325,9 +394,9 @@
   </div>
 </div>
 
-{% if open_edit %}
+{% if open_edit or form.errors %}
 <script>
-  // Abre el modal de edición si venimos con ?editar=
+  // Abre el modal de edición si venimos con ?editar= o si hay errores en el form
   document.getElementById("editPetModal")?.classList.remove("hidden");
 </script>
 {% endif %}

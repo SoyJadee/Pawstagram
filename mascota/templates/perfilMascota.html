@@ -28,7 +28,9 @@
 {% endblock extra_head %}
 {% block content %}
 
-<div class="max-w-4xl mx-auto p-4">
+<main class="pt-4">
+  <div class="container mx-auto px-4 max-w-4xl">
+    <div class="w-full">
   <!-- Header del perfil -->
   <div class="bg-white rounded-3xl card-shadow p-8 mb-6">
     <div class="flex flex-col md:flex-row items-center gap-8">
@@ -122,12 +124,14 @@
             {% endif %}
           </div>
         </div>
-        {% if mascota.is_available_for_adoption %}
-        <button onclick="showInterest('{{ mascota.pk }}')"
-          class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
-          💕 ¡Me interesa adoptar!
-        </button>
-        {% endif %}
+        {% if post.pet.is_available_for_adoption and mascota.creator.user != request.user %}
+          <button
+            onclick="showInterest('{{ post.pet.pk }}')"
+            class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+          >
+            💕 ¡Me interesa adoptar!
+          </button>
+          {% endif %}
       </div>
     </div>
   </div>
@@ -160,67 +164,92 @@
           <span class="font-semibold text-gray-900">
             <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
           </span>
-          <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
+          <span class="text-gray-500 font-normal">-{{ post.author.user.username }}</span>
           <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
         </div>
-        {% if post.pet.is_available_for_adoption %}
-        <button onclick="showInterest('{{ mascota.pk }}')"
-          class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
-          💕 ¡Me interesa adoptar!
+        {% if post.pet.is_available_for_adoption and post.author.user != request.user %}
+    <button
+      onclick="showInterest('{{ post.pet.pk }}')"
+      class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+    >
+      💕 ¡Me interesa adoptar!
+    </button>
+    {% elif post.author.user == request.user %}
+    <a href="{% url 'editar_post' post.pk %}">
+        <button
+            class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
+        >
+            <i class="fas fa-edit" title="Editar publicación" style="color: #222; font-size: 1.25rem;"></i>
         </button>
-        {% endif %}
-      </div>
-      <div class="w-full bg-gray-100">
-        <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
-      </div>
-      <div class="px-6 py-4">
-        <div class="flex items-center mb-4">
-          {% if user_authenticated %}
-          <button
-            class="like-btn {% if post.id in user_liked_post_ids %}text-red-500{% else %}text-gray-500{% endif %} hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1">
-            <i class="fas fa-heart text-xl"></i>
-          </button>
-          {% else %}
-          <a href="{% url 'login' %}"
-            class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
-            <i class="fas fa-heart text-xl"></i>
-          </a>
-          {% endif %}
-          <button
-            class="text-gray-500 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition-all duration-300 mr-1">
-            <i class="fas fa-comment text-xl"></i>
-            <span class="ml-1 text-xs align-middle font-semibold">{{ post.comments.count }}</span>
-          </button>
-          <!-- Botón de compartir eliminado -->
-          <span class="ml-auto text-sm font-semibold text-gray-700 like-count">{{ post.likes.count }} Me gusta</span>
+    </a>
+  <a href="{% url 'eliminar_post' post.pk %}" onclick="return confirm('¿Estás seguro de que deseas eliminar esta publicación?')">
+    <button
+      class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
+      style="background: none;"
+    >
+      <i class="fas fa-trash" title="Eliminar publicación" style="color: #222; font-size: 1.25rem;"></i>
+    </button>
+  </a>
+  {% endif %}
         </div>
-
-        <div class="mb-4">
-          <p class="text-gray-900">
-            <span class="font-semibold text-gray-900">{{ post.pet.name }}</span>
-            {% if post.content %} {{ post.content }}{% endif %}
-          </p>
+        <div class="w-full bg-gray-100">
+          <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
         </div>
+        <div class="px-6 py-4">
+          <div class="flex items-center mb-4">
+            {% if user_authenticated %}
+            <button
+              class="like-btn {% if post.id in user_liked_post_ids %}text-red-500{% else %}text-gray-500{% endif %} hover:text-red-500 p-2 rounded-full hover:bg-red-50 mr-1">
+              <i class="fas fa-heart text-xl"></i>
+            </button>
+            <style>
+              /* Animación pop rápida para el botón de like */
+              .like-pop {
+                animation: like-pop-anim 0.18s cubic-bezier(.4, 2, .6, 1);
+              }
 
-        {% if post.comments.count > 0 %}
-        <div class="mb-4 comments-box">
-          {% if post.comments.count > 5 %}
-          {% for comment in post.comments.all|slice:":5" %}
-          <p class="text-sm text-gray-800 mb-1">
-            <span class="font-semibold text-gray-900">
-              {% if comment.user and comment.user.username %}
-              {{ comment.user.username }}
-              {% else %}
-              Usuario
-              {% endif %}
-            </span> {{ comment.content }}
-          </p>
-          {% endfor %}
-          <a href="#" class="text-sm text-gray-500 mb-2"
-            onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
-            comentarios... </a>
-          <div style="display:none;">
-            {% for comment in post.comments.all|slice:"5:" %}
+              @keyframes like-pop-anim {
+                0% {
+                  transform: scale(1);
+                }
+
+                60% {
+                  transform: scale(1.35);
+                }
+
+                100% {
+                  transform: scale(1);
+                }
+              }
+            </style>
+            {% else %}
+            <a href="{% url 'login' %}"
+              class="text-gray-500 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-all duration-300 mr-1 block">
+              <i class="fas fa-heart text-xl"></i>
+            </a>
+            {% endif %}
+            <button
+              class="text-gray-500 hover:text-blue-500 p-2 rounded-full hover:bg-blue-50 transition-all duration-300 mr-1">
+              <i class="fas fa-comment text-xl"></i>
+              <span class="ml-1 text-xs align-middle font-semibold">{{ post.comments.count }}</span>
+            </button>
+            <!-- Botón de compartir eliminado -->
+            <span class="ml-auto text-sm font-semibold text-gray-700 like-count">{{ post.likes.count }} Me gusta</span>
+          </div>
+
+          <div class="mb-4">
+            <p class="text-gray-900">
+              <span class="font-semibold text-gray-900">
+                <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
+              </span>
+              {% if post.content %} {{ post.content }}{% endif %}
+            </p>
+          </div>
+
+          {% if post.comments.count > 0 %}
+          <div class="mb-4 comments-box">
+            {% if post.comments.count > 5 %}
+            {% for comment in post.comments.all|slice:":5" %}
             <p class="text-sm text-gray-800 mb-1">
               <span class="font-semibold text-gray-900">
                 {% if comment.user and comment.user.username %}
@@ -231,44 +260,59 @@
               </span> {{ comment.content }}
             </p>
             {% endfor %}
+            <a href="#" class="text-sm text-gray-500 mb-2"
+              onclick="this.nextElementSibling.style.display='block';this.style.display='none';return false;">Ver más
+              comentarios... </a>
+            <div style="display:none;">
+              {% for comment in post.comments.all|slice:"5:" %}
+              <p class="text-sm text-gray-800 mb-1">
+                <span class="font-semibold text-gray-900">
+                  {% if comment.user and comment.user.username %}
+                  {{ comment.user.username }}
+                  {% else %}
+                  Usuario
+                  {% endif %}
+                </span> {{ comment.content }}
+              </p>
+              {% endfor %}
+            </div>
+            {% else %}
+            {% for comment in post.comments.all %}
+            <p class="text-sm text-gray-800 mb-1">
+              <span class="font-semibold text-gray-900">
+                {% if comment.user and comment.user.username %}
+                {{ comment.user.username }}
+                {% else %}
+                Usuario
+                {% endif %}
+              </span> {{ comment.content }}
+            </p>
+            {% endfor %}
+            {% endif %}
           </div>
-          {% else %}
-          {% for comment in post.comments.all %}
-          <p class="text-sm text-gray-800 mb-1">
-            <span class="font-semibold text-gray-900">
-              {% if comment.user and comment.user.username %}
-              {{ comment.user.username }}
-              {% else %}
-              Usuario
-              {% endif %}
-            </span> {{ comment.content }}
-          </p>
-          {% endfor %}
           {% endif %}
-        </div>
-        {% endif %}
 
-        <form method="post" action="" class="comment-form flex items-center border-t border-gray-100 pt-4 gap-3">
-          {% csrf_token %}
-          <img src="{% static 'img/logo1.png' %}" alt="Tu perfil"
-            class="w-8 h-8 rounded-full border border-[#00F5D4] object-cover">
-          <input type="hidden" name="comment_post_id" value="{{ post.id }}">
-          <input type="text" name="comment_content"
-            class="flex-1 bg-gray-50 border-0 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300"
-            placeholder="Añade un comentario..." {% if not user_authenticated %}disabled{% endif %} required>
-          <span class="comment-msg hidden text-green-600 text-xs ml-2"></span>
-          {% if not user_authenticated %}
-          <a href="{% url 'login' %}"
-            class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</a>
-          {% else %}
-          <button type="submit"
-            class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</button>
-          {% endif %}
-        </form>
+          <form method="post" action="" class="comment-form flex items-center border-t border-gray-100 pt-4 gap-3">
+            {% csrf_token %}
+            <img src="{% static 'img/logo1.png' %}" alt="Tu perfil"
+              class="w-8 h-8 rounded-full border border-[#00F5D4] object-cover">
+            <input type="hidden" name="comment_post_id" value="{{ post.id }}">
+            <input type="text" name="comment_content"
+              class="flex-1 bg-gray-50 border-0 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300"
+              placeholder="Añade un comentario..." {% if not user_authenticated %}disabled{% endif %} required>
+            <span class="comment-msg hidden text-green-600 text-xs ml-2"></span>
+            {% if not user_authenticated %}
+            <a href="{% url 'login' %}"
+              class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</a>
+            {% else %}
+            <button type="submit"
+              class="px-4 py-2 bg-gradient-to-r from-[#00F5D4] to-[#40E0D0] text-white rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300">Enviar</button>
+            {% endif %}
+          </form>
+        </div>
       </div>
-    </div>
-    {% endfor %}
-    {% else %}
+      {% endfor %}
+      {% else %}
     <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
       <div class="text-6xl mb-6">🐾</div>
       <h3 class="text-2xl font-bold text-gray-900 mb-3">No hay publicaciones aún</h3>
@@ -284,7 +328,7 @@
     </div>
     {% endif %}
     <!-- Footer -->
-    {% if mascota.is_available_for_adoption %}
+    {% if mascota.is_available_for_adoption and mascota.creator.user != request.user %}
     <div class="text-center mt-12 p-6">
       <div class="bg-white rounded-2xl card-shadow p-6">
         <h3 class="text-xl font-bold text-gray-800 mb-2">
@@ -298,6 +342,7 @@
           class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
           💕 ¡Quiero adoptar a {{mascota.name}}!
         </button>
+        
       </div>
     </div>
     {% endif %}
@@ -342,7 +387,9 @@
       </div>
     </div>
   </div>
-</div>
+    </div>
+  </div>
+</main>
 {% endblock content %}
 {% block extra_scripts %}
 <script>

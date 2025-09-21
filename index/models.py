@@ -10,10 +10,12 @@ class Post(models.Model):
                             verbose_name='mascota', related_name='index_posts')
     author = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, verbose_name='autor', related_name='index_posts')
-    content = models.TextField(
+    content = models.TextField(max_length=300,
         null=True, blank=True, verbose_name="Contenido del post")
     photo_url = models.URLField(
         null=True, blank=True, verbose_name="URL de la foto")
+    photo_storage_path = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Ruta de almacenamiento de la foto")
     created_at = models.DateTimeField(
         auto_now_add=True, null=True, verbose_name="Fecha de creación")
 
