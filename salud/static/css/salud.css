@@ -1,0 +1,31 @@
+body {
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.gradient-bg {
+	background: linear-gradient(135deg, #E8F8F5 0%, #F0F9FF 50%, #E0F2F1 100%);
+}
+.card-shadow {
+	box-shadow: 0 4px 20px rgba(152, 228, 214, 0.15);
+}
+.service-card {
+	transition: all 0.3s ease;
+	border: 1px solid rgba(152, 228, 214, 0.2);
+}
+.service-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 30px rgba(152, 228, 214, 0.25);
+	border-color: rgba(152, 228, 214, 0.4);
+}
+.turquoise-accent {
+	background: linear-gradient(135deg, #40E0D0 0%, #48D1CC 100%);
+}
+.rating-stars {
+	color: #FFD700;
+}
+.rating-interactive .star {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+.rating-interactive .star:hover {
+	transform: scale(1.2);
+}
