@@ -35,7 +35,6 @@ def like_post(request):
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-
 def mascotaDetailsView(request, idPet):
     mascota = get_object_or_404(Pet, idPet=idPet)
     # Obtener posts relacionados a la mascota (por instancia)
@@ -114,13 +113,12 @@ def mascotaDetailsView(request, idPet):
                     return redirect('perfil_mascota', idPet=mascota.idPet)
                 if pet_obj:
                     new_adoption.pet = pet_obj
-                    new_adoption.responsable = pet_obj.creator
                 else:
                     new_adoption.pet = mascota
-                    new_adoption.responsable = mascota.creator
 
-                new_adoption.status = new_adoption.status or 'pending'
+                pet_obj.status = new_adoption.status or 'pending'
                 new_adoption.save()
+                pet_obj.save()
                 adoption_form = AdoptionForm()  # Resetear el formulario después de guardar
                 messages.success(
                     request, 'Solicitud de adopción enviada correctamente.')

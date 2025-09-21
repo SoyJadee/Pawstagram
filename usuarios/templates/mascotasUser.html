@@ -1,0 +1,361 @@
+{% extends "perfilBase.html" %} 
+{% block content_profile %}
+
+<!-- Pets Tab -->
+<div id="petsContent" class="tab-content mb-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for pet in pets %}
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift">
+      <div class="relative">
+        {% if pet.profile_photo_url %}
+        <img
+          src="{{ pet.profile_photo_url }}"
+          alt="{{ pet.name }}"
+          class="h-48 w-full object-cover"
+        />
+        {% else %}
+        <div
+          class="h-48 bg-gradient-to-br from-mint to-turquoise flex items-center justify-center text-6xl"
+        >
+          🐾
+        </div>
+        {% endif %} 
+        {% if pet.is_available_for_adoption %}
+        <div
+          class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold"
+        >
+          En adopción
+        </div>
+        {% else %}
+        <div
+          class="absolute top-4 right-4 bg-gray-400 text-white px-2 py-1 rounded-full text-xs font-semibold"
+        >
+          No disponible
+        </div>
+        {% endif %}
+      </div>
+      <div class="p-6">
+        <h4 class="text-xl font-semibold text-gray-800 mb-2">{{ pet.name }}</h4>
+        <p class="text-gray-600 text-sm mb-4">
+          {{ pet.tipoAnimal }} • {{ pet.age|default:"?" }} años • 
+          {% if pet.gender == 'male' %}
+          Macho
+          {% elif pet.gender == 'female' %}
+          Hembra
+          {% else %}
+          Desconocido
+          {% endif %}
+        </p>
+        <p class="text-gray-700 text-sm mb-4">{{ pet.breed }}</p>
+        <div class="flex gap-2 mb-3">
+          <a
+            href="?editar={{ pet.idPet }}"
+            class="flex-1 bg-light-mint text-turquoise py-2 rounded-lg font-semibold hover:bg-mint hover:text-white transition-all text-center"
+            >Editar</a
+          >
+          <button
+            type="button"
+            onclick="showPublishModal('{{ pet.idPet }}')"
+            class="flex-1 turquoise-gradient text-white py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+          >
+            Publicar
+          </button>
+        </div>
+        <a
+          href="{% url 'mascotaDetails' pet.idPet %}"
+          class="w-full block bg-gray-100 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-all text-center"
+        >
+          <i class="fas fa-eye mr-2"></i>Ver Perfil
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center text-gray-500">
+      Aún no has agregado mascotas.
+    </div>
+    {% endfor %}
+
+    <!-- Add Pet Card -->
+    <div
+      class="bg-white rounded-2xl card-shadow border-2 border-dashed border-mint hover-lift cursor-pointer"
+      onclick="showAddPetModal()"
+    >
+      <div
+        class="h-full flex flex-col items-center justify-center p-6 text-center"
+      >
+        <div
+          class="w-16 h-16 bg-light-mint rounded-full flex items-center justify-center mb-4"
+        >
+          <i class="fas fa-plus text-2xl text-turquoise"></i>
+        </div>
+        <h4 class="text-lg font-semibold text-gray-800 mb-2">
+          Agregar Mascota
+        </h4>
+        <p class="text-gray-600 text-sm">
+          Publica una nueva mascota para adopción
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Pet Modal -->
+<div
+  id="addPetModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto"
+  >
+    <div class="text-center mb-6">
+      <div class="text-6xl mb-4"><i class="fas fa-paw"></i></div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">Agregar Mascota</h3>
+      <p class="text-gray-600">Completa la información de tu mascota</p>
+    </div>
+    <form
+      id="addPetForm"
+      method="post"
+      enctype="multipart/form-data"
+      class="space-y-6"
+    >
+      {% csrf_token %} 
+      
+      {{ form.non_field_errors }}
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Imagen de perfil</label
+        >
+        {{ form.profile_photo_url }}
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Nombre *</label
+          >
+          {{ form.name }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Disponible para adopción</label
+          >
+          {{ form.is_available_for_adoption }}
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Especie *</label
+          >
+          {{ form.tipoAnimal }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Raza *</label
+          >
+          {{ form.breed }}
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Género *</label
+          >
+          {{ form.gender }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Edad *</label
+          >
+          {{ form.age }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Vacunas</label
+        >
+        {{ form.vacunas }}
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Desparasitación</label
+        >
+        {{ form.desparasitacion }}
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Esterilización</label
+        >
+        {{ form.sterilization }}
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Microchip</label
+        >
+        {{ form.microchip }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Descripción de la mascota</label
+        >
+        {{ form.description }}
+      </div>
+      <div class="flex gap-4 pt-6">
+        <button
+          type="button"
+          onclick="closeAddPetModal()"
+          class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="flex-1 turquoise-gradient text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+        >
+          Agregar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Pet Modal -->
+<div
+  id="editPetModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto"
+  >
+    <div class="text-center mb-6">
+      <div class="text-6xl mb-4"><i class="fas fa-pencil-alt"></i></div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">Editar Mascota</h3>
+      <p class="text-gray-600">Actualiza la información de tu mascota</p>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      <input
+        type="hidden"
+        name="pet_id"
+        value="{{ form.instance.idPet|default:'' }}"
+      />
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Imagen de perfil</label
+        >
+        {{ form.profile_photo_url }}
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Nombre *</label
+          >
+          {{ form.name }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Disponible para adopción</label
+          >
+          {{ form.is_available_for_adoption }}
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Especie *</label
+          >
+          {{ form.tipoAnimal }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Raza *</label
+          >
+          {{ form.breed }}
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Género *</label
+          >
+          {{ form.gender }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Edad *</label
+          >
+          {{ form.age }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Vacunas</label
+        >
+        {{ form.vacunas }}
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Desparasitación</label
+        >
+        {{ form.desparasitacion }}
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Esterilización</label
+        >
+        {{ form.sterilization }}
+        <label class="block text-sm font-medium text-gray-700 mb-3"
+          >Microchip</label
+        >
+        {{ form.microchip }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Descripción de la mascota</label
+        >
+        {{ form.description }}
+      </div>
+      <div class="flex gap-4 pt-6">
+        <button
+          type="button"
+          onclick="closeEditPetModal()"
+          class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="flex-1 turquoise-gradient text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+        >
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if open_edit %}
+<script>
+  // Abre el modal de edición si venimos con ?editar=
+  document.getElementById("editPetModal")?.classList.remove("hidden");
+</script>
+{% endif %}
+
+<script>
+  // Activar la pestaña "Mis Mascotas" al cargar esta página
+  (function () {
+    const petsContent = document.getElementById("petsContent");
+    if (petsContent) petsContent.classList.remove("hidden");
+    const petsTab = document.getElementById("petsTab");
+    const profileTab = document.getElementById("profileTab");
+    if (petsTab) {
+      petsTab.classList.remove("tab-inactive");
+      petsTab.classList.add("tab-active");
+    }
+    if (profileTab) {
+      profileTab.classList.remove("tab-active");
+      profileTab.classList.add("tab-inactive");
+    }
+  })();
+
+  // El JS del layout prevenía el submit del formulario de agregar; clonamos el formulario
+  // después de que el layout termine de adjuntar sus listeners (en window.load)
+  window.addEventListener("load", function () {
+    const form = document.getElementById("addPetForm");
+    if (form) {
+      const clone = form.cloneNode(true);
+      form.parentNode.replaceChild(clone, form);
+    }
+  });
+</script>
+
+{% endblock content_profile %}
