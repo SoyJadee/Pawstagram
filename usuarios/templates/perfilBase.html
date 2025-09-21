@@ -98,7 +98,7 @@
     <a href="{% url 'posts_user' %}">
     <button
       id="postsTab"
-      class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-newspaper mr-2"></i>
       Mis Publicaciones
@@ -107,7 +107,7 @@
     <a href="{% url 'perfil' %}">
     <button
       id="profileTab"
-      class="tab-active px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-user mr-2"></i>
       Datos Personales
@@ -116,7 +116,7 @@
     <a href="{% url 'pets_user' %}">
     <button
       id="petsTab"
-      class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-paw mr-2"></i>
       Mis Mascotas
@@ -125,7 +125,7 @@
     <a href="{% url 'configuracion' %}">
     <button
       id="settingsTab"
-      class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-cog mr-2"></i>
       Configuración

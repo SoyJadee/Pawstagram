@@ -88,7 +88,7 @@ def login_view(request):
             if request.user.is_staff and request.user.is_superuser:
                 return redirect("/admin/")
             else:
-                return redirect("perfil")
+                return redirect("principal")
         else:
             messages.error(request, "Usuario o contraseña incorrectos.")
 
