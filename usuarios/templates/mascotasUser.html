@@ -53,6 +53,7 @@
             class="flex-1 bg-light-mint text-turquoise py-2 rounded-lg font-semibold hover:bg-mint hover:text-white transition-all text-center"
             >Editar</a
           >
+          <a href="{% url 'principal'%}">
           <button
             type="button"
             onclick="showPublishModal('{{ pet.idPet }}')"
@@ -60,6 +61,7 @@
           >
             Publicar
           </button>
+          </a>
         </div>
         <a
           href="{% url 'mascotaDetails' pet.idPet %}"
