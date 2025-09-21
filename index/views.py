@@ -1,29 +1,77 @@
 from django.shortcuts import render, redirect
-from .models import Like
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-from django.db.models import Q, QuerySet
-from mascota.models import Pet
-from .models import Post, Comment, Notifications as Notification
-from tienda.models import Store, Product
-from salud.models import ServicesHealth
-from adopcion.forms import AdoptionForm
-from adopcion.models import Adoption
-from django.contrib import messages
-from supabase import create_client
-from django.conf import settings
-import os
-import uuid
-import re
-import logging
-from django.core.serializers.json import DjangoJSONEncoder
-from django.utils.timesince import timesince
-# Endpoint AJAX para obtener notificaciones del usuario autenticado
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
+from django.utils.timesince import timesince
+from django.core.serializers.json import DjangoJSONEncoder
+import logging
+import re
+import uuid
+import os
+from django.conf import settings
+from supabase import create_client
+from django.contrib import messages
+from adopcion.models import Adoption
+from adopcion.forms import AdoptionForm
+from salud.models import ServicesHealth
+from tienda.models import Store, Product
+from .models import Post, Comment, Notifications as Notification
+from mascota.models import Pet
+from django.db.models import Q, QuerySet
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse
+from .models import Like
+from .models import Histories
+# Endpoint para subir historias tipo Instagram
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+@require_POST
+@csrf_exempt
+def subir_historia(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'not_authenticated'})
+    foto = request.FILES.get('foto_historia')
+    if not foto:
+        return JsonResponse({'success': False, 'error': 'no_file'})
+    if foto.size > 5 * 1024 * 1024:
+        return JsonResponse({'success': False, 'error': 'file_too_large'})
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if foto.content_type not in allowed_types:
+        return JsonResponse({'success': False, 'error': 'invalid_type'})
+    url = None
+    if supabase:
+        try:
+            usuario = request.user.username
+            nombre_archivo = f"{uuid.uuid4()}_{foto.name}"
+            ruta_supabase = f"Usuarios/{usuario}/histories/{nombre_archivo}"
+            foto_data = foto.read()
+            foto.seek(0)
+            res = supabase.storage.from_('Usuarios').upload(
+                ruta_supabase, foto_data, {'content-type': foto.content_type})
+            url_result = supabase.storage.from_(
+                'Usuarios').get_public_url(ruta_supabase)
+            if isinstance(url_result, dict) and 'publicUrl' in url_result:
+                url = url_result['publicUrl']
+            else:
+                url = url_result
+            if url and url.endswith('?'):
+                url = url[:-1]
+        except Exception as e:
+            logger.error(f"Error al subir historia a Supabase: {e}")
+            return JsonResponse({'success': False, 'error': 'upload_failed'})
+    else:
+        return JsonResponse({'success': False, 'error': 'storage_unavailable'})
+    historia = Histories.objects.create(
+        author=request.user,
+        photo_url=url
+    )
+    return JsonResponse({'success': True, 'historia_id': historia.id, 'photo_url': url})
+
+
+# Endpoint AJAX para obtener notificaciones del usuario autenticado
 
 
 @login_required
@@ -292,12 +340,29 @@ def principal(request):
     if request.user.is_authenticated:
         user_liked_post_ids = set(Like.objects.filter(
             user=request.user).values_list('post_id', flat=True))
+    # Historias activas (últimas 24h)
+    from django.utils import timezone
+    desde = timezone.now() - timezone.timedelta(hours=24)
+    historias_qs = Histories.objects.filter(created_at__gte=desde).select_related(
+        'author').order_by('author', 'created_at')
+    historias_por_usuario = {}
+    for h in historias_qs:
+        username = h.author.username
+        if username not in historias_por_usuario:
+            historias_por_usuario[username] = {
+                'user': h.author,
+                'historias': []
+            }
+        historias_por_usuario[username]['historias'].append(h)
     context = {
         'mascotas_usuario': mascotas,
         'form': form,
         'posts': posts,
         'adoption_success': adoption_success,
         'user_liked_post_ids': user_liked_post_ids,
+        'historias_por_usuario': historias_por_usuario,
+        'user_authenticated': request.user.is_authenticated,
+        'usuario_actual': request.user.username if request.user.is_authenticated else '',
     }
     return render(request, 'Principal.html', context)
 

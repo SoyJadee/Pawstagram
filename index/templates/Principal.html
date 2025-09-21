@@ -7,29 +7,14 @@
 <main class="pt-4">
   <div class="container mx-auto px-4 max-w-4xl">
     <div class="w-full">
-      <div class="swiper mb-4">
-        <div class="swiper-wrapper">
-          {% if not user_authenticated %}
-          <a href="#" class="swiper-slide w-24 h-36 rounded-md bg-white flex flex-col items-center justify-center">
-            <i class="ri-add-circle-fill text-blue-500 text-lg"></i>
-            <span class="text-[13px] font-semibold">Historia</span>
-          </a>
-          {% else %}
-          <a href="#" class="swiper-slide w-24 h-36 rounded-md bg-white flex flex-col items-center justify-center">
-            <i class="ri-add-circle-fill text-blue-500 text-lg"></i>
-            <span class="text-[13px] font-semibold">Historia</span>
-          </a>
-          {% endif %}
-          {% for i in "12345678" %}
-          <a href="#"
-            class="swiper-slide relative w-24 h-36 rounded-md overflow-hidden before:contents-[''] before:absolute before:bottom-0 before:left-0 before:w-full before:h-16 before:bg-gradient-to-b before:from-transparent before:to-black/50 z-10">
-            <img src="https://placehold.co/96x144" alt="" class="w-full h-full object-cover block">
-            <span
-              class="absolute bottom-3 left-0 w-full block text-center font-semibold text-white z-20 text-[13px]"></span>
-            <span
-              class="absolute top-3 right-3 w-5 h-5 rounded bg-blue-500 text-white text-[10px] flex items-center justify-center z-20 font-bold"></span>
-          </a>
-          {% endfor %}
+      {% include 'historias.html' %}
+      {% comment %} Modal de subida de historia global para asegurar visibilidad {% endcomment %}
+      <div id="modal-cargando-historia" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl px-8 py-8 flex flex-col items-center shadow-lg">
+          <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Paticas"
+            class="w-16 h-16 mb-4 animate-bounce">
+          <span class="text-lg font-bold text-mint mb-2">Subiendo historia...</span>
+          <span class="text-gray-500 text-sm">Por favor espera</span>
         </div>
       </div>
 
