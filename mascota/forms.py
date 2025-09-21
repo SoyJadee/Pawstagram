@@ -3,8 +3,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 from .models import Pet
 
 class PetForm(forms.ModelForm):
-    # Usamos ImageField en el formulario para subir archivo y luego guardamos la URL en el modelo.
-    # No es obligatorio para permitir edición sin cambiar imagen; en creación lo validamos en la vista.
     profile_photo_url = forms.ImageField(
         required=False,
         widget=forms.ClearableFileInput(
@@ -62,7 +60,7 @@ class PetForm(forms.ModelForm):
         ),
     )
     description = forms.CharField(
-        max_length=200,
+        max_length=400,
         required=True,
         widget=forms.Textarea(
             attrs={

@@ -1,15 +1,21 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import UserProfile
 from django.db import IntegrityError, transaction
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from index.models import Post
+from index.models import Post, Comment, Like, Notifications
 from mascota.models import Pet
 from .forms import UserCreationForm, LoginForm, DeleteUserForm, EditProfileForm
+from index.views import like_post
+from index.forms import PostForm
 from mascota.forms import PetForm
+from adopcion.forms import AdoptionForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-import re, logging, uuid
+import re
+import logging
+import uuid
+from django.http import JsonResponse
 from supabase import create_client
 from django.conf import settings
 
@@ -95,6 +101,19 @@ def login_view(request):
     return render(request, "login.html", {"form": form})
 
 
+INJECTION_PATTERNS = [
+    r"[;\\'\"\\\\]|(--|#|/\\*|\\*/|xp_)",
+    r"(<|>|script|alert|onerror|onload)",
+]
+
+
+def is_injection_attempt(value):
+    for pattern in INJECTION_PATTERNS:
+        if re.search(pattern, value, re.IGNORECASE):
+            return True
+    return False
+
+
 def petAdopted(request):
     user = UserProfile.objects.select_related("user").filter(user=request.user).first()
     if not user:
@@ -109,12 +128,6 @@ def petAvailable(request):
         messages.error(request, "El perfil de usuario no existe.")
         return redirect("login")
     return Pet.objects.filter(creator=user, status="available").count()
-
-
-INJECTION_PATTERNS = [
-    r"[;\\'\"\\\\]|(--|#|/\\*|\\*/|xp_)",
-    r"(<|>|script|alert|onerror|onload)",
-]
 
 
 @login_required
@@ -216,13 +229,17 @@ def petsUserView(request):
 
     form = None
     open_edit = False
+    url = None
 
     if request.method == "GET":
         pet_id = request.GET.get("editar", "").strip()
         if pet_id:
             instance = Pet.objects.filter(idPet=pet_id, creator=user_profile).first()
-            form = PetForm(instance=instance)
-            open_edit = True if instance else False
+            if instance:
+                form = PetForm(instance=instance)
+                open_edit = True
+            else:
+                form = PetForm()
         else:
             form = PetForm()
 
@@ -237,120 +254,100 @@ def petsUserView(request):
             if form.is_valid():
                 edited_pet = form.save(commit=False)
                 image = form.cleaned_data.get("profile_photo_url")
-                if image != instance.profile_photo_url:
-                    if image:
-                        if image.size > 5 * 1024 * 1024:
-                            messages.error(
-                                request, "El tamaño de la imagen no debe exceder 5MB."
-                            )
-                            return redirect("pets_user")
-                        if (
-                            hasattr(image, "content_type")
-                            and image.content_type not in allowed_types
-                        ):
-                            messages.error(
-                                request,
-                                "Tipo de imagen no permitido. Usa JPEG, PNG, GIF o WEBP.",
-                            )
-                            return redirect("pets_user")
-                        if supabase:
-                            try:
-                                # Verificar si hay una imagen previa y eliminarla de Supabase
-                                if instance.profile_photo_storage_path and supabase:
-                                    try:
-                                        logger.info(
-                                            f"Intentando eliminar la imagen previa de Supabase: {instance.profile_photo_storage_path}"
-                                        )
-                                        bucket_name = "Usuarios"
-                                        ruta = instance.profile_photo_storage_path
-
-                                        # Extraer el directorio y el nombre del archivo
-                                        directorio = "/".join(ruta.split("/")[:-1])
-                                        nombre_archivo = ruta.split("/")[-1]
-
-                                        # Verificar si el archivo existe en Supabase
-                                        archivos = supabase.storage.from_(
-                                            bucket_name
-                                        ).list(path=directorio)
-
-                                        if any(
-                                            archivo["name"] == nombre_archivo
-                                            for archivo in archivos
-                                        ):
-                                            resultado_eliminacion = (
-                                                supabase.storage.from_(
-                                                    bucket_name
-                                                ).remove([ruta])
-                                            )
-                                    except Exception as e:
-                                        return redirect("pets_user")
-                                usuario_name = request.user.username
-                                image_name = f"{uuid.uuid4()}_{image.name}"
-                                ruta_supabase = f"{usuario_name}/{edited_pet.name}/profile/{image_name}"
-                                edited_pet.profile_photo_storage_path = ruta_supabase
-
-                                image_data = image.read()
-                                image.seek(0)
-                                _ = supabase.storage.from_("Usuarios").upload(
-                                    ruta_supabase,
-                                    image_data,
-                                    {"content-type": image.content_type},
+                # Solo si se subió una nueva imagen
+                if image and hasattr(image, "size"):
+                    if image.size > 5 * 1024 * 1024:
+                        form.add_error(
+                            "profile_photo_url",
+                            "El tamaño de la imagen no debe exceder 5MB.",
+                        )
+                    elif (
+                        hasattr(image, "content_type")
+                        and image.content_type not in allowed_types
+                    ):
+                        form.add_error(
+                            "profile_photo_url",
+                            "Tipo de imagen no permitido. Usa JPEG, PNG, GIF o WEBP.",
+                        )
+                    elif supabase:
+                        try:
+                            # Eliminar imagen previa si existe
+                            if instance.profile_photo_storage_path:
+                                bucket_name = "Usuarios"
+                                ruta = instance.profile_photo_storage_path
+                                directorio = "/".join(ruta.split("/")[:-1])
+                                nombre_archivo = ruta.split("/")[-1]
+                                archivos = supabase.storage.from_(bucket_name).list(
+                                    path=directorio
                                 )
-                                url_result = supabase.storage.from_(
-                                    "Usuarios"
-                                ).get_public_url(ruta_supabase)
-                                url = (
-                                    url_result["publicURL"]
-                                    if isinstance(url_result, dict)
-                                    and "publicURL" in url_result
-                                    else url_result
-                                )
-                                if url and url.endswith("?"):
-                                    url = url[:-1]
-                                edited_pet.profile_photo_url = url
-                            except Exception as e:
-
-                                messages.error(
-                                    request,
-                                    "Error al subir la imagen. Intenta nuevamente.",
-                                )
-                                return redirect("pets_user")
-                        else:
-                            messages.error(
-                                request,
-                                "Servicio de almacenamiento no disponible. Contacta al administrador.",
+                                if any(
+                                    archivo["name"] == nombre_archivo
+                                    for archivo in archivos
+                                ):
+                                    supabase.storage.from_(bucket_name).remove([ruta])
+                            usuario_name = request.user.username
+                            image_name = f"{uuid.uuid4()}_{image.name}"
+                            ruta_supabase = (
+                                f"{usuario_name}/{edited_pet.name}/profile/{image_name}"
                             )
-                            return redirect("pets_user")
-                edited_pet.save()
-                messages.success(request, "Mascota actualizada correctamente.")
-                return redirect("pets_user")
+                            edited_pet.profile_photo_storage_path = ruta_supabase
+                            image_data = image.read()
+                            image.seek(0)
+                            supabase.storage.from_("Usuarios").upload(
+                                ruta_supabase,
+                                image_data,
+                                {"content-type": image.content_type},
+                            )
+                            url_result = supabase.storage.from_(
+                                "Usuarios"
+                            ).get_public_url(ruta_supabase)
+                            url = (
+                                url_result["publicURL"]
+                                if isinstance(url_result, dict)
+                                and "publicURL" in url_result
+                                else url_result
+                            )
+                            if url and url.endswith("?"):
+                                url = url[:-1]
+                            edited_pet.profile_photo_url = url
+                        except Exception as e:
+                            form.add_error(
+                                "profile_photo_url",
+                                "Error al subir la imagen. Intenta nuevamente.",
+                            )
+                    else:
+                        form.add_error(
+                            "profile_photo_url",
+                            "Servicio de almacenamiento no disponible. Contacta al administrador.",
+                        )
+                if not form.errors:
+                    edited_pet.save()
+                    messages.success(request, "Mascota actualizada correctamente.")
+                    return redirect("pets_user")
+            # Si hay errores, se mostrarán en el formulario
+            open_edit = True
         else:
             form = PetForm(request.POST, request.FILES)
             if form.is_valid():
                 new_pet = form.save(commit=False)
                 new_pet.creator = user_profile
-
                 image = form.cleaned_data.get("profile_photo_url")
-
                 if not image:
-                    messages.error(request, "Por favor sube una imagen.")
-                    return redirect("pets_user")
-                if image.size > 5 * 1024 * 1024:
-                    messages.error(
-                        request, "El tamaño de la imagen no debe exceder 5MB."
+                    form.add_error("profile_photo_url", "Por favor sube una imagen.")
+                elif image.size > 5 * 1024 * 1024:
+                    form.add_error(
+                        "profile_photo_url",
+                        "El tamaño de la imagen no debe exceder 5MB.",
                     )
-                    return redirect("pets_user")
-                if (
+                elif (
                     hasattr(image, "content_type")
                     and image.content_type not in allowed_types
                 ):
-                    messages.error(
-                        request,
+                    form.add_error(
+                        "profile_photo_url",
                         "Tipo de imagen no permitido. Usa JPEG, PNG, GIF o WEBP.",
                     )
-                    return redirect("pets_user")
-
-                if supabase:
+                elif supabase:
                     try:
                         usuario_name = request.user.username
                         image_name = f"{uuid.uuid4()}_{image.name}"
@@ -358,10 +355,9 @@ def petsUserView(request):
                             f"{usuario_name}/{new_pet.name}/profile/{image_name}"
                         )
                         new_pet.profile_photo_storage_path = ruta_supabase
-                        logger.info(f"Subiendo imagen a Supabase en {ruta_supabase}")
                         image_data = image.read()
                         image.seek(0)
-                        _ = supabase.storage.from_("Usuarios").upload(
+                        supabase.storage.from_("Usuarios").upload(
                             ruta_supabase,
                             image_data,
                             {"content-type": image.content_type},
@@ -377,29 +373,23 @@ def petsUserView(request):
                         )
                         if url and url.endswith("?"):
                             url = url[:-1]
-                        logger.info(f"Imagen subida exitosamente. URL: {url}")
+                        new_pet.profile_photo_url = url
                     except Exception as e:
-                        logger.exception(f"Error al subir la imagen a Supabase: {e}")
-                        messages.error(
-                            request, "Error al subir la imagen. Intenta nuevamente."
+                        form.add_error(
+                            "profile_photo_url",
+                            "Error al subir la imagen. Intenta nuevamente.",
                         )
-                        return redirect("pets_user")
                 else:
-                    messages.error(
-                        request,
+                    form.add_error(
+                        "profile_photo_url",
                         "Error de configuración del servidor. Contacta al administrador.",
                     )
+                if not form.errors:
+                    new_pet.save()
+                    messages.success(request, "Mascota guardada correctamente.")
                     return redirect("pets_user")
+            # Si hay errores, se mostrarán en el formulario
 
-                new_pet.profile_photo_url = url
-                new_pet.save()
-                messages.success(request, "Mascota guardada correctamente.")
-                return redirect("pets_user")
-            else:
-                messages.error(
-                    request,
-                    "Hay errores en el formulario. Revisa los campos resaltados.",
-                )
     return render(
         request,
         "mascotasUser.html",
@@ -414,6 +404,7 @@ def petsUserView(request):
             "open_edit": open_edit,
         },
     )
+
 
 def publicacionesUserView(request):
     user_profile = (
@@ -435,3 +426,284 @@ def publicacionesUserView(request):
             "disponibles": petAvailable(request),
         },
     )
+
+
+@login_required
+def postView(request, post_id):
+    user_profile = (
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
+    )
+    if not user_profile:
+        messages.error(request, "El perfil de usuario no existe.")
+        return redirect("login")
+
+    post = get_object_or_404(Post, id=post_id)
+
+    adoption_success = False
+    form = AdoptionForm()
+
+    if request.method == "POST":
+        # Comentario por AJAX
+        if (
+            request.POST.get("comment_content") is not None
+            and request.headers.get("x-requested-with") == "XMLHttpRequest"
+        ):
+            comment_content = request.POST.get("comment_content", "").strip()
+            if not comment_content:
+                return JsonResponse({"success": False})
+            try:
+                comment = Comment.objects.create(
+                    post=post, user=request.user, content=comment_content
+                )
+                # Notificar al autor si es distinto al usuario actual
+                if post.author and post.author.user != request.user:
+                    Notifications.objects.create(
+                        post=post,
+                        user=post.author.user,
+                        referenceComment=comment,
+                        type="comment",
+                        message=f"{request.user.username} comentó en tu post.",
+                        is_read=False,
+                    )
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "username": request.user.username,
+                        "content": comment_content,
+                    }
+                )
+            except Exception as e:
+                logger.exception(f"Error al guardar el comentario: {e}")
+                return JsonResponse({"success": False})
+
+        # Comentario por submit normal (no AJAX)
+        if request.POST.get("comment_content") is not None:
+            comment_content = request.POST.get("comment_content", "").strip()
+            if comment_content and not is_injection_attempt(comment_content):
+                try:
+                    comment = Comment.objects.create(
+                        post=post, user=request.user, content=comment_content
+                    )
+                    if post.author and post.author.user != request.user:
+                        Notifications.objects.create(
+                            post=post,
+                            user=post.author.user,
+                            referenceComment=comment,
+                            type="comment",
+                            message=f"{request.user.username} comentó en tu post.",
+                            is_read=False,
+                        )
+                    messages.success(request, "Comentario publicado.")
+                except Exception as e:
+                    logger.exception(f"Error al guardar el comentario (no AJAX): {e}")
+                    messages.error(request, "No se pudo guardar el comentario.")
+            return redirect("post_view", post_id=post.id)
+
+        # Proceso de adopción
+        form = AdoptionForm(request.POST)
+        if form.is_valid():
+            try:
+                adoption = form.save(commit=False)
+                pet_id = (
+                    request.POST.get("pet_id") or request.POST.get("mascota_id") or ""
+                ).strip()
+                pet = None
+                if pet_id:
+                    pet = (
+                        Pet.objects.filter(idPet=pet_id).first()
+                        or Pet.objects.filter(pk=pet_id).first()
+                    )
+                if not pet:
+                    logger.warning(f"Solicitud de adopción: pet_id='{pet_id}' inválido")
+                    messages.error(
+                        request,
+                        "Mascota inválida. No se pudo procesar la solicitud de adopción.",
+                    )
+                else:
+                    adoption.pet = pet
+                    # marcar mascota como pendiente
+                    try:
+                        pet.status = "pending"
+                    except Exception:
+                        pass
+                    adoption.save()
+                    pet.save()
+                    adoption_success = True
+                    messages.success(request, "Solicitud de adopción enviada.")
+            except Exception as e:
+                logger.exception(f"Error al guardar adopción: {e}")
+                messages.error(
+                    request,
+                    "Error al procesar la solicitud de adopción. Inténtalo de nuevo.",
+                )
+        else:
+            messages.error(
+                request,
+                "Error en el formulario de adopción. Revisa los datos ingresados.",
+            )
+
+    # Estado de like del usuario actual
+    liked = Like.objects.filter(post=post, user=request.user).exists()
+    user_liked_post_ids = [post.id] if liked else []
+
+    return render(
+        request,
+        "post.html",
+        {
+            "form": form,
+            "usuario": user_profile,
+            "post": post,
+            "adoptados": petAdopted(request),
+            "disponibles": petAvailable(request),
+            "user_authenticated": request.user.is_authenticated,
+            "user_liked_post_ids": user_liked_post_ids,
+            "adoption_success": adoption_success,
+        },
+    )
+
+
+def deletePostView(request, post_id):
+    post = Post.objects.filter(id=post_id).first()
+    if not post:
+        messages.error(request, "Publicación no encontrada.")
+        return redirect("posts_user")
+    if post.author.user != request.user:
+        messages.error(request, "No tienes permiso para eliminar esta publicación.")
+        return redirect("posts_user")
+    try:
+        # Eliminar imagen de Supabase si existe
+        if post.photo_storage_path and supabase:
+            try:
+                logger.info(
+                    f"Intentando eliminar la imagen de Supabase: {post.photo_storage_path}"
+                )
+                bucket_name = "Usuarios"
+                ruta = post.photo_storage_path
+
+                # Extraer el directorio y el nombre del archivo
+                directorio = "/".join(ruta.split("/")[:-1])
+                nombre_archivo = ruta.split("/")[-1]
+
+                # Verificar si el archivo existe en Supabase
+                archivos = supabase.storage.from_(bucket_name).list(path=directorio)
+
+                if any(archivo["name"] == nombre_archivo for archivo in archivos):
+                    resultado_eliminacion = supabase.storage.from_(bucket_name).remove(
+                        [ruta]
+                    )
+            except Exception as e:
+                logger.exception(f"Error al eliminar la imagen de Supabase: {e}")
+        post.delete()
+        messages.success(request, "Publicación eliminada correctamente.")
+    except Exception as e:
+        logger.exception(f"Error al eliminar la publicación: {e}")
+        messages.error(request, "Error al eliminar la publicación. Inténtalo de nuevo.")
+    return redirect("posts_user")
+
+
+@login_required
+def editPostView(request, post_id):
+    post = Post.objects.filter(id=post_id).first()
+    if not post:
+        messages.error(request, "Publicación no encontrada.")
+        return redirect("posts_user")
+    if post.author.user != request.user:
+        messages.error(request, "No tienes permiso para editar esta publicación.")
+        return redirect("posts_user")
+
+    if request.method == "POST":
+        try:
+            user_profile = (
+                UserProfile.objects.select_related("user")
+                .filter(user=request.user)
+                .first()
+            )
+            instance = Post.objects.filter(id=post_id, author=user_profile).first()
+            if not instance:
+                messages.error(request, "Publicación no encontrada.")
+                return redirect("posts_user")
+
+            form = PostForm(request.POST, request.FILES, instance=instance)
+            if form.is_valid():
+                edited_post = form.save(commit=False)
+                image = form.cleaned_data.get("image")
+
+                # Si se subió una nueva imagen, validar y subir a Supabase
+                if image and hasattr(image, "size"):
+                    if image.size > 5 * 1024 * 1024:
+                        form.add_error(
+                            "image", "El tamaño de la imagen no debe exceder 5MB."
+                        )
+                    elif (
+                        hasattr(image, "content_type")
+                        and image.content_type not in allowed_types
+                    ):
+                        form.add_error(
+                            "image",
+                            "Tipo de imagen no permitido. Usa JPEG, PNG, GIF o WEBP.",
+                        )
+                    elif supabase:
+                        try:
+                            # Eliminar imagen previa si existe
+                            if edited_post.photo_storage_path:
+                                bucket_name = "Usuarios"
+                                ruta = edited_post.photo_storage_path
+                                directorio = "/".join(ruta.split("/")[:-1])
+                                nombre_archivo = ruta.split("/")[-1]
+                                archivos = supabase.storage.from_(bucket_name).list(
+                                    path=directorio
+                                )
+                                if any(
+                                    archivo.get("name") == nombre_archivo
+                                    for archivo in archivos
+                                ):
+                                    supabase.storage.from_(bucket_name).remove([ruta])
+                            # Subir nueva imagen
+                            usuario_name = request.user.username
+                            image_name = f"{uuid.uuid4()}_{image.name}"
+                            ruta_supabase = (
+                                f"{usuario_name}/{edited_post.pet.name}/{image_name}"
+                            )
+                            edited_post.photo_storage_path = ruta_supabase
+
+                            image_data = image.read()
+                            image.seek(0)
+                            supabase.storage.from_("Usuarios").upload(
+                                ruta_supabase,
+                                image_data,
+                                {"content-type": image.content_type},
+                            )
+                            url_result = supabase.storage.from_(
+                                "Usuarios"
+                            ).get_public_url(ruta_supabase)
+                            url = (
+                                url_result.get("publicURL")
+                                if isinstance(url_result, dict)
+                                else url_result
+                            )
+                            if url and isinstance(url, str) and url.endswith("?"):
+                                url = url[:-1]
+                            edited_post.photo_url = url
+                        except Exception as e:
+                            logger.exception(f"Error al subir imagen del post: {e}")
+                            form.add_error(
+                                "image", "Error al subir la imagen. Intenta nuevamente."
+                            )
+                    else:
+                        form.add_error(
+                            "image",
+                            "Servicio de almacenamiento no disponible. Contacta al administrador.",
+                        )
+
+                if not form.errors:
+                    edited_post.save()
+                    messages.success(request, "Publicación actualizada correctamente.")
+                    return redirect("posts_user")
+        except Exception as e:
+            logger.exception(f"Error al editar la publicación: {e}")
+            messages.error(
+                request, "Error al editar la publicación. Inténtalo de nuevo."
+            )
+    else:
+        form = PostForm(instance=post)
+    return render(request, "editPost.html", {"form": form, "post": post})

@@ -26,7 +26,7 @@ class Pet(models.Model):
         ('unknown', 'Desconocido')
     ], default='unknown', verbose_name="Género")
     name = models.CharField(max_length=20,verbose_name="Nombre")
-    description = models.TextField(max_length=200,null=True, blank=True,verbose_name="Descripción")
+    description = models.TextField(max_length=400,null=True, blank=True,verbose_name="Descripción")
     profile_photo_url = models.TextField(null=True, blank=True,verbose_name="URL de foto de perfil")
     profile_photo_storage_path = models.CharField(max_length=200, null=True, blank=True,verbose_name="Ruta de almacenamiento de la foto de perfil")
     is_available_for_adoption = models.BooleanField(default=False,verbose_name="Disponible para adopción")

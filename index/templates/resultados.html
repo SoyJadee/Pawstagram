@@ -114,9 +114,9 @@
               <div class="relative">
                 <img src="{{ mascota.profile_photo_url }}" alt="{{ mascota.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
                 <div class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                  {% if mascota.estado == 'available' %}
+                  {% if mascota.status == 'available' %}
                   En adopción
-                  {% elif mascota.estado == 'pending' %}
+                  {% elif mascota.status == 'pending' %}
                   En proceso
                   {% else %}
                   Adoptado

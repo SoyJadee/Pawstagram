@@ -96,12 +96,30 @@
             <span class="text-gray-500 font-normal">-{{ post.author.user.username }}</span>
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
-          {% if post.pet.is_available_for_adoption %}
-          <button onclick="showInterest('{{ post.pet.pk }}')"
-            class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
-            💕 ¡Me interesa adoptar!
-          </button>
-          {% endif %}
+          {% if post.pet.is_available_for_adoption and post.author.user != request.user %}
+    <button
+      onclick="showInterest('{{ post.pet.pk }}')"
+      class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+    >
+      💕 ¡Me interesa adoptar!
+    </button>
+    {% elif post.author.user == request.user %}
+    <a href="{% url 'editar_post' post.pk %}">
+        <button
+            class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
+        >
+            <i class="fas fa-edit" title="Editar publicación" style="color: #222; font-size: 1.25rem;"></i>
+        </button>
+    </a>
+  <a href="{% url 'eliminar_post' post.pk %}" onclick="return confirm('¿Estás seguro de que deseas eliminar esta publicación?')">
+    <button
+      class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
+      style="background: none;"
+    >
+      <i class="fas fa-trash" title="Eliminar publicación" style="color: #222; font-size: 1.25rem;"></i>
+    </button>
+  </a>
+  {% endif %}
         </div>
         <div class="w-full bg-gray-100">
           <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
