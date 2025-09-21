@@ -1,0 +1,44 @@
+{% extends "perfilBase.html" %}
+{% block content_profile %}
+<!-- Publications Tab -->
+
+<style>
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .grid-item img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+  }
+</style>
+<div class="padding-container mb-10" style="padding-left: 2em; padding-right: 2em; padding-bottom: 2rem;"></div>
+    <div class="grid-container">
+        {% if posts %}
+
+        {% for post in posts %}
+        <div class="grid-item">
+            <img
+                src="{{ post.photo_url }}"
+                alt="Foto de perfil"
+            />
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="flex flex-col items-center justify-center h-64 bg-white rounded-2xl card-shadow p-6 hover-lift">
+            <i class="fas fa-newspaper fa-3x text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">No hay publicaciones</h3>
+            <p class="text-gray-600 text-center">Aún no has creado ninguna publicación.<br>¡Comparte las aventuras de tus mascotas con la comunidad!</p>
+                <a href="{% url 'principal' %}">
+                        <button class="mt-4 turquoise-gradient text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover-lift">
+                        <i class="fas fa-plus mr-2"></i>
+                        Crear Publicación
+                        </button>
+                </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content_profile %}

@@ -26,9 +26,18 @@ class Pet(models.Model):
         ('unknown', 'Desconocido')
     ], default='unknown', verbose_name="Género")
     name = models.CharField(max_length=20,verbose_name="Nombre")
-    description = models.TextField(null=True, blank=True,verbose_name="Descripción")
+    description = models.TextField(max_length=200,null=True, blank=True,verbose_name="Descripción")
     profile_photo_url = models.TextField(null=True, blank=True,verbose_name="URL de foto de perfil")
+    profile_photo_storage_path = models.CharField(max_length=200, null=True, blank=True,verbose_name="Ruta de almacenamiento de la foto de perfil")
     is_available_for_adoption = models.BooleanField(default=False,verbose_name="Disponible para adopción")
     ubication = models.CharField(max_length=100, null=True, blank=True,verbose_name="Ubicación")
+    status = models.CharField(max_length=10, choices=[
+        ('available', 'Disponible'),
+        ('pending', 'Pendiente'),
+        ('adopted', 'Adoptado')
+    ], default='available', verbose_name="Estado")
     created_at = models.DateTimeField(auto_now_add=True,verbose_name="Fecha de creación")
     vacunas = models.BooleanField(default=False,verbose_name="Vacunas")
+    desparasitacion = models.BooleanField(default=False,verbose_name="Desparasitacion")
+    sterilization = models.BooleanField(default=False,verbose_name="Esterilización")
+    microchip = models.BooleanField(default=False,verbose_name="Microchip")

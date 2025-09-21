@@ -1,4 +1,5 @@
 from django.db import models
+from usuarios.models import UserProfile
 from django.contrib.auth.models import User
 from mascota.models import Pet
 
@@ -8,7 +9,7 @@ class Post(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE,
                             verbose_name='mascota', related_name='index_posts')
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='autor', related_name='index_posts')
+        UserProfile, on_delete=models.CASCADE, verbose_name='autor', related_name='index_posts')
     content = models.TextField(
         null=True, blank=True, verbose_name="Contenido del post")
     photo_url = models.URLField(

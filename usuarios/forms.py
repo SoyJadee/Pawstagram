@@ -1,6 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django import forms
 from django.contrib.auth.models import User
+from .models import UserProfile
 
 class UserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -127,3 +128,61 @@ class LoginForm(AuthenticationForm):
         password_widget.attrs.setdefault('placeholder', '••••••••')
         password_widget.attrs.setdefault('maxlength', '20')
         password_widget.attrs.setdefault('autocomplete', 'current-password')
+
+class EditProfileForm(forms.ModelForm):
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-200 rounded-xl input-focus', 'maxlength': 30, 'required': True})
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-200 rounded-xl input-focus', 'maxlength': 30, 'required': True})
+    )
+    email = forms.EmailField(
+        max_length=150,
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'w-full px-4 py-3 border border-gray-200 rounded-xl input-focus', 'maxlength': 150, 'required': True})
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ['phone']
+        widgets = {
+            'phone': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-200 rounded-xl input-focus', 'required': True, 'maxlength': 15}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['email'].initial = user.email
+        elif self.instance and self.instance.user:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+            self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        user = profile.user
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            profile.save()
+        return profile
+
+class DeleteUserForm(forms.Form):
+    email = forms.EmailField(
+        required=True,
+        label="Confirma tu email para eliminar la cuenta",
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-paw-teal focus:border-transparent transition-all',
+            'placeholder': 'ejemplo@email.com',
+            'maxlength': '150'
+        })
+    )
