@@ -58,13 +58,13 @@
             }
         }
         </script>
-        <script src="{% static 'img/js/Script_salud.js' %}"></script>
+    <!-- <script src="{% static 'img/js/Script_salud.js' %}"></script> -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/salud.css' %}">
-    <script src="{% static 'img/js/Script_salud.js' %}"></script>
-    <script src="{% static 'img/js/mapa.js' %}"></script>
-    <script src="{% static 'img/js/comentarios.js' %}"></script>
-    <script src="{% static 'img/js/ui.js' %}"></script>
+    <!-- <script src="{% static 'js/Script_salud.js' %}"></script> -->
+    <!-- <script src="{% static 'img/js/mapa.js' %}"></script> -->
+    <!-- <script src="{% static 'img/js/comentarios.js' %}"></script> -->
+    <!-- <script src="{% static 'img/js/ui.js' %}"></script> -->
 </head>
 <body class="gradient-bg min-h-screen pt-20">
     <!-- Barra de navegación eliminada -->
@@ -301,7 +301,7 @@
     </div>
 
     <script>
-        let currentRating = 0;
+    var currentRating = 0;
 
         function getUserLocation(callback) {
             if (navigator.geolocation) {
@@ -377,9 +377,12 @@
         }
 
         // Actualizar filtro al cambiar distancia
-        document.querySelector('select').addEventListener('change', function() {
-            filterServices('all');
-        });
+        var select = document.querySelector('select');
+        if (select) {
+            select.addEventListener('change', function() {
+                filterServices('all');
+            });
+        }
 
         function showContact(name, phone, email) {
             document.getElementById('contactName').textContent = name;
@@ -574,7 +577,7 @@
             const lista = modal.querySelector('.space-y-4.mb-6');
             lista.innerHTML = '<div class="text-center text-gray-400">Cargando comentarios...</div>';
             // Obtener comentarios reales por AJAX
-            fetch(`/index/obtener-comentarios-salud/?service_id=${serviceId}`)
+            fetch(`/salud/obtener-comentarios-salud/?service_id=${serviceId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -677,7 +680,7 @@
             }
             const csrf = getCookie('csrftoken');
             // Enviar datos al backend
-            fetch('/index/guardar-comentario-salud/', {
+            fetch('/salud/guardar-comentario-salud/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -697,7 +700,7 @@
                     });
                     // Actualizar comentarios en el modal sin cerrarlo
                     const lista = modal.querySelector('.space-y-4.mb-6');
-                    fetch(`/index/obtener-comentarios-salud/?service_id=${serviceId}`)
+                    fetch(`/salud/obtener-comentarios-salud/?service_id=${serviceId}`)
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
