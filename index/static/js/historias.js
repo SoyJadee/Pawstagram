@@ -82,9 +82,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const modalUsername = document.getElementById('modal-historia-username');
   const modalTime = document.getElementById('modal-historia-time');
   const modalProgress = document.getElementById('modal-historia-progress');
-  const prevArea = document.getElementById('modal-historia-prev-area');
-  const nextArea = document.getElementById('modal-historia-next-area');
-  const pauseArea = document.getElementById('modal-historia-pause-area');
+  // const prevArea = document.getElementById('modal-historia-prev-area');
+  // const nextArea = document.getElementById('modal-historia-next-area');
+  // const pauseArea = document.getElementById('modal-historia-pause-area');
 
   // Construir estructura de historias agrupadas por usuario desde el DOM
   const historiasPorUsuario = {};
@@ -114,123 +114,198 @@ document.addEventListener('DOMContentLoaded', function () {
     usuarioActual = usuario;
     historiasActuales = (window.historiasPorUsuario && window.historiasPorUsuario[usuario]) ? window.historiasPorUsuario[usuario].historias : [];
     idxHistoriaActual = 0;
-    
     if (modalHistoria) modalHistoria.classList.remove('hidden');
     mostrarHistoriaActual();
-    configurarEventosNavegacion();
-  }
-
-  // Configurar eventos de navegación
-  function configurarEventosNavegacion() {
-    // Limpiar eventos previos
-    if (prevArea) {
-      prevArea.onclick = null;
-      prevArea.ontouchend = null;
-    }
-    if (nextArea) {
-      nextArea.onclick = null;
-      nextArea.ontouchend = null;
-    }
+    // --- Pausa con mantener presionado en el área central ---
+    const pauseArea = document.getElementById('modal-historia-pause-area');
     if (pauseArea) {
+      // Elimina listeners previos
       pauseArea.onmousedown = null;
       pauseArea.onmouseup = null;
       pauseArea.onmouseleave = null;
       pauseArea.ontouchstart = null;
       pauseArea.ontouchend = null;
       pauseArea.ontouchcancel = null;
-    }
-
-    // Configurar eventos para área anterior
-    if (prevArea) {
-      prevArea.addEventListener('click', function (e) {
-        e.stopPropagation();
-        navegarAnterior();
+      // Pausar
+      pauseArea.addEventListener('mousedown', function(e) {
+        console.log('mousedown: PAUSA');
+        if (!historiasActuales.length || historiaPausada) return;
+        historiaPausada = true;
+        clearTimeout(historiaTimer);
+        if (historiaFill) {
+          const elapsed = Date.now() - historiaStartTime;
+          historiaElapsed += elapsed;
+          const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+          historiaFill.style.transition = 'none';
+          historiaFill.style.width = percent + '%';
+        }
       });
-      prevArea.addEventListener('touchend', function (e) {
+      // Reanudar
+      pauseArea.addEventListener('mouseup', function(e) {
+        console.log('mouseup: REANUDAR');
+        if (!historiasActuales.length || !historiaPausada) return;
+        historiaPausada = false;
+        historiaStartTime = Date.now();
+        if (historiaFill) {
+          const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+          historiaFill.style.transition = `width ${(3500 - historiaElapsed) / 1000}s linear`;
+          historiaFill.style.width = '100%';
+        }
+        historiaTimer = setTimeout(() => {
+          if (!historiaPausada) {
+            if (idxHistoriaActual < historiasActuales.length - 1) {
+              idxHistoriaActual++;
+              historiaElapsed = 0;
+              mostrarHistoriaActual();
+            } else {
+              cerrarModalHistoria();
+            }
+          }
+        }, 3500 - historiaElapsed);
+      });
+      pauseArea.addEventListener('mouseleave', function(e) {
+        console.log('mouseleave: REANUDAR');
+        if (!historiasActuales.length || !historiaPausada) return;
+        historiaPausada = false;
+        historiaStartTime = Date.now();
+        if (historiaFill) {
+          const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+          historiaFill.style.transition = `width ${(3500 - historiaElapsed) / 1000}s linear`;
+          historiaFill.style.width = '100%';
+        }
+        historiaTimer = setTimeout(() => {
+          if (!historiaPausada) {
+            if (idxHistoriaActual < historiasActuales.length - 1) {
+              idxHistoriaActual++;
+              historiaElapsed = 0;
+              mostrarHistoriaActual();
+            } else {
+              cerrarModalHistoria();
+            }
+          }
+        }, 3500 - historiaElapsed);
+      });
+      // Touch
+      pauseArea.addEventListener('touchstart', function(e) {
         e.preventDefault();
-        navegarAnterior();
+        console.log('touchstart: PAUSA');
+        if (!historiasActuales.length || historiaPausada) return;
+        historiaPausada = true;
+        clearTimeout(historiaTimer);
+        if (historiaFill) {
+          const elapsed = Date.now() - historiaStartTime;
+          historiaElapsed += elapsed;
+          const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+          historiaFill.style.transition = 'none';
+          historiaFill.style.width = percent + '%';
+        }
       });
-    }
-
-    // Configurar eventos para área siguiente
-    if (nextArea) {
-      nextArea.addEventListener('click', function (e) {
-        e.stopPropagation();
-        navegarSiguiente();
-      });
-      nextArea.addEventListener('touchend', function (e) {
+      pauseArea.addEventListener('touchend', function(e) {
         e.preventDefault();
-        navegarSiguiente();
+        console.log('touchend: REANUDAR');
+        if (!historiasActuales.length || !historiaPausada) return;
+        historiaPausada = false;
+        historiaStartTime = Date.now();
+        if (historiaFill) {
+          const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+          historiaFill.style.transition = `width ${(3500 - historiaElapsed) / 1000}s linear`;
+          historiaFill.style.width = '100%';
+        }
+        historiaTimer = setTimeout(() => {
+          if (!historiaPausada) {
+            if (idxHistoriaActual < historiasActuales.length - 1) {
+              idxHistoriaActual++;
+              historiaElapsed = 0;
+              mostrarHistoriaActual();
+            } else {
+              cerrarModalHistoria();
+            }
+          }
+        }, 3500 - historiaElapsed);
       });
-    }
-
-    // Configurar eventos para pausa
-    if (pauseArea) {
-      // Eventos de ratón
-      pauseArea.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
-        pausarHistoria();
-      });
-      pauseArea.addEventListener('mouseup', function (e) {
-        e.stopPropagation();
-        reanudarHistoria();
-      });
-      pauseArea.addEventListener('mouseleave', function (e) {
-        e.stopPropagation();
-        reanudarHistoria();
-      });
-      
-      // Eventos táctiles
-      pauseArea.addEventListener('touchstart', function(e){
+      pauseArea.addEventListener('touchcancel', function(e) {
         e.preventDefault();
-        pausarHistoria();
-      });
-      pauseArea.addEventListener('touchend', function(e){
-        e.preventDefault();
-        reanudarHistoria();
-      });
-      pauseArea.addEventListener('touchcancel', function(e){
-        e.preventDefault();
-        reanudarHistoria();
+        console.log('touchcancel: REANUDAR');
+        if (!historiasActuales.length || !historiaPausada) return;
+        historiaPausada = false;
+        historiaStartTime = Date.now();
+        if (historiaFill) {
+          const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+          historiaFill.style.transition = `width ${(3500 - historiaElapsed) / 1000}s linear`;
+          historiaFill.style.width = '100%';
+        }
+        historiaTimer = setTimeout(() => {
+          if (!historiaPausada) {
+            if (idxHistoriaActual < historiasActuales.length - 1) {
+              idxHistoriaActual++;
+              historiaElapsed = 0;
+              mostrarHistoriaActual();
+            } else {
+              cerrarModalHistoria();
+            }
+          }
+        }, 3500 - historiaElapsed);
       });
     }
   }
+
+  // Configurar eventos de navegación
+
 
   // Función para navegar a la historia anterior
-  function navegarAnterior() {
-    if (!historiaPausada && idxHistoriaActual > 0) {
-      clearTimeout(historiaTimer);
-      historiaPausada = false;
-      historiaElapsed = 0;
-      idxHistoriaActual--;
-      mostrarHistoriaActual();
-    }
-  }
 
-  // Función para navegar a la siguiente historia
-  function navegarSiguiente() {
-    if (!historiaPausada) {
-      clearTimeout(historiaTimer);
-      historiaPausada = false;
-      historiaElapsed = 0;
-      
-      if (idxHistoriaActual < historiasActuales.length - 1) {
-        idxHistoriaActual++;
-        mostrarHistoriaActual();
-      } else {
-        cerrarModalHistoria();
-      }
-    }
-  }
 
   function mostrarHistoriaActual() {
+    // Botón de pausa/reanudar
+    const btnPausa = document.getElementById('historia-pause-btn');
+    if (btnPausa) {
+      btnPausa.onclick = function(e) {
+        e.stopPropagation();
+        if (historiaPausada) {
+          // Reanudar
+          historiaPausada = false;
+          historiaStartTime = Date.now();
+          if (historiaFill) {
+            const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+            historiaFill.style.transition = `width ${(3500 - historiaElapsed) / 1000}s linear`;
+            historiaFill.style.width = '100%';
+          }
+          historiaTimer = setTimeout(() => {
+            if (!historiaPausada) {
+              if (idxHistoriaActual < historiasActuales.length - 1) {
+                idxHistoriaActual++;
+                historiaElapsed = 0;
+                mostrarHistoriaActual();
+              } else {
+                cerrarModalHistoria();
+              }
+            }
+          }, 3500 - historiaElapsed);
+          btnPausa.innerHTML = '<i class="fas fa-pause"></i>';
+        } else {
+          // Pausar
+          historiaPausada = true;
+          clearTimeout(historiaTimer);
+          if (historiaFill) {
+            const elapsed = Date.now() - historiaStartTime;
+            historiaElapsed += elapsed;
+            const percent = Math.min(historiaElapsed / 3500, 1) * 100;
+            historiaFill.style.transition = 'none';
+            historiaFill.style.width = percent + '%';
+          }
+          btnPausa.innerHTML = '<i class="fas fa-play"></i>';
+        }
+      };
+      // Estado inicial
+      btnPausa.innerHTML = historiaPausada ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+    }
     if (!historiasActuales.length) return;
     clearTimeout(historiaTimer);
     historiaPausada = false;
     historiaElapsed = 0;
     historiaStartTime = Date.now();
     const historia = historiasActuales[idxHistoriaActual];
-    
+
     // Avatar: foto de perfil o logo por defecto
     if (modalAvatar) {
       let fotoPerfil = null;
@@ -243,10 +318,10 @@ document.addEventListener('DOMContentLoaded', function () {
         modalAvatar.innerHTML = `<img src="/static/img/logo1.png" alt="avatar" class="w-10 h-10 rounded-full object-cover" style="background:#fff;">`;
       }
     }
-    
+
     // Nombre usuario
     if (modalUsername) modalUsername.textContent = usuarioActual;
-    
+
     // Tiempo (formato tipo Instagram)
     if (modalTime && historia.created_at) {
       const fecha = new Date(historia.created_at);
@@ -267,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       modalTime.textContent = texto;
     }
-    
+
     // Progreso animado
     if (modalProgress) {
       modalProgress.innerHTML = '';
@@ -295,24 +370,103 @@ document.addEventListener('DOMContentLoaded', function () {
         modalProgress.appendChild(bar);
       }
     }
-    
-    // Contenido (solo imagen, si hay; si no, solo fondo negro)
-    if (document.getElementById('modal-historia-content')) {
-      const modalContent = document.getElementById('modal-historia-content');
-      modalContent.innerHTML = '';
+
+    // Contenido (solo imagen, si hay; si no, solo fondo negro) y flechas
+    const modalContent = document.getElementById('modal-historia-content');
+    if (modalContent) {
+      // Asegura que los botones de flecha existan siempre
+      let prevBtn = document.getElementById('historia-flecha-prev');
+      let nextBtn = document.getElementById('historia-flecha-next');
+      if (!prevBtn) {
+        prevBtn = document.createElement('button');
+        prevBtn.id = 'historia-flecha-prev';
+        prevBtn.type = 'button';
+        prevBtn.innerHTML = '&#8592;';
+        prevBtn.style.display = 'none';
+        prevBtn.style.position = 'absolute';
+        prevBtn.style.left = '10px';
+        prevBtn.style.top = '50%';
+        prevBtn.style.transform = 'translateY(-50%)';
+        prevBtn.style.background = 'rgba(0,0,0,0.4)';
+        prevBtn.style.border = 'none';
+        prevBtn.style.borderRadius = '50%';
+        prevBtn.style.width = '40px';
+        prevBtn.style.height = '40px';
+        prevBtn.style.color = 'white';
+        prevBtn.style.fontSize = '2rem';
+        prevBtn.style.zIndex = '30';
+        prevBtn.style.alignItems = 'center';
+        prevBtn.style.justifyContent = 'center';
+        modalContent.appendChild(prevBtn);
+      }
+      if (!nextBtn) {
+        nextBtn = document.createElement('button');
+        nextBtn.id = 'historia-flecha-next';
+        nextBtn.type = 'button';
+        nextBtn.innerHTML = '&#8594;';
+        nextBtn.style.display = 'none';
+        nextBtn.style.position = 'absolute';
+        nextBtn.style.right = '10px';
+        nextBtn.style.top = '50%';
+        nextBtn.style.transform = 'translateY(-50%)';
+        nextBtn.style.background = 'rgba(0,0,0,0.4)';
+        nextBtn.style.border = 'none';
+        nextBtn.style.borderRadius = '50%';
+        nextBtn.style.width = '40px';
+        nextBtn.style.height = '40px';
+        nextBtn.style.color = 'white';
+        nextBtn.style.fontSize = '2rem';
+        nextBtn.style.zIndex = '30';
+        nextBtn.style.alignItems = 'center';
+        nextBtn.style.justifyContent = 'center';
+        modalContent.appendChild(nextBtn);
+      }
+      // Borra solo los hijos que sean imagen o p
+      Array.from(modalContent.children).forEach(child => {
+        if (child.tagName === 'IMG' || child.tagName === 'P') modalContent.removeChild(child);
+      });
       if (historia.photo_url) {
         const img = document.createElement('img');
         img.src = historia.photo_url;
         img.alt = 'Historia';
         img.className = 'max-h-[400px] max-w-full rounded-xl shadow-lg object-contain bg-black';
-        modalContent.appendChild(img);
+        modalContent.insertBefore(img, prevBtn || nextBtn || null);
       } else {
         const p = document.createElement('p');
         p.textContent = '';
-        modalContent.appendChild(p);
+        modalContent.insertBefore(p, prevBtn || nextBtn || null);
+      }
+      // SIEMPRE re-asigna y muestra/oculta flechas
+      prevBtn.onclick = null;
+      if (historiasActuales.length > 1 && idxHistoriaActual > 0) {
+        prevBtn.style.display = 'flex';
+        prevBtn.onclick = function(e) {
+          e.stopPropagation();
+          if (idxHistoriaActual > 0) {
+            idxHistoriaActual--;
+            mostrarHistoriaActual();
+          }
+        };
+      } else {
+        prevBtn.style.display = 'none';
+      }
+      nextBtn.onclick = null;
+      if (historiasActuales.length > 1 && idxHistoriaActual < historiasActuales.length - 1) {
+        nextBtn.style.display = 'flex';
+        nextBtn.onclick = function(e) {
+          e.stopPropagation();
+          if (idxHistoriaActual < historiasActuales.length - 1) {
+            idxHistoriaActual++;
+            mostrarHistoriaActual();
+          }
+        };
+      } else {
+        nextBtn.style.display = 'none';
       }
     }
-    
+
+
+
     // Cambio automático de historia
     historiaTimer = setTimeout(() => {
       if (!historiaPausada) {
@@ -326,41 +480,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 3500);
   }
 
-  // Pausar y reanudar con mouse/touch
-  function pausarHistoria() {
-    if (historiaPausada) return;
-    historiaPausada = true;
-    clearTimeout(historiaTimer);
-    if (historiaFill) {
-      // Pausar animación de barra
-      const elapsed = Date.now() - historiaStartTime;
-      historiaElapsed += elapsed;
-      const percent = Math.min(historiaElapsed / 3500, 1) * 100;
-      historiaFill.style.transition = 'none';
-      historiaFill.style.width = percent + '%';
-    }
-  }
 
-  function reanudarHistoria() {
-    if (!historiaPausada) return;
-    historiaPausada = false;
-    historiaStartTime = Date.now();
-    if (historiaFill) {
-      const percent = Math.min(historiaElapsed / 3500, 1) * 100;
-      historiaFill.style.transition = `width ${(3500 - historiaElapsed) / 1000}s linear`;
-      historiaFill.style.width = '100%';
-    }
-    historiaTimer = setTimeout(() => {
-      if (!historiaPausada) {
-        if (idxHistoriaActual < historiasActuales.length - 1) {
-          idxHistoriaActual++;
-          mostrarHistoriaActual();
-        } else {
-          cerrarModalHistoria();
-        }
-      }
-    }, 3500 - historiaElapsed);
-  }
 
   window.cerrarModalHistoria = function () {
     if (historiaTimer) clearTimeout(historiaTimer);

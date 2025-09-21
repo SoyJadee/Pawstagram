@@ -31,7 +31,13 @@
         <div class="relative bg-black rounded-3xl overflow-hidden shadow-2xl max-w-xs w-full flex flex-col items-center story-modal-container"
             style="height: 600px; width: 350px;">
             <!-- Barra de progreso -->
-            <div class="absolute top-4 left-4 right-4 flex gap-2 z-30" id="modal-historia-progress"></div>
+            <div class="absolute top-4 left-4 right-4 flex items-center gap-2 z-30" style="min-height:28px;">
+                <div class="flex-1 flex gap-2" id="modal-historia-progress"></div>
+                <button id="historia-pause-btn" type="button" aria-label="Pausar/Reanudar"
+                    style="background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:28px; height:28px; color:white; display:flex; align-items:center; justify-content:center; margin-left:8px; font-size:1.2rem; z-index:40;">
+                    <i class="fas fa-pause"></i>
+                </button>
+            </div>
             <!-- Header usuario -->
             <div class="absolute top-12 left-4 right-4 flex items-center justify-between z-30">
                 <div class="flex items-center gap-3">
@@ -46,9 +52,19 @@
                 <button onclick="cerrarModalHistoria()" class="text-white text-2xl bg-black/40 rounded-full p-1"><i
                         class="fas fa-times"></i></button>
             </div>
-            <!-- Contenido historia -->
+            <!-- Contenido historia y flechas -->
             <div id="modal-historia-content"
-                class="absolute inset-0 flex flex-col justify-center items-center px-4 z-20"></div>
+                class="absolute inset-0 flex flex-col justify-center items-center px-4 z-20">
+                <!-- Flechas de navegación, ocultas por defecto -->
+                <button id="historia-flecha-prev" type="button"
+                    style="display:none; position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:40px; height:40px; color:white; font-size:2rem; z-index:30; align-items:center; justify-content:center;">
+                    &#8592;
+                </button>
+                <button id="historia-flecha-next" type="button"
+                    style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:40px; height:40px; color:white; font-size:2rem; z-index:30; align-items:center; justify-content:center;">
+                    &#8594;
+                </button>
+            </div>
             <!-- Controles navegación: izquierda (prev), centro (pausa), derecha (next) -->
             <div class="absolute inset-0 flex z-10 select-none">
                 <div class="w-1/3 h-full cursor-pointer" id="modal-historia-prev-area"></div>
@@ -108,8 +124,40 @@
         transition: border-color 0.2s;
     }
 
+    .historias-swiper .swiper-slide.vista {
+        border-color: #bbb !important;
+    }
+
+    .historias-swiper .swiper-slide.nueva {
+        border-color: #00F5D4 !important;
+    }
+
     .historias-swiper .swiper-slide.active,
     .historias-swiper .swiper-slide:focus {
         border-color: #40E0D0;
     }
 </style>
+<script>
+    // Marcar historias vistas y cambiar borde
+    document.addEventListener('DOMContentLoaded', function () {
+        const slides = document.querySelectorAll('.historia-slide');
+        slides.forEach(slide => {
+            const usuario = slide.getAttribute('data-usuario');
+            if (!usuario) return;
+            // Estado inicial
+            if (localStorage.getItem('historias_vistas_' + usuario)) {
+                slide.classList.add('vista');
+                slide.classList.remove('nueva');
+            } else {
+                slide.classList.add('nueva');
+                slide.classList.remove('vista');
+            }
+            // Al hacer click, marcar como vista
+            slide.addEventListener('click', function () {
+                localStorage.setItem('historias_vistas_' + usuario, '1');
+                slide.classList.add('vista');
+                slide.classList.remove('nueva');
+            });
+        });
+    });
+</script>
