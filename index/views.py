@@ -36,12 +36,13 @@ def subir_historia(request):
     foto = request.FILES.get('foto_historia')
     if not foto:
         return JsonResponse({'success': False, 'error': 'no_file'})
-    if foto.size > 5 * 1024 * 1024:
+    if foto.size > 10 * 1024 * 1024:
         return JsonResponse({'success': False, 'error': 'file_too_large'})
     allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     if foto.content_type not in allowed_types:
         return JsonResponse({'success': False, 'error': 'invalid_type'})
     url = None
+    upload_error = None
     if supabase:
         try:
             usuario = request.user.username
@@ -51,6 +52,9 @@ def subir_historia(request):
             foto.seek(0)
             res = supabase.storage.from_('Usuarios').upload(
                 ruta_supabase, foto_data, {'content-type': foto.content_type})
+            # Si la respuesta indica error, lanzar excepción
+            if hasattr(res, 'error') and res.error:
+                raise Exception(res.error)
             url_result = supabase.storage.from_(
                 'Usuarios').get_public_url(ruta_supabase)
             if isinstance(url_result, dict) and 'publicUrl' in url_result:
@@ -61,12 +65,16 @@ def subir_historia(request):
                 url = url[:-1]
         except Exception as e:
             logger.error(f"Error al subir historia a Supabase: {e}")
-            return JsonResponse({'success': False, 'error': 'upload_failed'})
+            upload_error = str(e)
     else:
         return JsonResponse({'success': False, 'error': 'storage_unavailable'})
+    if not url:
+        # Si no hay URL, pero no hubo error de subida, solo guardar la historia sin advertencia
+        if upload_error:
+            return JsonResponse({'success': False, 'error': upload_error or 'upload_failed'})
     historia = Histories.objects.create(
         author=request.user,
-        photo_url=url
+        photo_url=url or ''
     )
     return JsonResponse({'success': True, 'historia_id': historia.id, 'photo_url': url})
 
