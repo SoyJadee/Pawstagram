@@ -70,11 +70,11 @@
         >
           <div class="flex items-center space-x-2">
             <i class="fas fa-heart text-red-500"></i>
-            <span class="text-gray-600">{{ successAdopts }}adopciones exitosas</span>
+            <span class="text-gray-600">{{ adoptados }} adopciones exitosas</span>
           </div>
           <div class="flex items-center space-x-2">
             <i class="fas fa-paw text-turquoise"></i>
-            <span class="text-gray-600">{{ petAdopt }} mascotas en adopción</span>
+            <span class="text-gray-600">{{ disponibles }} mascotas en adopción</span>
           </div>
         </div>
       </div>
@@ -95,38 +95,54 @@
 
   <!-- Tabs Navigation -->
   <div class="flex flex-wrap gap-2 mb-8">
-    <a href="#">
+    <a href="{% url 'posts_user' %}">
+    <button
+      id="postsTab"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
+    >
+      <i class="fas fa-newspaper mr-2"></i>
+      Mis Publicaciones
+    </button>
+    </a>
+    <a href="{% url 'perfil' %}">
     <button
       id="profileTab"
-      class="tab-active px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-user mr-2"></i>
       Datos Personales
     </button>
     </a>
-    <a href="#">
+    <a href="{% url 'pets_user' %}">
     <button
-      onclick="switchTab('pets')"
       id="petsTab"
-      class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-paw mr-2"></i>
       Mis Mascotas
     </button>
     </a>
-    <a href="#">
+    <a href="{% url 'configuracion' %}">
     <button
-      onclick="switchTab('settings')"
       id="settingsTab"
-      class="tab-inactive px-6 py-3 rounded-xl font-semibold transition-all"
+      class="{% if request.path == request.resolver_match.url_name %}tab-active{% else %}tab-inactive{% endif %} px-6 py-3 rounded-xl font-semibold transition-all"
     >
       <i class="fas fa-cog mr-2"></i>
       Configuración
     </button>
     </a>
+    
   </div>
 </div>
-
+{% if messages %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  {% for message in messages %}
+    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %} shadow-md">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>  
+{% endif %}
 {% block content_profile %}
  {% endblock content_profile %} 
  {% endblock content%} 

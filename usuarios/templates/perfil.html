@@ -1,11 +1,69 @@
-{% extends "base.html" %}
+{% extends "perfilBase.html" %} 
+{% block content_profile %}
+<!-- Profile Tab -->
+<div id="profileContent" class="tab-content mb-10">
+  <div class="max-w-2xl mx-auto">
+    <!-- Personal Information -->
+    <div class="bg-white rounded-2xl card-shadow p-6 hover-lift">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-800">
+          Información Personal
+        </h3>
+      <a href="{% url 'editar_perfil' %}">
+        <button
+          id="editPersonalBtn"
+          class="text-turquoise hover:text-dark-mint transition-colors"
+        >
+          <i class="fas fa-edit"></i>
+        </button>
+      </a>
+      </div>
 
-{% load static %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Nombre</label
+          >
+          <p
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50"
+          >
+            {{ usuario.user.first_name }}
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Apellidos</label
+          >
+          <p
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50"
+          >
+            {{ usuario.user.last_name }}
+          </p>
+        </div>
+      </div>
 
-{% block content %}
-<h1>Perfil de Usuario</h1>
-<p>Nombre de usuario: {{ user.username }}</p>
-<p>Correo electrónico: {{ user.email }}</p>
-<p>Teléfono: {{ user.userprofile.phone }}</p>
-<p>¿Es fundación?: {{ user.userprofile.is_foundation|yesno:"Sí,No" }}</p>
-{% endblock content %}
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Email</label
+        >
+        <p
+          class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50"
+        >
+          {{ usuario.user.email }}
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Teléfono</label
+        >
+        <p
+          class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus disabled:bg-gray-50"
+        >
+          {{ usuario.phone }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content_profile %}
