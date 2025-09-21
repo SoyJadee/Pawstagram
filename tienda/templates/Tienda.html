@@ -1,9 +1,344 @@
-
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+<title>Pawly</title>
+{% endblock extra_head %}
+{% block content %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.getElementById('closeMapModalInline');
-  if (btn) {
-    btn.addEventListener('click', function() {
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('closeMapModalInline');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        mapModal.classList.add('hidden');
+        leafletMapDiv.innerHTML = '';
+        if (leafletMap) {
+          leafletMap.remove();
+          leafletMap = null;
+        }
+        leafletMarkers = [];
+        leafletRoute = null;
+        if (window._routingControl) {
+          window._routingControl.remove();
+          window._routingControl = null;
+        }
+      });
+    }
+
+    // Cerrar modal al hacer clic fuera de la caja blanca
+    var modal = document.getElementById('mapModal');
+    var mapDiv = document.getElementById('leafletMap');
+    if (modal) {
+      modal.addEventListener('mousedown', function (e) {
+        // Solo cerrar si el click fue en el fondo oscuro, no en la caja blanca
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+          mapDiv.innerHTML = '<div id="leafletMap" class="w-full h-96 min-h-[400px] rounded-xl border-2 border-turquesa mb-4"></div>';
+          if (window.leafletMap) {
+            window.leafletMap.remove();
+            window.leafletMap = null;
+          }
+          window.leafletMarkers = [];
+          window.leafletRoute = null;
+          if (window._routingControl) {
+            window._routingControl.remove();
+            window._routingControl = null;
+          }
+        }
+      });
+    }
+  });
+</script>
+<!-- Botón Volver fijo -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mint': '#98E4D6',
+            'light-blue': '#87CEEB',
+            'soft-mint': '#E8F8F5',
+            'turquesa': '#40E0D0',
+            'verde-menta': '#98E4D6',
+            'azul-claro': '#87CEEB'
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Ocultar el panel de instrucciones de Leaflet Routing Machine */
+    .leaflet-routing-container {
+      display: none !important;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #E8F8F5 0%, #F0F9FF 50%, #E0F2F1 100%);
+    }
+
+    .card-shadow {
+      box-shadow: 0 4px 20px rgba(152, 228, 214, 0.15);
+    }
+
+    .gradient-border {
+      background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #98E4D6, #87CEEB) border-box;
+      border: 2px solid transparent;
+      border-radius: 2rem;
+    }
+
+    .store-card {
+      transition: all 0.3s ease;
+    }
+
+    .store-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 8px 30px rgba(152, 228, 214, 0.18);
+    }
+
+    .inner-card {
+      background: #fff;
+      border-radius: 2rem;
+      box-shadow: 0 2px 8px rgba(152, 228, 214, 0.08);
+    }
+  </style>
+
+  <div class="max-w-7xl mx-auto p-4">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-4">Encuentra tu tienda ideal</h1>
+    </div>
+  </div>
+  </section>
+
+  <!-- Tiendas Section -->
+  <section class="pb-20">
+    <div id="tiendas-container"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto justify-center h-full">
+      {% for store in stores %}
+      <div class="gradient-border store-card max-w-[340px] h-full flex flex-col" data-especies="todas">
+        <div class="inner-card p-8 flex flex-col justify-between h-full">
+          <div class="text-center mb-6">
+            <div
+              class="w-24 h-24 bg-gradient-to-r from-turquesa to-azul-claro rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+              <img
+                src="{{ store.photo_url|default:'https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg' }}"
+                alt="Perfil tienda" class="object-cover w-full h-full">
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ store.name }}</h3>
+            <p class="text-turquesa font-semibold">{{ store.owner }}</p>
+          </div>
+          <div class="space-y-4 mb-8">
+            <div class="bg-gradient-to-r from-turquesa/10 to-azul-claro/10 p-4 rounded-xl">
+              <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
+              <p class="text-gray-600">{{ store.location }}</p>
+              <p class="text-sm text-gray-500">{{ store.created_at|date:'d M Y H:i' }}</p>
+            </div>
+            <div class="bg-gradient-to-r from-verde-menta/10 to-turquesa/10 p-4 rounded-xl">
+              <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
+              <p class="text-gray-600 text-sm">{{ store.description }}</p>
+            </div>
+          </div>
+          <a href="#"
+            class="ver-mapa-btn w-full block py-4 bg-gradient-to-r from-turquesa to-azul-claro text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-center"
+            data-coords="{{ store.coordinates }}">
+            Ver en mapa 📍
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-span-3 text-center py-12">
+        <h3 class="text-2xl font-bold text-gray-500">No hay tiendas registradas.</h3>
+      </div>
+      {% endfor %}
+    </div>
+    </div>
+  </section>
+
+  <!-- Leaflet CSS y JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+  <!-- Modal para el mapa -->
+  <div id="mapModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-4 relative w-full max-w-2xl h-[500px] flex flex-col">
+      <button id="closeMapModal"
+        class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+      <div id="leafletMap" class="w-full h-96 min-h-[400px] rounded-xl border-2 border-turquesa mb-4"></div>
+      <div class="flex flex-col md:flex-row justify-between items-center mt-2">
+        <div class="flex gap-4 items-center">
+          <span class="font-semibold text-gray-700">Distancia:</span>
+          <span class="modal-distance text-turquesa font-bold"></span>
+          <span class="font-semibold text-gray-700">Duración:</span>
+          <span class="modal-duration text-turquesa font-bold"></span>
+        </div>
+        <div class="flex gap-2 justify-end w-full md:w-auto mt-4 md:mt-0">
+          <button id="openMapAddress"
+            class="bg-turquesa text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-turquesa/80 transition">Mostrar
+            dirección</button>
+          <button id="closeMapModalInline"
+            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold shadow hover:bg-gray-400 transition">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    // Sistema de filtros
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const storeCards = document.querySelectorAll('.store-card');
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remover clase active y resetear estilos de todos los botones
+        filterButtons.forEach(btn => {
+          btn.classList.remove('active');
+          btn.classList.remove('bg-turquesa', 'text-white');
+          btn.classList.add('bg-gray-200', 'text-gray-700');
+        });
+        // Agregar clase active al botón clickeado
+        button.classList.add('active');
+        button.classList.remove('bg-gray-200', 'text-gray-700');
+        button.classList.add('bg-turquesa', 'text-white');
+
+        const filter = button.getAttribute('data-filter');
+
+        storeCards.forEach(card => {
+          const especies = card.getAttribute('data-especies');
+
+          if (filter === 'todas' || especies.includes(filter)) {
+            card.style.display = 'block';
+            card.style.opacity = '0';
+            setTimeout(() => {
+              card.style.opacity = '1';
+            }, 100);
+          } else {
+            card.style.opacity = '0';
+            setTimeout(() => {
+              card.style.display = 'none';
+            }, 300);
+          }
+        });
+      });
+    });
+
+    // Hacer clic en cualquier carta de tienda lleva a /tienda/catalogo/
+    storeCards.forEach(card => {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', function (e) {
+        // Evitar que el click en el botón de Google Maps dispare la redirección
+        if (e.target.closest('button')) return;
+        window.location.href = '/tienda/catalogo/';
+      });
+    });
+
+    // Funcionalidad para botones de Google Maps
+    document.querySelectorAll('button').forEach(button => {
+      if (button.textContent.includes('Google Maps')) {
+        button.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const tienda = this.closest('.store-card').querySelector('h3').textContent;
+          const ubicacion = this.closest('.store-card').querySelector('p').textContent;
+          alert(`🗺️ Abriendo ${tienda} en Google Maps\nUbicación: ${ubicacion}`);
+        });
+      }
+    });
+
+    // Modal de mapa
+    const mapModal = document.getElementById('mapModal');
+    const leafletMapDiv = document.getElementById('leafletMap');
+    let leafletMap = null;
+    let leafletMarkers = [];
+    let leafletRoute = null;
+
+    function showLeafletMap(userLat, userLon, destLat, destLon, routeGeoJson) {
+      // Inicializar el mapa solo una vez
+      if (!leafletMap) {
+        leafletMap = L.map('leafletMap').setView([destLat, destLon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap'
+        }).addTo(leafletMap);
+      } else {
+        leafletMap.setView([destLat, destLon], 13);
+        leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+        leafletMarkers = [];
+        if (leafletRoute) {
+          leafletMap.removeLayer(leafletRoute);
+          leafletRoute = null;
+        }
+      }
+      // Marcador destino
+      const destMarker = L.marker([destLat, destLon]).addTo(leafletMap);
+      leafletMarkers.push(destMarker);
+      // Marcador usuario
+      if (userLat && userLon) {
+        const userMarker = L.marker([userLat, userLon], { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32, 32] }) }).addTo(leafletMap);
+        leafletMarkers.push(userMarker);
+      }
+      // Dibujar ruta realista si existe
+      if (routeGeoJson) {
+        leafletRoute = L.geoJSON(routeGeoJson, { style: { color: 'turquoise', weight: 4, opacity: 0.7 } }).addTo(leafletMap);
+        leafletMap.fitBounds(L.geoJSON(routeGeoJson).getBounds(), { padding: [40, 40] });
+      }
+    }
+
+    let lastCoords = '';
+    let lastUserLat = null;
+    let lastUserLon = null;
+    let lastDestLat = null;
+    let lastDestLon = null;
+
+
+
+
+    document.querySelectorAll('.ver-mapa-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const coords = this.getAttribute('data-coords');
+        lastCoords = coords;
+        // Limpiar cualquier instancia previa de Leaflet y Routing Machine
+        if (leafletMap) {
+          leafletMap.remove();
+          leafletMap = null;
+        }
+        leafletMarkers = [];
+        leafletRoute = null;
+        if (window._routingControl) {
+          window._routingControl.remove();
+          window._routingControl = null;
+        }
+        // No recrear el div, solo reutilizarlo
+        if (coords) {
+          const [destLat, destLon] = coords.split(',');
+          lastDestLat = destLat;
+          lastDestLon = destLon;
+          showLeafletMap(null, null, lastDestLat, lastDestLon, false);
+          mapModal.classList.remove('hidden');
+          setTimeout(() => {
+            if (leafletMap) leafletMap.invalidateSize();
+          }, 300);
+        }
+      });
+    });
+
+
+    closeMapModal.addEventListener('click', function () {
       mapModal.classList.add('hidden');
       leafletMapDiv.innerHTML = '';
       if (leafletMap) {
@@ -17,463 +352,125 @@ document.addEventListener('DOMContentLoaded', function() {
         window._routingControl = null;
       }
     });
-  }
 
-  // Cerrar modal al hacer clic fuera de la caja blanca
-  var modal = document.getElementById('mapModal');
-  var mapDiv = document.getElementById('leafletMap');
-  if (modal) {
-    modal.addEventListener('mousedown', function(e) {
-      // Solo cerrar si el click fue en el fondo oscuro, no en la caja blanca
-      if (e.target === modal) {
-        modal.classList.add('hidden');
-        mapDiv.innerHTML = '<div id="leafletMap" class="w-full h-96 min-h-[400px] rounded-xl border-2 border-turquesa mb-4"></div>';
-        if (window.leafletMap) {
-          window.leafletMap.remove();
-          window.leafletMap = null;
+    openMapAddress.addEventListener('click', function () {
+      // Al presionar 'Mostrar dirección', usar Leaflet Routing Machine para ruta realista y datos
+      if (lastDestLat && lastDestLon) {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function (position) {
+            const userLat = position.coords.latitude;
+            const userLon = position.coords.longitude;
+            showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
+            // Usar Leaflet Routing Machine
+            if (leafletMap) {
+              if (window._routingControl) {
+                window._routingControl.remove();
+                window._routingControl = null;
+              }
+              window._routingControl = L.Routing.control({
+                waypoints: [
+                  L.latLng(userLat, userLon),
+                  L.latLng(lastDestLat, lastDestLon)
+                ],
+                routeWhileDragging: false,
+                show: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: true,
+                createMarker: function (i, wp, nWps) {
+                  if (i === 0) {
+                    return L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32, 32] }) }).bindPopup('Tu ubicación');
+                  } else {
+                    return L.marker(wp.latLng).bindPopup('Destino');
+                  }
+                },
+                // Ocultar instrucciones visuales
+                showAlternatives: false,
+                routeDragInterval: 0,
+                collapsible: true,
+                createWaypoints: false,
+                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+                itineraryFormatter: null,
+                formatter: null,
+                autoRoute: true,
+                // Eliminar el panel de instrucciones visual
+                show: false,
+                // Eliminar el contenedor de instrucciones si aparece
+                container: document.createElement('div')
+              }).addTo(leafletMap);
+              window._routingControl.on('routesfound', function (e) {
+                var route = e.routes[0];
+                var km = (route.summary.totalDistance / 1000).toFixed(2);
+                var min = Math.ceil(route.summary.totalTime / 60);
+                document.querySelectorAll('.modal-distance').forEach(function (el) {
+                  el.textContent = km + ' km';
+                });
+                document.querySelectorAll('.modal-duration').forEach(function (el) {
+                  el.textContent = min + ' minutos';
+                });
+              });
+            }
+          }, function () {
+            showLeafletMap(null, null, lastDestLat, lastDestLon, null);
+            document.querySelectorAll('.modal-distance').forEach(function (el) {
+              el.textContent = 'No disponible';
+            });
+            document.querySelectorAll('.modal-duration').forEach(function (el) {
+              el.textContent = 'No disponible';
+            });
+          });
+        } else {
+          showLeafletMap(null, null, lastDestLat, lastDestLon, null);
+          document.querySelectorAll('.modal-distance').forEach(function (el) {
+            el.textContent = 'No disponible';
+          });
+          document.querySelectorAll('.modal-duration').forEach(function (el) {
+            el.textContent = 'No disponible';
+          });
         }
-        window.leafletMarkers = [];
-        window.leafletRoute = null;
+      }
+    });
+
+
+    function showLeafletMap(userLat, userLon, destLat, destLon, routeFeature) {
+      if (!leafletMap) {
+        leafletMap = L.map('leafletMap').setView([destLat, destLon], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap'
+        }).addTo(leafletMap);
+      } else {
+        leafletMap.setView([destLat, destLon], 15);
+        leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+        leafletMarkers = [];
+        if (leafletRoute) {
+          leafletMap.removeLayer(leafletRoute);
+          leafletRoute = null;
+        }
         if (window._routingControl) {
           window._routingControl.remove();
           window._routingControl = null;
         }
       }
-    });
-  }
-});
-</script>
-<!-- Botón Volver fijo -->
-    <a href="index.html" onclick="if(history.length>1){history.back(); return false;}" class="fixed top-6 left-6 z-50 bg-turquesa hover:bg-turquesa/80 text-white px-5 py-2 rounded-full shadow-lg font-semibold flex items-center gap-2 transition-all" style="text-decoration:none;">
-        <span class="text-lg">&#8592;</span> Volver
-    </a>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicios para Mascotas - PetAdopt</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'mint': '#98E4D6',
-                        'light-blue': '#87CEEB',
-                        'soft-mint': '#E8F8F5',
-                        'turquesa': '#40E0D0',
-                        'verde-menta': '#98E4D6',
-                        'azul-claro': '#87CEEB'
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-  /* Ocultar el panel de instrucciones de Leaflet Routing Machine */
-  .leaflet-routing-container {
-    display: none !important;
-  }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #E8F8F5 0%, #F0F9FF 50%, #E0F2F1 100%);
-        }
-        .card-shadow {
-            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.15);
-        }
-        .gradient-border {
-            background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #98E4D6, #87CEEB) border-box;
-            border: 2px solid transparent;
-            border-radius: 2rem;
-        }
-        .store-card {
-            transition: all 0.3s ease;
-        }
-        .store-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.18);
-        }
-        .inner-card {
-            background: #fff;
-            border-radius: 2rem;
-            box-shadow: 0 2px 8px rgba(152, 228, 214, 0.08);
-        }
-    </style>
-
-    <div class="max-w-7xl mx-auto p-4">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">Encuentra tu tienda ideal</h1>
-            <p class="text-xl text-gray-600">Filtra por especie y descubre las mejores tiendas especializadas</p>
-        </div>
-
-        <!-- Filtros -->
-       <!-- Filtros -->
-            <div class="bg-white rounded-3xl shadow-xl p-6 mb-16">
-                <div class="flex flex-wrap gap-3 justify-center">
-                    <button class="filter-btn bg-turquesa text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="todas">
-                        🌟 Todas las tiendas
-                    </button>
-                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="perros">
-                        🐕 Perros
-                    </button>
-                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="gatos">
-                        🐱 Gatos
-                    </button>
-                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="aves">
-                        🐦 Aves
-                    </button>
-                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="peces">
-                        🐠 Peces
-                    </button>
-                    <button class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105" data-filter="exoticos">
-                        🦎 Exóticos
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Tiendas Section -->
-    <section class="pb-20">
-    <div id="tiendas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto justify-center h-full">
-  {% for store in stores %}
-        <div class="gradient-border store-card max-w-[340px] h-full flex flex-col" data-especies="todas">
-            <div class="inner-card p-8 flex flex-col justify-between h-full">
-                        <div class="text-center mb-6">
-                            <div class="w-24 h-24 bg-gradient-to-r from-turquesa to-azul-claro rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
-                                <img src="{{ store.photo_url|default:'https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg' }}" alt="Perfil tienda" class="object-cover w-full h-full">
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ store.name }}</h3>
-                            <p class="text-turquesa font-semibold">{{ store.owner }}</p>
-                        </div>
-                        <div class="space-y-4 mb-8">
-                            <div class="bg-gradient-to-r from-turquesa/10 to-azul-claro/10 p-4 rounded-xl">
-                                <h4 class="font-semibold text-gray-700 mb-2">📍 Ubicación</h4>
-                                <p class="text-gray-600">{{ store.location }}</p>
-                                <p class="text-sm text-gray-500">{{ store.created_at|date:'d M Y H:i' }}</p>
-                            </div>
-                            <div class="bg-gradient-to-r from-verde-menta/10 to-turquesa/10 p-4 rounded-xl">
-                                <h4 class="font-semibold text-gray-700 mb-2">ℹ️ Información</h4>
-                                <p class="text-gray-600 text-sm">{{ store.description }}</p>
-                            </div>
-                        </div>
-                        <a href="#" class="ver-mapa-btn w-full block py-4 bg-gradient-to-r from-turquesa to-azul-claro text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-center" data-coords="{{ store.coordinates }}">
-                            Ver en mapa 📍
-                        </a>
-                    </div>
-                </div>
-    {% empty %}
-    <div class="col-span-3 text-center py-12">
-      <h3 class="text-2xl font-bold text-gray-500">No hay tiendas registradas.</h3>
-    </div>
-  {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    <!-- Leaflet CSS y JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-
-    <!-- Modal para el mapa -->
-<div id="mapModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl p-4 relative w-full max-w-2xl h-[500px] flex flex-col">
-    <button id="closeMapModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
-    <div id="leafletMap" class="w-full h-96 min-h-[400px] rounded-xl border-2 border-turquesa mb-4"></div>
-    <div class="flex flex-col md:flex-row justify-between items-center mt-2">
-      <div class="flex gap-4 items-center">
-        <span class="font-semibold text-gray-700">Distancia:</span>
-        <span class="modal-distance text-turquesa font-bold"></span>
-        <span class="font-semibold text-gray-700">Duración:</span>
-        <span class="modal-duration text-turquesa font-bold"></span>
-      </div>
-      <div class="flex gap-2 justify-end w-full md:w-auto mt-4 md:mt-0">
-        <button id="openMapAddress" class="bg-turquesa text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-turquesa/80 transition">Mostrar dirección</button>
-        <button id="closeMapModalInline" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold shadow hover:bg-gray-400 transition">Cerrar</button>
-      </div>
-    </div>
-    </div>
-  </div>
-</div>
-
-<script>
-        // Sistema de filtros
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const storeCards = document.querySelectorAll('.store-card');
-
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Remover clase active y resetear estilos de todos los botones
-                filterButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.classList.remove('bg-turquesa', 'text-white');
-                    btn.classList.add('bg-gray-200', 'text-gray-700');
-                });
-                // Agregar clase active al botón clickeado
-                button.classList.add('active');
-                button.classList.remove('bg-gray-200', 'text-gray-700');
-                button.classList.add('bg-turquesa', 'text-white');
-
-                const filter = button.getAttribute('data-filter');
-
-                storeCards.forEach(card => {
-                    const especies = card.getAttribute('data-especies');
-                    
-                    if (filter === 'todas' || especies.includes(filter)) {
-                        card.style.display = 'block';
-                        card.style.opacity = '0';
-                        setTimeout(() => {
-                            card.style.opacity = '1';
-                        }, 100);
-                    } else {
-                        card.style.opacity = '0';
-                        setTimeout(() => {
-                            card.style.display = 'none';
-                        }, 300);
-                    }
-                });
-            });
-        });
-
-        // Hacer clic en cualquier carta de tienda lleva a /tienda/catalogo/
-        storeCards.forEach(card => {
-            card.style.cursor = 'pointer';
-            card.addEventListener('click', function(e) {
-                // Evitar que el click en el botón de Google Maps dispare la redirección
-                if (e.target.closest('button')) return;
-                window.location.href = '/tienda/catalogo/';
-            });
-        });
-
-        // Funcionalidad para botones de Google Maps
-        document.querySelectorAll('button').forEach(button => {
-            if (button.textContent.includes('Google Maps')) {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const tienda = this.closest('.store-card').querySelector('h3').textContent;
-                    const ubicacion = this.closest('.store-card').querySelector('p').textContent;
-                    alert(`🗺️ Abriendo ${tienda} en Google Maps\nUbicación: ${ubicacion}`);
-                });
-            }
-        });
-
-        // Modal de mapa
-const mapModal = document.getElementById('mapModal');
-const leafletMapDiv = document.getElementById('leafletMap');
-let leafletMap = null;
-let leafletMarkers = [];
-let leafletRoute = null;
-
-function showLeafletMap(userLat, userLon, destLat, destLon, routeGeoJson) {
-  // Inicializar el mapa solo una vez
-  if (!leafletMap) {
-    leafletMap = L.map('leafletMap').setView([destLat, destLon], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(leafletMap);
-  } else {
-    leafletMap.setView([destLat, destLon], 13);
-    leafletMarkers.forEach(m => leafletMap.removeLayer(m));
-    leafletMarkers = [];
-    if (leafletRoute) {
-      leafletMap.removeLayer(leafletRoute);
-      leafletRoute = null;
-    }
-  }
-  // Marcador destino
-  const destMarker = L.marker([destLat, destLon]).addTo(leafletMap);
-  leafletMarkers.push(destMarker);
-  // Marcador usuario
-  if (userLat && userLon) {
-    const userMarker = L.marker([userLat, userLon], {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32,32]})}).addTo(leafletMap);
-    leafletMarkers.push(userMarker);
-  }
-  // Dibujar ruta realista si existe
-  if (routeGeoJson) {
-    leafletRoute = L.geoJSON(routeGeoJson, {style: {color: 'turquoise', weight: 4, opacity: 0.7}}).addTo(leafletMap);
-    leafletMap.fitBounds(L.geoJSON(routeGeoJson).getBounds(), {padding: [40,40]});
-  }
-}
-
-let lastCoords = '';
-let lastUserLat = null;
-let lastUserLon = null;
-let lastDestLat = null;
-let lastDestLon = null;
-
-
-
-
-document.querySelectorAll('.ver-mapa-btn').forEach(btn => {
-  btn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    const coords = this.getAttribute('data-coords');
-    lastCoords = coords;
-    // Limpiar cualquier instancia previa de Leaflet y Routing Machine
-    if (leafletMap) {
-      leafletMap.remove();
-      leafletMap = null;
-    }
-    leafletMarkers = [];
-    leafletRoute = null;
-    if (window._routingControl) {
-      window._routingControl.remove();
-      window._routingControl = null;
-    }
-    // No recrear el div, solo reutilizarlo
-    if (coords) {
-      const [destLat, destLon] = coords.split(',');
-      lastDestLat = destLat;
-      lastDestLon = destLon;
-      showLeafletMap(null, null, lastDestLat, lastDestLon, false);
-      mapModal.classList.remove('hidden');
-      setTimeout(() => {
-        if (leafletMap) leafletMap.invalidateSize();
-      }, 300);
-    }
-  });
-});
-
-
-closeMapModal.addEventListener('click', function() {
-  mapModal.classList.add('hidden');
-  leafletMapDiv.innerHTML = '';
-  if (leafletMap) {
-    leafletMap.remove();
-    leafletMap = null;
-  }
-  leafletMarkers = [];
-  leafletRoute = null;
-  if (window._routingControl) {
-    window._routingControl.remove();
-    window._routingControl = null;
-  }
-});
-
-openMapAddress.addEventListener('click', function() {
-  // Al presionar 'Mostrar dirección', usar Leaflet Routing Machine para ruta realista y datos
-  if (lastDestLat && lastDestLon) {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
-        showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
-        // Usar Leaflet Routing Machine
-        if (leafletMap) {
-          if (window._routingControl) {
-            window._routingControl.remove();
-            window._routingControl = null;
-          }
-          window._routingControl = L.Routing.control({
-            waypoints: [
-              L.latLng(userLat, userLon),
-              L.latLng(lastDestLat, lastDestLon)
-            ],
-            routeWhileDragging: false,
-            show: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true,
-            createMarker: function(i, wp, nWps) {
-              if (i === 0) {
-                return L.marker(wp.latLng, {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32,32]})}).bindPopup('Tu ubicación');
-              } else {
-                return L.marker(wp.latLng).bindPopup('Destino');
-              }
-            },
-            // Ocultar instrucciones visuales
-            showAlternatives: false,
-            routeDragInterval: 0,
-            collapsible: true,
-            createWaypoints: false,
-            router: L.Routing.osrmv1({serviceUrl: 'https://router.project-osrm.org/route/v1'}),
-            itineraryFormatter: null,
-            formatter: null,
-            autoRoute: true,
-            // Eliminar el panel de instrucciones visual
-            show: false,
-            // Eliminar el contenedor de instrucciones si aparece
-            container: document.createElement('div')
-          }).addTo(leafletMap);
-          window._routingControl.on('routesfound', function(e) {
-            var route = e.routes[0];
-            var km = (route.summary.totalDistance / 1000).toFixed(2);
-            var min = Math.ceil(route.summary.totalTime / 60);
-            document.querySelectorAll('.modal-distance').forEach(function(el){
-              el.textContent = km + ' km';
-            });
-            document.querySelectorAll('.modal-duration').forEach(function(el){
-              el.textContent = min + ' minutos';
-            });
-          });
-        }
-      }, function() {
-        showLeafletMap(null, null, lastDestLat, lastDestLon, null);
-        document.querySelectorAll('.modal-distance').forEach(function(el){
-          el.textContent = 'No disponible';
-        });
-        document.querySelectorAll('.modal-duration').forEach(function(el){
-          el.textContent = 'No disponible';
-        });
+      // Marcador destino
+      const destMarker = L.marker([parseFloat(destLat), parseFloat(destLon)]).addTo(leafletMap);
+      leafletMarkers.push(destMarker);
+      // Marcador usuario
+      if (userLat && userLon) {
+        const userMarker = L.marker([parseFloat(userLat), parseFloat(userLon)], { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32, 32] }) }).addTo(leafletMap);
+        leafletMarkers.push(userMarker);
+      }
+      // Si solo se muestra el mapa, limpiar distancia/tiempo
+      document.querySelectorAll('.modal-distance').forEach(function (el) {
+        el.textContent = '';
       });
-    } else {
-      showLeafletMap(null, null, lastDestLat, lastDestLon, null);
-      document.querySelectorAll('.modal-distance').forEach(function(el){
-        el.textContent = 'No disponible';
-      });
-      document.querySelectorAll('.modal-duration').forEach(function(el){
-        el.textContent = 'No disponible';
+      document.querySelectorAll('.modal-duration').forEach(function (el) {
+        el.textContent = '';
       });
     }
-  }
-});
+  </script>
+  <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'98144066a56c7487',t:'MTc1ODIzNDI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+  </body>
 
-
-function showLeafletMap(userLat, userLon, destLat, destLon, routeFeature) {
-  if (!leafletMap) {
-    leafletMap = L.map('leafletMap').setView([destLat, destLon], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(leafletMap);
-  } else {
-    leafletMap.setView([destLat, destLon], 15);
-    leafletMarkers.forEach(m => leafletMap.removeLayer(m));
-    leafletMarkers = [];
-    if (leafletRoute) {
-      leafletMap.removeLayer(leafletRoute);
-      leafletRoute = null;
-    }
-    if (window._routingControl) {
-      window._routingControl.remove();
-      window._routingControl = null;
-    }
-  }
-  // Marcador destino
-  const destMarker = L.marker([parseFloat(destLat), parseFloat(destLon)]).addTo(leafletMap);
-  leafletMarkers.push(destMarker);
-  // Marcador usuario
-  if (userLat && userLon) {
-    const userMarker = L.marker([parseFloat(userLat), parseFloat(userLon)], {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32,32]})}).addTo(leafletMap);
-    leafletMarkers.push(userMarker);
-  }
-  // Si solo se muestra el mapa, limpiar distancia/tiempo
-  document.querySelectorAll('.modal-distance').forEach(function(el){
-    el.textContent = '';
-  });
-  document.querySelectorAll('.modal-duration').forEach(function(el){
-    el.textContent = '';
-  });
-}
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98144066a56c7487',t:'MTc1ODIzNDI0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+{% endblock content %}
