@@ -23,6 +23,6 @@ urlpatterns = [
     path('mascota/', include('mascota.urls')),
     path('usuario/', include('usuarios.urls')),
     # path('adopcion/', include('adopcion.urls')),
-    # path('tienda/', include('tienda.urls')),
+    path('tienda/', include('tienda.urls')),
     path('salud/', include('salud.urls')),
 ]
