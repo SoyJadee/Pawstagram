@@ -53,13 +53,8 @@
         <div
           class="w-32 h-32 turquoise-gradient rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg"
         >
-          M
+          {{ usuario.user.first_name|slice:":1" }}{{ usuario.user.last_name|slice:":1" }}
         </div>
-        <button
-          class="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all"
-        >
-          <i class="fas fa-camera text-turquoise"></i>
-        </button>
       </div>
 
       <!-- User Info -->
