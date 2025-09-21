@@ -24,5 +24,5 @@ urlpatterns = [
     path('usuario/', include('usuarios.urls')),
     # path('adopcion/', include('adopcion.urls')),
     # path('tienda/', include('tienda.urls')),
-    # path('sales/', include('salud.urls')),
+    path('salud/', include('salud.urls')),
 ]

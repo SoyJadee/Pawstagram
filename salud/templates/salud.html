@@ -1,0 +1,841 @@
+ <!-- Modal de contacto -->
+    <div id="contactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">📞</div>
+                <h3 id="contactName" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <p class="text-gray-600">Información de contacto</p>
+            </div>
+            <div class="space-y-4 mb-6">
+                <div class="bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20 flex items-center gap-3">
+                    <span class="font-semibold text-gray-600">Teléfono:</span>
+                    <span id="contactPhone" class="text-gray-800"></span>
+                </div>
+                <div class="bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20 flex items-center gap-3">
+                    <span class="font-semibold text-gray-600">Email:</span>
+                    <span id="contactEmail" class="text-gray-800"></span>
+                </div>
+            </div>
+            <div class="flex justify-center mt-8 mb-4">
+                <button onclick="closeContactModal()" class="w-1/2 max-w-xs bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors shadow">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios para Mascotas - PetAdopt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind y ubicación del usuario
+        window._userLocation = {lat: null, lon: null};
+        function initUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    window._userLocation.lat = position.coords.latitude;
+                    window._userLocation.lon = position.coords.longitude;
+                }, function() {
+                    window._userLocation.lat = null;
+                    window._userLocation.lon = null;
+                });
+            }
+        }
+        document.addEventListener('DOMContentLoaded', initUserLocation);
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mint': '#98E4D6',
+                        'light-blue': '#87CEEB',
+                        'soft-mint': '#E8F8F5'
+                    }
+                }
+            }
+        }
+        </script>
+        <script src="{% static 'img/js/Script_salud.js' %}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'img/css/salud.css' %}">
+    <script src="{% static 'img/js/Script_salud.js' %}"></script>
+    <script src="{% static 'img/js/mapa.js' %}"></script>
+    <script src="{% static 'img/js/comentarios.js' %}"></script>
+    <script src="{% static 'img/js/ui.js' %}"></script>
+</head>
+<body class="gradient-bg min-h-screen pt-20">
+    <!-- Barra de navegación eliminada -->
+    <script>
+        window.veterinariasData = [
+            {% for veterinaria in veterinarias %}
+            {
+                id: {{ veterinaria.id }},
+                name: `{{ veterinaria.name|escapejs }}`,
+                address: `{{ veterinaria.address|escapejs }}`,
+                coords: {{ veterinaria.coords|safe }},
+                type: `{{ veterinaria.type|escapejs }}`,
+                email: `{{ veterinaria.email|escapejs }}`,
+                services: `{{ veterinaria.services|escapejs }}`,
+                description: `{{ veterinaria.description|escapejs }}`,
+                consultprice: `{{ veterinaria.consultprice|default_if_none:'' }}`
+            },
+            {% endfor %}
+        ];
+    </script>
+
+    <div class="max-w-7xl mx-auto p-4">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Servicios para Mascotas</h1>
+            <p class="text-xl text-gray-600">Encuentra los mejores veterinarios, peluquerías y spas cerca de ti</p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-3xl card-shadow p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="filterServices('all')" class="filter-btn bg-mint text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🏥 Todos
+                    </button>
+                    <button onclick="filterServices('veterinaria')" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🩺 Veterinarios
+                    </button>
+                    <button onclick="filterServices('peluqueria')" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        ✂️ Peluquerías
+                    </button>
+                    <button onclick="filterServices('spa')" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105">
+                        🛁 Spa & Baño
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-gray-600 font-medium">Distancia:</label>
+                    <select class="bg-soft-mint border-0 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-mint">
+                    <option value="all" selected>Todas</option>
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="20">20 km</option>
+                    <option value="50">50 km</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de servicios reales -->
+        <div id="servicesList" class="space-y-8">
+            {% for veterinaria in veterinarias %}
+            <div class="service-card bg-white rounded-3xl card-shadow overflow-hidden" data-type="{{ veterinaria.type }}">
+                <div class="turquoise-accent p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
+                                {% if veterinaria.type == 'veterinaria' %}🩺{% elif veterinaria.type == 'peluqueria' %}✂️{% elif veterinaria.type == 'spa' %}🛁{% endif %}
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">{{ veterinaria.name }}</h3>
+                                <p class="text-white/90">{{ veterinaria.address }}</p>
+                                <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-semibold">
+                                    {% if veterinaria.type == 'veterinaria' %}Veterinaria{% elif veterinaria.type == 'peluqueria' %}Peluquería{% elif veterinaria.type == 'spa' %}Spa{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            {% if veterinaria.estado == 'abierto' %}
+                                <span class="bg-green-500 px-3 py-1 rounded-full text-sm font-medium">Abierto</span>
+                            {% else %}
+                                <span class="bg-red-500 px-3 py-1 rounded-full text-sm font-medium">Cerrado</span>
+                            {% endif %}
+                            <div class="mt-2">
+                                {% if veterinaria.consultprice %}
+                                <div class="mt-2">
+                                    <span class="bg-gradient-to-r from-mint/20 to-mint/10 text-white px-3 py-2 rounded-full text-sm border border-mint/30 font-semibold">
+                                        💰 Desde: {{ veterinaria.consultprice }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                                <!-- Precio eliminado -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
+                        <div class="flex flex-wrap gap-2">
+                            {{ veterinaria.services }}
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-2xl mb-6">
+                        <p class="text-gray-700 leading-relaxed">{{ veterinaria.description }}</p>
+                    </div>
+                    <!-- Botones de acción -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="showContact('{{ veterinaria.name }}', '{{ veterinaria.phone }}', '{{ veterinaria.email }}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
+                        Contactar
+                        </button>
+                        <button onclick="showMap('{{ veterinaria.name }}', '{{ veterinaria.address }}')" class="bg-gradient-to-r from-mint to-light-blue hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                        📍 Ver en mapa
+                        </button>
+                        <button onclick="showComments(this)" data-service-id="{{ veterinaria.id }}" data-service-name="{{ veterinaria.name }}" class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
+                        💬 Comentarios
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+    </div>
+
+    <!-- Modal de mapa -->
+    <div id="mapModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow">
+            <div class="text-center">
+                <div class="text-6xl mb-4">🗺️</div>
+                <h3 id="mapTitle" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <p id="mapAddress" class="text-gray-600 mb-6"></p>
+                
+                <!-- Simulación de mapa -->
+                <div id="realMap" class="rounded-2xl mb-6" style="height: 300px;"></div>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+                <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-mint/10 to-mint/5 p-4 rounded-xl border border-mint/20">
+                        <div class="text-sm text-gray-600 mb-1">Distancia</div>
+                        <div class="font-semibold text-gray-800 modal-distance"></div>
+                    </div>
+                    <div class="bg-gradient-to-br from-light-blue/10 to-light-blue/5 p-4 rounded-xl border border-light-blue/20">
+                        <div class="text-sm text-gray-600 mb-1">Tiempo estimado</div>
+                        <div class="font-semibold text-gray-800 modal-duration"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeMapModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                        Cerrar
+                    </button>
+                    <button onclick="openDirections()" class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        🧭 Abrir direcciones
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de calificación -->
+    <div id="ratingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full card-shadow">
+            <div class="text-center">
+                <div class="text-6xl mb-4">⭐</div>
+                <h3 id="ratingServiceName" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+                <p class="text-gray-600 mb-6">¿Cómo calificarías este servicio?</p>
+                
+                <!-- Estrellas interactivas -->
+                <div class="rating-interactive flex justify-center gap-2 mb-6">
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="1"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="2"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="3"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="4"></i>
+                    <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="5"></i>
+                </div>
+
+                <div class="mb-6">
+                    <textarea id="ratingComment" placeholder="Comparte tu experiencia (opcional)..." class="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:border-mint h-24 resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeRatingModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="submitRating()" class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                        Enviar calificación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de comentarios -->
+    <div id="commentsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">💬</div>
+                <h3 id="commentsServiceName" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <p class="text-gray-600">Comentarios y reseñas</p>
+            </div>
+
+            <!-- Lista de comentarios -->
+            <div class="space-y-4 mb-6"></div>
+
+            <!-- Agregar comentario -->
+            <div class="border-t pt-6">
+                <h4 class="font-semibold text-gray-800 mb-3">Agregar comentario</h4>
+                <div class="space-y-3">
+                    <input type="text" placeholder="Tu nombre" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint">
+                    <textarea placeholder="Comparte tu experiencia..." class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint h-20 resize-none"></textarea>
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600">Tu calificación:</span>
+                        <div class="rating-interactive flex gap-1">
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="1"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="2"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="3"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="4"></i>
+                            <i class="star fas fa-star text-lg text-gray-300 hover:text-yellow-400" data-rating="5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeCommentsModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                    Cerrar
+                </button>
+                <button onclick="submitComment()" class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                    Publicar comentario
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRating = 0;
+
+        function getUserLocation(callback) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    callback(position.coords.latitude, position.coords.longitude);
+                }, function() {
+                    callback(null, null);
+                });
+            } else {
+                callback(null, null);
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // Haversine formula
+            function toRad(x) { return x * Math.PI / 180; }
+            var R = 6371; // km
+            var dLat = toRad(lat2 - lat1);
+            var dLon = toRad(lon2 - lon1);
+            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function filterServices(type) {
+            const cards = document.querySelectorAll('.service-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            const distanceSelect = document.querySelector('select');
+            const maxDistance = distanceSelect.value;
+
+            // Actualizar botones
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-mint', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+
+            // Activar solo el botón seleccionado
+            buttons.forEach(btn => {
+                if ((type === 'all' && btn.textContent.includes('Todos')) ||
+                    ((type === 'veterinaria' || type === 'veterinario') && btn.textContent.includes('Veterinarios')) ||
+                    (type === 'peluqueria' && btn.textContent.includes('Peluquerías')) ||
+                    (type === 'spa' && btn.textContent.includes('Spa'))) {
+                    btn.classList.remove('bg-gray-200', 'text-gray-700');
+                    btn.classList.add('bg-mint', 'text-white');
+                }
+            });
+
+            const userLat = window._userLocation.lat;
+            const userLon = window._userLocation.lon;
+            cards.forEach((card) => {
+                let cardType = card.dataset.type;
+                let showType = (type === 'all') || (type === cardType) || (type === 'veterinaria' && cardType === 'veterinaria');
+                let showDistance = true;
+                let cardName = card.querySelector('h3') ? card.querySelector('h3').textContent.trim() : null;
+                let v = null;
+                if (cardName && window.veterinariasData) {
+                    v = window.veterinariasData.find(obj => obj.name === cardName);
+                }
+                if (maxDistance !== 'all') {
+                    if (userLat !== null && userLon !== null && v && v.coords) {
+                        let lat = v.coords.lat;
+                        let lon = v.coords.lon;
+                        let dist = calculateDistance(userLat, userLon, lat, lon);
+                        showDistance = dist <= parseInt(maxDistance);
+                    } else {
+                        showDistance = false; // Si no hay coordenadas, no mostrar en filtro por distancia
+                    }
+                }
+                card.style.display = (showType && showDistance) ? 'block' : 'none';
+            });
+        }
+
+        // Actualizar filtro al cambiar distancia
+        document.querySelector('select').addEventListener('change', function() {
+            filterServices('all');
+        });
+
+        function showContact(name, phone, email) {
+            document.getElementById('contactName').textContent = name;
+            document.getElementById('contactPhone').innerHTML = phone ? `<span>${phone}</span>` : '<span class="text-gray-400">No disponible</span>';
+            document.getElementById('contactEmail').innerHTML = email ? `<span>${email}</span>` : '<span class="text-gray-400">No disponible</span>';
+            document.getElementById('contactModal').classList.remove('hidden');
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.add('hidden');
+        }
+
+        function callNow() {
+            const phone = document.getElementById('contactPhone').textContent;
+            alert(`Llamando a ${phone}...`);
+            closeContactModal();
+        }
+
+        function showMap(title, address) {
+            document.getElementById('mapTitle').textContent = title;
+            document.getElementById('mapAddress').textContent = address;
+            document.getElementById('mapModal').classList.remove('hidden');
+
+            // Buscar veterinaria por nombre en el array global (ignorando mayúsculas y espacios)
+            let vet = null;
+            function normalize(str) {
+                return str.replace(/\s+/g, '').toLowerCase();
+            }
+            if (window.veterinariasData && window.veterinariasData.length > 0) {
+                let titleNorm = normalize(title);
+                for (let i = 0; i < window.veterinariasData.length; i++) {
+                    let v = window.veterinariasData[i];
+                    if (normalize(v.name) === titleNorm) {
+                        vet = v;
+                        break;
+                    }
+                }
+                if (!vet) {
+                    vet = window.veterinariasData[0];
+                }
+            }
+                setTimeout(function() {
+                    const mapDiv = document.getElementById('realMap');
+                    if (mapDiv) {
+                        if (window._leafletMapInstance) {
+                            window._leafletMapInstance.remove();
+                            window._leafletMapInstance = null;
+                        }
+                        mapDiv.innerHTML = "";
+                        let lat = 10.4806, lon = -66.9036;
+                        if (vet && vet.coords && typeof vet.coords.lat === 'number' && typeof vet.coords.lon === 'number') {
+                            lat = vet.coords.lat;
+                            lon = vet.coords.lon;
+                        }
+                        window._leafletMapInstance = L.map('realMap').setView([lat, lon], 15);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© OpenStreetMap contributors'
+                        }).addTo(window._leafletMapInstance);
+                        L.marker([lat, lon]).addTo(window._leafletMapInstance)
+                            .bindPopup(title)
+                            .openPopup();
+                        // Ocultar distancia y tiempo estimado al abrir el modal
+                        document.querySelectorAll('.modal-distance').forEach(function(el){
+                            el.textContent = '';
+                        });
+                        document.querySelectorAll('.modal-duration').forEach(function(el){
+                            el.textContent = '';
+                        });
+                        // Guardar destino para usar en abrir direcciones
+                        window._mapDestino = {lat: lat, lon: lon, title: title};
+                    }
+                }, 200);
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.add('hidden');
+            // Solución: destruir instancia previa de Leaflet al cerrar el modal
+            if (window._leafletMapInstance) {
+                window._leafletMapInstance.remove();
+                window._leafletMapInstance = null;
+            }
+        }
+
+        function openDirections() {
+            const address = document.getElementById('mapAddress').textContent;
+            // Trazar ruta desde ubicación actual hasta el destino
+            if (!window._mapDestino) return;
+            const lat = window._mapDestino.lat;
+            const lon = window._mapDestino.lon;
+            const title = window._mapDestino.title;
+            if (window._leafletMapInstance) {
+                window._leafletMapInstance.eachLayer(function(layer){
+                    if (layer instanceof L.Marker) {
+                        window._leafletMapInstance.removeLayer(layer);
+                    }
+                });
+            }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLat = position.coords.latitude;
+                    var userLon = position.coords.longitude;
+                    var routingControl = L.Routing.control({
+                        waypoints: [
+                            L.latLng(userLat, userLon),
+                            L.latLng(lat, lon)
+                        ],
+                        routeWhileDragging: false,
+                        show: false,
+                        addWaypoints: false,
+                        draggableWaypoints: false,
+                        fitSelectedRoutes: true,
+                        createMarker: function(i, wp, nWps) {
+                            if (i === 0) {
+                                return L.marker(wp.latLng, {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32,32]})}).bindPopup('Tu ubicación');
+                            } else {
+                                return L.marker(wp.latLng).bindPopup(title);
+                            }
+                        }
+                    }).addTo(window._leafletMapInstance);
+                    routingControl.on('routesfound', function(e) {
+                        var route = e.routes[0];
+                        var km = (route.summary.totalDistance / 1000).toFixed(2);
+                        var min = Math.ceil(route.summary.totalTime / 60);
+                        document.querySelectorAll('.modal-distance').forEach(function(el){
+                            el.textContent = km + ' km';
+                        });
+                        document.querySelectorAll('.modal-duration').forEach(function(el){
+                            el.textContent = min + ' minutos';
+                        });
+                    });
+                }, function(error) {
+                    document.querySelectorAll('.modal-distance').forEach(function(el){
+                        el.textContent = 'No disponible';
+                    });
+                    document.querySelectorAll('.modal-duration').forEach(function(el){
+                        el.textContent = 'No disponible';
+                    });
+                });
+            } else {
+                document.querySelectorAll('.modal-distance').forEach(function(el){
+                    el.textContent = 'No disponible';
+                });
+                document.querySelectorAll('.modal-duration').forEach(function(el){
+                    el.textContent = 'No disponible';
+                });
+            }
+        }
+
+        function showRating(serviceName) {
+            document.getElementById('ratingServiceName').textContent = serviceName;
+            document.getElementById('ratingModal').classList.remove('hidden');
+            resetRatingStars();
+        }
+
+        function closeRatingModal() {
+            document.getElementById('ratingModal').classList.add('hidden');
+            currentRating = 0;
+            document.getElementById('ratingComment').value = '';
+        }
+
+        function resetRatingStars() {
+            const stars = document.querySelectorAll('#ratingModal .star');
+            stars.forEach(star => {
+                star.classList.remove('text-yellow-400');
+                star.classList.add('text-gray-300');
+            });
+        }
+
+        function submitRating() {
+            if (currentRating === 0) {
+                alert('Por favor selecciona una calificación');
+                return;
+            }
+            const comment = document.getElementById('ratingComment').value;
+            const serviceName = document.getElementById('ratingServiceName').textContent;
+            alert(`¡Gracias por calificar a ${serviceName} con ${currentRating} estrellas!`);
+            closeRatingModal();
+        }
+
+        function showComments(button) {
+            const serviceName = button.getAttribute('data-service-name');
+            const serviceId = button.getAttribute('data-service-id');
+            const modal = document.getElementById('commentsModal');
+            // Limpiar antes de abrir
+            modal.setAttribute('data-service-id', '');
+            modal.setAttribute('data-service-name', '');
+            // Asignar nuevos valores
+            modal.setAttribute('data-service-id', serviceId);
+            modal.setAttribute('data-service-name', serviceName);
+            document.getElementById('commentsServiceName').textContent = serviceName;
+            // Limpiar comentarios previos y mostrar cargando
+            const lista = modal.querySelector('.space-y-4.mb-6');
+            lista.innerHTML = '<div class="text-center text-gray-400">Cargando comentarios...</div>';
+            // Obtener comentarios reales por AJAX
+            fetch(`/index/obtener-comentarios-salud/?service_id=${serviceId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.comentarios.length === 0) {
+                            lista.innerHTML = '<div class="text-center text-gray-400">No hay comentarios aún.</div>';
+                        } else {
+                            lista.innerHTML = '';
+                            data.comentarios.forEach(c => {
+                                // Unificar formato de fecha/hora
+                                let fechaLocal = '';
+                                try {
+                                    let fechaIso = c.created_at;
+                                    if (fechaIso.endsWith('+00:00')) {
+                                        fechaIso = fechaIso.replace('+00:00', 'Z');
+                                    }
+                                    const d = new Date(fechaIso);
+                                    const ahora = new Date();
+                                    if (
+                                        d.getFullYear() === ahora.getFullYear() &&
+                                        d.getMonth() === ahora.getMonth() &&
+                                        d.getDate() === ahora.getDate()
+                                    ) {
+                                        fechaLocal = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                    } else {
+                                        fechaLocal = d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
+                                    }
+                                } catch { fechaLocal = c.created_at; }
+                                lista.innerHTML += `
+                                    <div class=\"bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20\">
+                                        <div class=\"flex items-start gap-3\">
+                                            <div class=\"w-10 h-10 bg-gradient-to-br from-mint to-light-blue rounded-full flex items-center justify-center text-white font-bold\">
+                                                ${c.user.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div class=\"flex-1\">
+                                                <div class=\"flex items-center gap-2 mb-1\">
+                                                    <span class=\"font-semibold text-gray-800\">${c.user}</span>
+                                                    <div class=\"flex text-yellow-400 text-sm\">
+                                                        ${'<i class=\"fas fa-star\"></i>'.repeat(Math.round(c.rating))}
+                                                        ${'<i class=\"far fa-star\"></i>'.repeat(5 - Math.round(c.rating))}
+                                                    </div>
+                                                </div>
+                                                <p class=\"text-gray-700 text-sm\">${c.comment}</p>
+                                                <div class=\"text-gray-500 text-xs mt-2\">${fechaLocal}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+                    } else {
+                        lista.innerHTML = '<div class="text-center text-red-400">Error al cargar comentarios</div>';
+                    }
+                })
+                .catch(() => {
+                    lista.innerHTML = '<div class="text-center text-red-400">Error de red al cargar comentarios</div>';
+                });
+            modal.classList.remove('hidden');
+        }
+
+        function closeCommentsModal() {
+            const modal = document.getElementById('commentsModal');
+            modal.classList.add('hidden');
+            modal.setAttribute('data-service-id', '');
+            modal.setAttribute('data-service-name', '');
+        }
+
+        function submitComment() {
+            // Obtener los valores del formulario
+            const modal = document.getElementById('commentsModal');
+            const nombre = modal.querySelector('input[type="text"]').value;
+            const comentario = modal.querySelector('textarea').value;
+            let rating = 0;
+            const stars = modal.querySelectorAll('.rating-interactive .star');
+            stars.forEach((star, idx) => {
+                if(star.classList.contains('text-yellow-400')) rating = idx+1;
+            });
+            const serviceId = modal.getAttribute('data-service-id');
+            const serviceName = modal.getAttribute('data-service-name');
+
+            // Validar campos
+            if (!nombre || !comentario || rating === 0) {
+                alert('Por favor completa todos los campos y selecciona una calificación.');
+                return;
+            }
+
+            // CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrf = getCookie('csrftoken');
+            // Enviar datos al backend
+            fetch('/index/guardar-comentario-salud/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrf
+                },
+                body: `user=${encodeURIComponent(nombre)}&comment=${encodeURIComponent(comentario)}&rating=${encodeURIComponent(rating)}&service_id=${encodeURIComponent(serviceId)}&service_name=${encodeURIComponent(serviceName)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Limpiar campos del formulario
+                    modal.querySelector('input[type="text"]').value = '';
+                    modal.querySelector('textarea').value = '';
+                    modal.querySelectorAll('.rating-interactive .star').forEach(star => {
+                        star.classList.remove('text-yellow-400');
+                        star.classList.add('text-gray-300');
+                    });
+                    // Actualizar comentarios en el modal sin cerrarlo
+                    const lista = modal.querySelector('.space-y-4.mb-6');
+                    fetch(`/index/obtener-comentarios-salud/?service_id=${serviceId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (data.comentarios.length === 0) {
+                                    lista.innerHTML = '<div class="text-center text-gray-400">No hay comentarios aún.</div>';
+                                } else {
+                                    lista.innerHTML = '';
+                                    data.comentarios.forEach(c => {
+                                        // Mostrar solo la hora si es del mismo día, si no la fecha
+                                        let fechaLocal = '';
+                                        try {
+                                            // Convertir correctamente la fecha ISO con zona horaria
+                                            let fechaIso = c.created_at;
+                                            // Si termina en +00:00, convertir a formato compatible con Date
+                                            if (fechaIso.endsWith('+00:00')) {
+                                                fechaIso = fechaIso.replace('+00:00', 'Z');
+                                            }
+                                            const d = new Date(fechaIso);
+                                            const ahora = new Date();
+                                            if (
+                                                d.getFullYear() === ahora.getFullYear() &&
+                                                d.getMonth() === ahora.getMonth() &&
+                                                d.getDate() === ahora.getDate()
+                                            ) {
+                                                fechaLocal = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                            } else {
+                                                fechaLocal = d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
+                                            }
+                                        } catch { fechaLocal = c.created_at; }
+                                        lista.innerHTML += `
+                                            <div class=\"bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20\">
+                                                <div class=\"flex items-start gap-3\">
+                                                    <div class=\"w-10 h-10 bg-gradient-to-br from-mint to-light-blue rounded-full flex items-center justify-center text-white font-bold\">
+                                                        ${c.user.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div class=\"flex-1\">
+                                                        <div class=\"flex items-center gap-2 mb-1\">
+                                                            <span class=\"font-semibold text-gray-800\">${c.user}</span>
+                                                            <div class=\"flex text-yellow-400 text-sm\">
+                                                                ${'<i class=\"fas fa-star\"></i>'.repeat(Math.round(c.rating))}
+                                                                ${'<i class=\"far fa-star\"></i>'.repeat(5 - Math.round(c.rating))}
+                                                            </div>
+                                                        </div>
+                                                        <p class=\"text-gray-700 text-sm\">${c.comment}</p>
+                                                        <div class=\"text-gray-500 text-xs mt-2\">${fechaLocal}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    });
+                                }
+                            } else {
+                                lista.innerHTML = '<div class="text-center text-red-400">Error al cargar comentarios</div>';
+                            }
+                        })
+                        .catch(() => {
+                            lista.innerHTML = '<div class="text-center text-red-400">Error de red al cargar comentarios</div>';
+                        });
+                } else {
+                    alert('Error al guardar el comentario: ' + (data.error || 'Intenta de nuevo.'));
+                }
+            })
+            .catch(error => {
+                alert('Error de red al guardar el comentario.');
+            });
+        }
+
+        // Manejo de estrellas interactivas
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('star')) {
+                const rating = parseInt(e.target.dataset.rating);
+                const container = e.target.closest('.rating-interactive');
+                const stars = container.querySelectorAll('.star');
+                
+                // Si es el modal de calificación principal
+                if (container.closest('#ratingModal')) {
+                    currentRating = rating;
+                }
+                
+                // Actualizar estrellas
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('text-gray-300');
+                        star.classList.add('text-yellow-400');
+                    } else {
+                        star.classList.remove('text-yellow-400');
+                        star.classList.add('text-gray-300');
+                    }
+                });
+            }
+        });
+
+        function toggleMobileSearch() {
+            const mobileSearch = document.getElementById('mobileSearch');
+            mobileSearch.classList.toggle('hidden');
+            
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+            
+            if (!mobileSearch.classList.contains('hidden')) {
+                setTimeout(() => {
+                    mobileSearch.querySelector('input').focus();
+                }, 100);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+            
+            const mobileSearch = document.getElementById('mobileSearch');
+            if (!mobileSearch.classList.contains('hidden')) {
+                mobileSearch.classList.add('hidden');
+            }
+        }
+
+        // Cerrar modales al hacer clic fuera
+        document.getElementById('contactModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeContactModal();
+            }
+        });
+
+        document.getElementById('mapModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMapModal();
+            }
+        });
+
+        // Cerrar menús móviles al redimensionar
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                document.getElementById('mobileSearch').classList.add('hidden');
+                document.getElementById('mobileMenu').classList.add('hidden');
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980b0078d6ada4f2',t:'MTc1ODEzNzI1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
