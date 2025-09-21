@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes de Adopción - PetAdopt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mint': '#98E4D6',
+                        'turquoise': '#40E0D0',
+                        'light-mint': '#E8F8F5',
+                        'dark-mint': '#7DD3C0'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #E8F8F5 50%, #F0FDFA 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.1);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.15);
+        }
+        .turquoise-gradient {
+            background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
+        }
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        .input-focus:focus {
+            border-color: #40E0D0;
+            box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+        }
+        .status-pending {
+            background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+        }
+        .status-approved {
+            background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+        }
+        .status-rejected {
+            background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+
+        </div>
+
+        <!-- Applications List -->
+        <div class="space-y-6">
+            <!-- Pet 1: Max -->
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-mint to-turquoise rounded-xl flex items-center justify-center text-2xl">
+                                🐕
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">Max</h3>
+                                <p class="text-gray-600">Golden Retriever • 3 años</p>
+                                <p class="text-sm text-gray-500">📍 Madrid, España</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold mb-2">
+                                3 solicitudes pendientes
+                            </div>
+                            <button onclick="toggleAccordion('max')" class="text-turquoise hover:text-dark-mint font-medium">
+                                <i class="fas fa-chevron-down mr-1"></i>Ver solicitudes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="max-content" class="accordion-content">
+                    <div class="p-6 space-y-4">
+                        <!-- Application 1 -->
+                        <div class="border border-gray-200 rounded-xl p-4 hover-lift">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-turquoise rounded-full flex items-center justify-center text-white font-semibold">
+                                        AC
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Ana Carmen Rodríguez</h4>
+                                        <p class="text-sm text-gray-600">ana.rodriguez@email.com</p>
+                                        <p class="text-sm text-gray-500">📞 +34 612 345 678</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-gray-500">Hace 2 días</span>
+                                </div>
+                            </div>
+                            
+
+                            
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-500">Mensaje para el equipo de adopción</p>
+                                <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                                    "Hola, estoy muy interesada en adoptar a Max. Tengo experiencia con perros grandes y un jardín amplio donde puede correr. Trabajo desde casa, así que podré dedicarle mucho tiempo."
+                                </p>
+                            </div>
+                            
+
+                        </div>
+
+                        <!-- Application 2 -->
+                        <div class="border border-gray-200 rounded-xl p-4 hover-lift">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-turquoise rounded-full flex items-center justify-center text-white font-semibold">
+                                        JM
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">José Manuel García</h4>
+                                        <p class="text-sm text-gray-600">jm.garcia@email.com</p>
+                                        <p class="text-sm text-gray-500">📞 +34 687 123 456</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-gray-500">Hace 1 día</span>
+                                </div>
+                            </div>
+                            
+
+                            
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-500">Mensaje para el equipo de adopción</p>
+                                <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                                    "Me encantaría adoptar a Max. Vivo cerca de varios parques y salgo a correr todas las mañanas. Busco un compañero activo para compartir mis actividades al aire libre."
+                                </p>
+                            </div>
+                            
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet 2: Bella -->
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-turquoise to-mint rounded-xl flex items-center justify-center text-2xl">
+                                🐕
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">Bella</h3>
+                                <p class="text-gray-600">Beagle • 1 año</p>
+                                <p class="text-sm text-gray-500">📍 Sevilla, España</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mb-2">
+                                1 solicitud aprobada
+                            </div>
+                            <button onclick="toggleAccordion('bella')" class="text-turquoise hover:text-dark-mint font-medium">
+                                <i class="fas fa-chevron-down mr-1"></i>Ver solicitudes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="bella-content" class="accordion-content">
+                    <div class="p-6 space-y-4">
+                        <!-- Approved Application -->
+                        <div class="border border-green-200 bg-green-50 rounded-xl p-4">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-turquoise rounded-full flex items-center justify-center text-white font-semibold">
+                                        LF
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Laura Fernández</h4>
+                                        <p class="text-sm text-gray-600">laura.fernandez@email.com</p>
+                                        <p class="text-sm text-gray-500">📞 +34 654 987 321</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-gray-500">Hace 3 días</span>
+                                </div>
+                            </div>
+                            
+
+                            
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-500">Mensaje para el equipo de adopción</p>
+                                <p class="text-sm text-gray-700 bg-white p-3 rounded-lg border">
+                                    "Busco una compañera joven y juguetona. Tengo mucha experiencia con beagles y un patio perfecto para que pueda explorar y jugar."
+                                </p>
+                            </div>
+                            
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet 3: Charlie -->
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-mint to-turquoise rounded-xl flex items-center justify-center text-2xl">
+                                🐕
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">Charlie</h3>
+                                <p class="text-gray-600">Bulldog Francés • 5 años</p>
+                                <p class="text-sm text-gray-500">📍 Bilbao, España</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold mb-2">
+                                2 solicitudes pendientes
+                            </div>
+                            <button onclick="toggleAccordion('charlie')" class="text-turquoise hover:text-dark-mint font-medium">
+                                <i class="fas fa-chevron-down mr-1"></i>Ver solicitudes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="charlie-content" class="accordion-content">
+                    <div class="p-6 space-y-4">
+                        <!-- Application 1 -->
+                        <div class="border border-gray-200 rounded-xl p-4 hover-lift">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-turquoise rounded-full flex items-center justify-center text-white font-semibold">
+                                        MJ
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">María José Ruiz</h4>
+                                        <p class="text-sm text-gray-600">mj.ruiz@email.com</p>
+                                        <p class="text-sm text-gray-500">📞 +34 698 456 789</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-gray-500">Hace 4 horas</span>
+                                </div>
+                            </div>
+                            
+
+                            
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-500">Mensaje para el equipo de adopción</p>
+                                <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                                    "Charlie sería perfecto para mi estilo de vida. Vivo sola y busco un compañero tranquilo. Tengo experiencia con bulldogs franceses y entiendo sus necesidades especiales."
+                                </p>
+                            </div>
+                            
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Accordion functionality
+        function toggleAccordion(petId) {
+            const content = document.getElementById(petId + '-content');
+            const button = event.target.closest('button');
+            const icon = button.querySelector('i');
+            
+            content.classList.toggle('active');
+            
+            if (content.classList.contains('active')) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Application actions
+        function approveApplication(petId, applicantId) {
+            if (confirm('¿Estás seguro de que quieres aprobar esta solicitud?')) {
+                alert(`Solicitud de ${applicantId} para ${petId} aprobada. Se enviará una notificación al solicitante.`);
+                // Here you would update the UI to reflect the approval
+            }
+        }
+
+        function rejectApplication(petId, applicantId) {
+            if (confirm('¿Estás seguro de que quieres rechazar esta solicitud?')) {
+                alert(`Solicitud de ${applicantId} para ${petId} rechazada. Se enviará una notificación al solicitante.`);
+                // Here you would update the UI to reflect the rejection
+            }
+        }
+
+        function contactApplicant(applicantId) {
+            alert(`Abriendo chat con ${applicantId}...`);
+        }
+
+        function viewAdoptionProgress(petId, applicantId) {
+            alert(`Viendo progreso de adopción de ${petId} por ${applicantId}...`);
+        }
+
+        // Filter functionality
+        document.querySelector('select').addEventListener('change', function() {
+            const filterBy = this.value;
+            alert(`Filtrando por: ${filterBy}`);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'982d69fc258f614c',t:'MTc1ODQ5ODA5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
