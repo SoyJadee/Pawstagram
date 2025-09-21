@@ -93,7 +93,7 @@
             <span class="font-semibold text-gray-900">
               <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
             </span>
-            <span class="text-gray-500 font-normal">-{{ post.author.username }}</span>
+            <span class="text-gray-500 font-normal">-{{ post.author.user.username }}</span>
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
           {% if post.pet.is_available_for_adoption %}
