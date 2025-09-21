@@ -6,6 +6,15 @@
 {% block content %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    // Efecto parallax suave en las huellas
+    window.addEventListener('scroll', () => {
+      const scrolled = window.pageYOffset;
+      const paws = document.querySelectorAll('.paw');
+      paws.forEach((paw, index) => {
+        const speed = 0.5 + (index * 0.1);
+        paw.style.transform = `translateY(${scrolled * speed * 0.1}px)`;
+      });
+    });
     var btn = document.getElementById('closeMapModalInline');
     if (btn) {
       btn.addEventListener('click', function () {
@@ -112,12 +121,60 @@
       border-radius: 2rem;
       box-shadow: 0 2px 8px rgba(152, 228, 214, 0.08);
     }
+
+    .paw-prints {
+      display: flex;
+      gap: 0.6rem;
+      margin: 0rem;
+      justify-content: center;
+    }
+
+    .paw {
+      font-size: 1.2rem;
+      color: #00F5D4;
+      animation: bounce 2s infinite;
+      animation-delay: calc(var(--delay) * 0.2s);
+    }
+
+    @keyframes bounce {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
   </style>
 
   <div class="max-w-7xl mx-auto p-4">
     <!-- Header -->
     <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-gray-800 mb-4">Encuentra tu tienda ideal</h1>
+      <!-- Huellas decorativas -->
+      <div class="paw-prints">
+        <span class="paw" style="--delay: 0">🐾</span>
+        <span class="paw" style="--delay: 1">🐾</span>
+        <span class="paw" style="--delay: 2">🐾</span>
+        <span class="paw" style="--delay: 3">🐾</span>
+        <span class="paw" style="--delay: 4">🐾</span>
+        <span class="paw" style="--delay: 5">🐾</span>
+        <span class="paw" style="--delay: 6">🐾</span>
+        <span class="paw" style="--delay: 7">🐾</span>
+        <span class="paw" style="--delay: 8">🐾</span>
+        <span class="paw" style="--delay: 9">🐾</span>
+        <span class="paw" style="--delay: 10">🐾</span>
+        <span class="paw" style="--delay: 11">🐾</span>
+        <span class="paw" style="--delay: 12">🐾</span>
+        <span class="paw" style="--delay: 13">🐾</span>
+        <span class="paw" style="--delay: 14">🐾</span>
+        <span class="paw" style="--delay: 15">🐾</span>
+        <span class="paw" style="--delay: 16">🐾</span>
+        <span class="paw" style="--delay: 17">🐾</span>
+        <span class="paw" style="--delay: 18">🐾</span>
+        <span class="paw" style="--delay: 19">🐾</span>
+      </div>
     </div>
   </div>
   </section>
@@ -136,7 +193,7 @@
                 src="{{ store.photo_url|default:'https://emprendeconhuevos.com/wp-content/uploads/2020/12/WalMart-Centro-CDR-1-1.jpg' }}"
                 alt="Perfil tienda" class="object-cover w-full h-full">
             </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ store.name }}</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2" data-store-id="{{ store.id }}">{{ store.name }}</h3>
             <p class="text-turquesa font-semibold">{{ store.owner }}</p>
           </div>
           <div class="space-y-4 mb-8">
@@ -242,7 +299,10 @@
       card.addEventListener('click', function (e) {
         // Evitar que el click en el botón de Google Maps dispare la redirección
         if (e.target.closest('button')) return;
-        window.location.href = '/tienda/catalogo/';
+        const storeId = this.querySelector('h3').getAttribute('data-store-id');
+        if (storeId) {
+          window.location.href = `/tienda/catalogo/${storeId}/`;
+        }
       });
     });
 
