@@ -10,4 +10,5 @@ urlpatterns = [
          name='marcar_notificaciones_leidas'),
     path('notificaciones/json/', views.notificaciones_json,
          name='notificaciones_json'),
+    path('historias/subir/', views.subir_historia, name='subir_historia'),
 ]

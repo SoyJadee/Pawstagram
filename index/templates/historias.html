@@ -1,0 +1,163 @@
+{% load static %}
+<div id="historias-carrusel" class="mb-4">
+    <div class="swiper historias-swiper">
+        <div class="swiper-wrapper">
+            {% if user_authenticated %}
+            <div class="swiper-slide w-24 h-36 rounded-md bg-gray-100 flex items-center justify-center cursor-pointer"
+                id="add-historia-btn">
+                <div class="flex flex-col items-center justify-center w-full h-full">
+                    <i class="ri-add-circle-fill text-blue-500 text-3xl mb-2"></i>
+                    <span class="text-[13px] font-semibold text-center">Agregar<br>historia</span>
+                </div>
+            </div>
+            {% endif %}
+            {% for username, data in historias_por_usuario.items %}
+            {% with historia=data.historias.0 %}
+            <div class="swiper-slide w-24 h-36 rounded-md bg-white flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer historia-slide"
+                data-usuario="{{ username }}">
+                <img src="{{ historia.photo_url }}" alt="Historia de {{ username }}"
+                    class="w-full h-full object-cover block transition-transform duration-200 group-hover:scale-105">
+                <div
+                    class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent p-2 flex flex-col items-center">
+                    <span class="text-white text-xs font-semibold truncate w-full text-center">{{ username }}</span>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Modal para ver historias de un usuario, estilo Instagram/WhatsApp -->
+    <div id="modal-historia" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 hidden">
+        <div class="relative bg-black rounded-3xl overflow-hidden shadow-2xl max-w-xs w-full flex flex-col items-center story-modal-container"
+            style="height: 600px; width: 350px;">
+            <!-- Barra de progreso -->
+            <div class="absolute top-4 left-4 right-4 flex items-center gap-2 z-30" style="min-height:28px;">
+                <div class="flex-1 flex gap-2" id="modal-historia-progress"></div>
+                <button id="historia-pause-btn" type="button" aria-label="Pausar/Reanudar"
+                    style="background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:28px; height:28px; color:white; display:flex; align-items:center; justify-content:center; margin-left:8px; font-size:1.2rem; z-index:40;">
+                    <i class="fas fa-pause"></i>
+                </button>
+            </div>
+            <!-- Header usuario -->
+            <div class="absolute top-12 left-4 right-4 flex items-center justify-between z-30">
+                <div class="flex items-center gap-3">
+                    <div id="modal-historia-avatar"
+                        class="w-12 h-12 rounded-full border-2 border-[#00F5D4] bg-white flex items-center justify-center p-0 m-0">
+                    </div>
+                    <div>
+                        <div id="modal-historia-username" class="text-white font-semibold text-base"></div>
+                        <div id="modal-historia-time" class="text-white text-xs opacity-80"></div>
+                    </div>
+                </div>
+                <button onclick="cerrarModalHistoria()" class="text-white text-2xl bg-black/40 rounded-full p-1"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <!-- Contenido historia y flechas -->
+            <div id="modal-historia-content"
+                class="absolute inset-0 flex flex-col justify-center items-center px-4 z-20">
+                <!-- Flechas de navegación, ocultas por defecto -->
+                <button id="historia-flecha-prev" type="button"
+                    style="display:none; position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:40px; height:40px; color:white; font-size:2rem; z-index:30; align-items:center; justify-content:center;">
+                    &#8592;
+                </button>
+                <button id="historia-flecha-next" type="button"
+                    style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); border:none; border-radius:50%; width:40px; height:40px; color:white; font-size:2rem; z-index:30; align-items:center; justify-content:center;">
+                    &#8594;
+                </button>
+            </div>
+            <!-- Controles navegación: izquierda (prev), centro (pausa), derecha (next) -->
+            <div class="absolute inset-0 flex z-10 select-none">
+                <div class="w-1/3 h-full cursor-pointer" id="modal-historia-prev-area"></div>
+                <div class="w-1/3 h-full cursor-pointer" id="modal-historia-pause-area"></div>
+                <div class="w-1/3 h-full cursor-pointer" id="modal-historia-next-area"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para subir historia -->
+    <div id="modal-subir-historia" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
+        <form id="form-subir-historia" class="bg-white rounded-xl p-6 flex flex-col gap-4 w-80"
+            enctype="multipart/form-data">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Subir historia</h3>
+            <input type="file" name="foto_historia" accept="image/*" required class="border rounded p-2"
+                onchange="previewHistoria(this)">
+            <div id="preview-historia"
+                class="w-full h-36 flex items-center justify-center bg-gray-50 rounded border border-dashed border-gray-300 overflow-hidden hidden">
+                <img src="#" alt="Preview" class="max-h-32 max-w-full object-contain" />
+            </div>
+            <div class="flex gap-2 mt-2">
+                <button type="button" onclick="cerrarModalSubirHistoria()"
+                    class="flex-1 bg-gray-100 text-gray-700 py-2 rounded font-semibold">Cancelar</button>
+                <button type="submit" id="btn-subir-historia"
+                    class="flex-1 bg-mint text-white py-2 rounded font-semibold">Subir</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script id="historias-por-usuario-json" type="application/json">
+    {
+        {% for username, data in historias_por_usuario.items %}
+            "{{ username|escapejs }}": {
+                "user": {
+                    "username": "{{ username|escapejs }}"
+                },
+                "historias": [
+                    {% for historia in data.historias %}
+                        {
+                            "id": {{ historia.id|default:'null' }},
+                            "photo_url": "{{ historia.photo_url|escapejs }}",
+                            "created_at": "{{ historia.created_at|date:'c' }}"
+                        }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    }
+</script>
+<script>
+    window.historiasPorUsuario = JSON.parse(document.getElementById('historias-por-usuario-json').textContent);
+</script>
+<script src="{% static 'js/historias.js' %}"></script>
+<style>
+    .historias-swiper .swiper-slide {
+        border: 2px solid #00F5D4;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .historias-swiper .swiper-slide.vista {
+        border-color: #bbb !important;
+    }
+
+    .historias-swiper .swiper-slide.nueva {
+        border-color: #00F5D4 !important;
+    }
+
+    .historias-swiper .swiper-slide.active,
+    .historias-swiper .swiper-slide:focus {
+        border-color: #40E0D0;
+    }
+</style>
+<script>
+    // Marcar historias vistas y cambiar borde
+    document.addEventListener('DOMContentLoaded', function () {
+        const slides = document.querySelectorAll('.historia-slide');
+        slides.forEach(slide => {
+            const usuario = slide.getAttribute('data-usuario');
+            if (!usuario) return;
+            // Estado inicial
+            if (localStorage.getItem('historias_vistas_' + usuario)) {
+                slide.classList.add('vista');
+                slide.classList.remove('nueva');
+            } else {
+                slide.classList.add('nueva');
+                slide.classList.remove('vista');
+            }
+            // Al hacer click, marcar como vista
+            slide.addEventListener('click', function () {
+                localStorage.setItem('historias_vistas_' + usuario, '1');
+                slide.classList.add('vista');
+                slide.classList.remove('nueva');
+            });
+        });
+    });
+</script>
