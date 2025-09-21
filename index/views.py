@@ -326,11 +326,10 @@ def principal(request):
                         request, 'Mascota inválida. No se pudo procesar la solicitud de adopción.')
                 else:
                     adoption.pet = pet
-                    # responsable es el creador de la mascota (UserProfile)
-                    adoption.responsable = getattr(pet, 'creator', None)
-                    adoption.status = 'pending'
+                    pet.status = 'pending'
                     adoption.save()
                     adoption_success = True
+                    pet.save()
             except Exception as e:
                 logger.error(f"Error al guardar adopción: {e}")
                 messages.error(
