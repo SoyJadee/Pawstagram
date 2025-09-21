@@ -12,6 +12,8 @@ def user_authenticated(request):
         user__is_active=True, user__is_staff=False, user__is_superuser=False).count()
     notificaciones = []
     notif_unread = 0
+    notif_unread_adopciones = 0
+    notificaciones_adopciones = None
     if request.user.is_authenticated:
         if not request.user.is_staff and not request.user.is_superuser:
             try:
@@ -22,13 +24,28 @@ def user_authenticated(request):
             except Exception:
                 notificaciones = []
                 notif_unread = 0
+            # Notificaciones de adopciones para el responsable (todas las solicitudes asociadas a sus mascotas)
+            try:
+                user_profile = UserProfile.objects.select_related(
+                    'user').filter(user=request.user).first()
+                mascotas = Pet.objects.filter(creator=user_profile)
+                notificaciones_adopciones = Adoption.objects.filter(
+                    pet__in=mascotas
+                ).only('adopterName', 'pet', 'created_at', 'is_read').order_by('-created_at')
+                notif_unread_adopciones = notificaciones_adopciones.filter(
+                    is_read=False).count()
+            except Exception:
+                notificaciones_adopciones = None
+                notif_unread_adopciones = 0
         else:
             notificaciones = []
             notif_unread = 0
+            notificaciones_adopciones = None
         return {
             'user_authenticated': True,
             'notificaciones': notificaciones,
-            'notif_unread': notif_unread,
+            'notif_unread': notif_unread + notif_unread_adopciones,
+            'notificaciones_adopciones': notificaciones_adopciones,
             'countPosts': countPosts,
             'countPets': countPets,
             'countUsers': countUsers,
@@ -38,6 +55,7 @@ def user_authenticated(request):
             'user_authenticated': False,
             'notificaciones': None,
             'notif_unread': 0,
+            'notificaciones_adopciones': None,
             'countPosts': countPosts,
             'countPets': countPets,
             'countUsers': countUsers,

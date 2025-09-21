@@ -13,6 +13,7 @@
   // Solo agrega notificaciones realtime si el panel está abierto
   if (userId && notifListContainer) {
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Likes y comentarios (index_notifications)
     supabase
       .channel('public:index_notifications')
       .on(
@@ -21,33 +22,25 @@
         payload => {
           const notifSidenav = document.getElementById('notifSidenav');
           if (notifSidenav && !notifSidenav.classList.contains('translate-x-full')) {
-            const n = payload.new;
-            let icon = '<i class="fas fa-bell text-mint"></i>';
-            let title = 'Notificación';
-            let message = n.message || '';
-            if (n.type === 'like') {
-              icon = '<i class="fas fa-heart text-rose-500"></i>';
-              title = '¡A tu post le dieron like!';
-            } else if (n.type === 'comment') {
-              icon = '<i class="fas fa-comment text-blue-500"></i>';
-              title = '¡Nuevo comentario en tu post!';
+            if (typeof window.reloadAllNotifications === 'function') {
+              window.reloadAllNotifications();
             }
-            // Formato igual al template: título, mensaje, tiempo
-            const notifDiv = document.createElement('div');
-            notifDiv.className = 'flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition bg-blue-50';
-            notifDiv.innerHTML = `
-              <div class="bg-mint/10 rounded-full p-2">${icon}</div>
-              <div class="flex-1">
-                <p class="font-semibold text-gray-900">${title}</p>
-                <div class="text-sm text-gray-800">${message}</div>
-                <div class="text-xs text-gray-400 mt-1">ahora</div>
-              </div>
-            `;
-            notifListContainer.prepend(notifDiv);
-            notifListContainer.scrollTop = 0;
-            // Elimina el mensaje vacío si existe
-            const emptyMsg = notifListContainer.querySelector('.text-center.text-xs.text-gray-400');
-            if (emptyMsg) emptyMsg.remove();
+          }
+        }
+      )
+      .subscribe();
+    // Adopciones (adopcion_adoption)
+    supabase
+      .channel('public:adopcion_adoption')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'adopcion_adoption' },
+        payload => {
+          const notifSidenav = document.getElementById('notifSidenav');
+          if (notifSidenav && !notifSidenav.classList.contains('translate-x-full')) {
+            if (typeof window.reloadAllNotifications === 'function') {
+              window.reloadAllNotifications();
+            }
           }
         }
       )
