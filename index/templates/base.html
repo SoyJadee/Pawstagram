@@ -11,6 +11,7 @@
   </script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>
+  <script src="{% static 'js/realtime_all_notifications.js' %}"></script>
   <style>
     /* Oculta el cuadro de sugerencias */
     .sugerencias,
@@ -3959,36 +3960,8 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
       title="Cerrar"><i class="fas fa-times"></i></button>
   </div>
   <div id="notifListContainer" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-    {% for notificacion in notificaciones %}
-    <div
-      class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition {% if notificacion.is_read %}bg-white{% else %}bg-blue-50{% endif %}"
-      data-realtime-notif="true">
-      <div class="bg-mint/10 rounded-full p-2">
-        {% if notificacion.type == 'like' %}
-        <i class="fas fa-heart text-rose-500"></i>
-        {% elif notificacion.type == 'comment' %}
-        <i class="fas fa-comment text-blue-500"></i>
-        {% else %}
-        <i class="fas fa-bell text-mint"></i>
-        {% endif %}
-      </div>
-      <div class="flex-1">
-        <p class="font-semibold text-gray-900">
-          {% if notificacion.type == 'like' %}
-          ¡A tu post le dieron like!
-          {% elif notificacion.type == 'comment' %}
-          ¡Nuevo comentario en tu post!
-          {% else %}
-          Notificación
-          {% endif %}
-        </p>
-        <div class="text-sm text-gray-800">{{ notificacion.message }}</div>
-        <div class="text-xs text-gray-400 mt-1">{{ notificacion.created_at|timesince }}</div>
-      </div>
-    </div>
-    {% empty %}
-    <div class="text-center text-xs text-gray-400 mt-8">No hay más notificaciones</div>
-    {% endfor %}
+    <!-- Aquí se renderiza la lista unificada de notificaciones -->
+    <div id="unifiedNotifList"></div>
   </div>
 </aside>
 {% endif %}
@@ -4003,68 +3976,32 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
         notifSidenav.classList.remove('translate-x-full');
         notifOverlay.classList.remove('hidden');
         setTimeout(() => notifOverlay.classList.add('opacity-100'), 10);
-        // Recargar notificaciones por AJAX
-        fetch("{% url 'notificaciones_json' %}", {
-          method: "GET",
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        })
-          .then(response => response.json())
-          .then(data => {
-            const notifListContainer = document.getElementById('notifListContainer');
-            notifListContainer.innerHTML = '';
-            if (data.notificaciones.length === 0) {
-              notifListContainer.innerHTML = '<div class="text-center text-xs text-gray-400 mt-8">No hay más notificaciones</div>';
-            } else {
-              data.notificaciones.forEach(n => {
-                let icon = '<i class="fas fa-bell text-mint"></i>';
-                let title = 'Notificación';
-                let photoPreview = '';
-                if (n.type === 'like') {
-                  icon = '<i class="fas fa-heart text-rose-500"></i>';
-                  title = '¡A tu post le dieron like!';
-                } else if (n.type === 'comment') {
-                  icon = '<i class="fas fa-comment text-blue-500"></i>';
-                  title = '¡Nuevo comentario en tu post!';
-                }
-                if (n.photo_url) {
-                  photoPreview = `<img src="${n.photo_url}" alt="Foto del post" class="w-16 h-16 object-cover rounded-lg border ml-2">`;
-                }
-                notifListContainer.innerHTML += `
-                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition ${n.is_read ? 'bg-white' : 'bg-blue-50'}">
-                  <div class="bg-mint/10 rounded-full p-2">${icon}</div>
-                  <div class="flex-1">
-                    <p class="font-semibold text-gray-900">${title}</p>
-                    <div class="text-sm text-gray-800">${n.message || ''}</div>
-                    <div class="text-xs text-gray-400 mt-1">${n.created_at}</div>
-                  </div>
-                  ${photoPreview}
-                </div>
-              `;
-              });
+        // Recargar notificaciones unificadas (mezcladas) por AJAX
+        if (typeof window.reloadAllNotifications === 'function') {
+          window.reloadAllNotifications();
+        }
+        // Marcar notificaciones como leídas al abrir, pero con un pequeño retraso para mostrar el azul
+        setTimeout(function () {
+          fetch("{% url 'marcar_notificaciones_leidas' %}", {
+            method: "POST",
+            headers: {
+              'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          }).then(() => {
+            // Oculta el contador y reinicia a 0
+            const notifCount = document.getElementById('notifCount');
+            if (notifCount) {
+              notifCount.textContent = '0';
+              notifCount.classList.add('hidden');
             }
+            // Cambiar color de fondo de notificaciones a blanco
+            document.querySelectorAll('#notifSidenav .bg-blue-50').forEach(el => {
+              el.classList.remove('bg-blue-50');
+              el.classList.add('bg-white');
+            });
           });
-        // Marcar notificaciones como leídas al abrir
-        fetch("{% url 'marcar_notificaciones_leidas' %}", {
-          method: "POST",
-          headers: {
-            'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        }).then(() => {
-          // Oculta el contador y reinicia a 0
-          const notifCount = document.getElementById('notifCount');
-          if (notifCount) {
-            notifCount.textContent = '0';
-            notifCount.classList.add('hidden');
-          }
-          // Cambiar color de fondo de notificaciones a blanco
-          document.querySelectorAll('#notifSidenav .bg-blue-50').forEach(el => {
-            el.classList.remove('bg-blue-50');
-            el.classList.add('bg-white');
-          });
-        });
+        }, 10000); // 10 segundos de azul visible
       });
       function closeNotifSidenav() {
         notifSidenav.classList.add('translate-x-full');
