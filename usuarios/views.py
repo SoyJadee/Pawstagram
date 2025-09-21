@@ -181,7 +181,7 @@ def configuracion_view(request):
                 return redirect("delete_account")
             elif request.user.email != email:
                 messages.error(request, "El email no coincide con el de la cuenta.")
-                return redirect("delete_account")
+                return redirect("configuracion")
             else:
                 user = request.user
                 logout(request)
