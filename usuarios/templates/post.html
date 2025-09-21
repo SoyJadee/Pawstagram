@@ -49,17 +49,21 @@
 >
   <div class="flex items-center px-6 py-4">
     {% if post.pet.profile_photo_url %}
-    <img
-      src="{{ post.pet.profile_photo_url }}"
-      alt="{{ post.pet.name }}"
-      class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4"
-    />
+    <a href="{% url 'mascotaDetails' post.pet.pk %}">
+      <img
+        src="{{ post.pet.profile_photo_url }}"
+        alt="{{ post.pet.name }}"
+        class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4"
+      />
+    </a>
     {% else %}
+    <a href="{% url 'mascotaDetails' post.pet.pk %}">
     <img
       src="{% static 'img/logo1.png' %}"
       alt="Patita azul"
       class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4"
     />
+    </a>
     {% endif %}
     <div class="flex-1">
       <span class="font-semibold text-gray-900">

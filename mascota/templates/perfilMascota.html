@@ -41,8 +41,15 @@
           <img src="{{ mascota.profile_photo_url }}" alt="Foto de perfil de {{ mascota.name }}"
             class="w-full h-full object-cover" />
           {% else %}
-          <img src="{{ post.photo_url|last }}" alt="Foto de perfil de {{ mascota.name }}"
-            class="w-full h-full object-cover" />
+            {% if posts %}
+            <img src="{{ post.photo_url|last }}" alt="Foto de perfil de {{ mascota.name }}"
+              class="w-full h-full object-cover" />
+            {% else %}
+            <div
+              class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-6xl font-bold">
+              🐾
+            </div>
+            {% endif %}
           {% endif %}
         </div>
         <div
@@ -161,8 +168,7 @@
           class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
         {% endif %}
         <div class="flex-1">
-          <span class="font-semibold text-gray-900">
-            <a href="{% url 'mascotaDetails' post.pet.pk %}">{{ post.pet.name }}</a>
+          <span class="font-semibold text-gray-900">{{ post.pet.name }}</span>
           </span>
           <span class="text-gray-500 font-normal">-{{ post.author.user.username }}</span>
           <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
