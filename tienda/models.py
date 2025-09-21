@@ -12,6 +12,7 @@ class Store(models.Model):
     location = models.CharField(max_length=255, null=True, blank=True, verbose_name="Ubicación")
     photo_url = models.URLField(null=True, blank=True, verbose_name="URL de foto")
     created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Fecha de creación")
+    coordinates = models.CharField(max_length=100, null=True, blank=True, verbose_name="Coordenadas")
 
     def __str__(self):
         return self.name or str(self.id)
