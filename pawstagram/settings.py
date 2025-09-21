@@ -32,8 +32,8 @@ ALLOWED_HOSTS = []
 SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_KEY = config("SUPABASE_KEY")
 INSTALLED_APPS = [
-    'hide_admin.apps.HideAdminConfig',
-    #'django.contrib.admin',
+    # 'hide_admin.apps.HideAdminConfig',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
