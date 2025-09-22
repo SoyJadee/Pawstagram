@@ -38,24 +38,38 @@ def register_view(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            try:
-                with transaction.atomic():
-                    user = form.save(commit=True)
-                    UserProfile.objects.create(
-                        user=user,
-                        phone=form.cleaned_data.get("phone"),
-                        is_foundation=form.cleaned_data.get("is_foundation"),
-                    )
-                messages.success(
-                    request,
-                    "Usuario registrado correctamente. Ahora puedes iniciar sesión.",
-                )
-                return redirect("login")
-            except IntegrityError:
+            email_exists = User.objects.filter(email=form.cleaned_data['email']).exists()
+            username_exists = User.objects.filter(username=form.cleaned_data['username']).exists()
+            phone_exists = UserProfile.objects.filter(phone=form.cleaned_data['phone']).exists()
+            if email_exists:
                 messages.error(
                     request,
-                    "No se pudo crear el cliente (teléfono o cédula ya existe).",
+                    "Correo Electrónico ya registrado"
                 )
+            elif username_exists:
+                messages.error(
+                    request,
+                    "Elija otro nombre de usuario, este ya está en uso"
+                )
+            else:
+                try:
+                    with transaction.atomic():
+                        user = form.save(commit=True)
+                        UserProfile.objects.create(
+                            user=user,
+                            phone=form.cleaned_data.get("phone"),
+                            is_foundation=form.cleaned_data.get("is_foundation"),
+                        )
+                    messages.success(
+                        request,
+                        "Usuario registrado correctamente. Ahora puedes iniciar sesión.",
+                    )
+                    return redirect("login")
+                except IntegrityError:
+                    messages.error(
+                        request,
+                        "No se pudo crear el cliente (teléfono o cédula ya existe).",
+                    )
         else:
             messages.error(request, "Por favor corrige los errores en el formulario.")
     else:
