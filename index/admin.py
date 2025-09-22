@@ -46,7 +46,7 @@ class LikeAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user_first_name', 'user_last_name', 'post', 'created_at')
+    list_display = ('id', 'user_first_name', 'user_last_name', 'content')
     search_fields = ('user__username', 'post__content', 'content')
     list_filter = ('created_at',)
     ordering = ('-created_at',)
