@@ -8,6 +8,8 @@
   <script>
     // Inyecta el id del usuario logeado para el JS de notificaciones
     window.USER_ID = "{{ user.id|default:'' }}";
+    // Inyecta los IDs de las mascotas del usuario para filtrar adopciones en JS
+    window.MY_PET_IDS = [{% for mascota in mascotas_usuario %}{% if not forloop.first %},{% endif %}{{ mascota.pk }}{% endfor %}];
   </script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>
