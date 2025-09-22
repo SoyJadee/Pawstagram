@@ -430,7 +430,6 @@ def principal(request):
                     )
                 else:
                     adoption.pet = pet
-                    pet.status = "pending"
                     adoption.save()
                     adoption_success = True
                     pet.save()

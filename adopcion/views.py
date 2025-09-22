@@ -9,9 +9,9 @@ from django.db.models import Count
 @login_required
 def solicitudes_adopcion(request):
     if request.user.is_authenticated and not request.user.is_superuser:
-        # Filtrar solo mascotas del usuario con estado pendiente que tengan al menos una solicitud
+        # Filtrar solo mascotas del usuario que tengan al menos una solicitud
         pets = (
-            Pet.objects.filter(creator__user=request.user, status="pending")
+            Pet.objects.filter(creator__user=request.user)
             .annotate(adoption_count=Count("adoptions"))
             .filter(adoption_count__gt=0)
             .prefetch_related("adoptions")

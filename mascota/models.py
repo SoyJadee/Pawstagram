@@ -33,7 +33,6 @@ class Pet(models.Model):
     ubication = models.CharField(max_length=100, null=True, blank=True,verbose_name="Ubicación")
     status = models.CharField(max_length=10, choices=[
         ('available', 'Disponible'),
-        ('pending', 'Pendiente'),
         ('adopted', 'Adoptado')
     ], default='available', verbose_name="Estado")
     created_at = models.DateTimeField(auto_now_add=True,verbose_name="Fecha de creación")
