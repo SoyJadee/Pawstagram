@@ -9,7 +9,7 @@
     // Inyecta el id del usuario logeado para el JS de notificaciones
     window.USER_ID = "{{ user.id|default:'' }}";
     // Inyecta los IDs de las mascotas del usuario para filtrar adopciones en JS
-    window.MY_PET_IDS = [{% for mascota in mascotas_usuario %}{% if not forloop.first %},{% endif %}{{ mascota.pk }}{% endfor %}];
+    window.MY_PET_IDS = [{% for mascota in mascotas_usuario %}{% if not forloop.first %}, {% endif %} { { mascota.pk } } {% endfor %}];
   </script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>
@@ -3629,8 +3629,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
           <h3><i class="fas fa-link"></i> Enlaces Rápidos</h3>
           <ul class="footer-links">
             <li><a href="{% url 'principal' %}"><i class="fas fa-home"></i> Inicio</a></li>
-            <li><a<a href="{% url 'tienda' %}">"><i class="fas fa-store"></i> Tienda</a></li>
-            <li><a href="#"><i class="fas fa-heart"></i> Salud</a></li>
+            <li>
+              <a href="{% url 'tienda' %}"><i class="fas fa-store"></i> Tienda</a>
+            </li>
+            <li><a href="{% url 'servicios_salud' %}"><i class="fas fa-heart"></i> Salud</a></li>
           </ul>
         </div>
         <div class="share">
