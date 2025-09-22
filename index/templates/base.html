@@ -6,8 +6,8 @@
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    window.USER_ID = {% if request.user.is_authenticated and request.user.id %}{ { request.user.id } } {% else %} null{% endif %};
-    window.MY_PET_IDS = [{% for mascota in mascotas_usuario %}{ { mascota.pk } } {% if not forloop.last %}, {% endif %} {% endfor %}];
+    window.USER_ID = {% if request.user.is_authenticated and request.user.id %}{{ request.user.id }}{% else %}null{% endif %};
+    window.MY_PET_IDS = [{% for mascota in mascotas_usuario %}{{ mascota.pk }}{% if not forloop.last %},{% endif %}{% endfor %}];
   </script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>
