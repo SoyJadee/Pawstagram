@@ -116,7 +116,6 @@ def mascotaDetailsView(request, idPet):
                 else:
                     new_adoption.pet = mascota
 
-                pet_obj.status = new_adoption.status or 'pending'
                 new_adoption.save()
                 pet_obj.save()
                 adoption_form = AdoptionForm()  # Resetear el formulario después de guardar

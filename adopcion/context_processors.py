@@ -13,7 +13,7 @@ def user_adoption_notifications(request):
             user_profile = UserProfile.objects.select_related(
                 'user').filter(user=request.user).first()
             notificaciones = Adoption.objects.filter(
-                responsable=user_profile, status='pending'
+                pet__creator=user_profile, 
             ).only('adopterName', 'pet', 'created_at').order_by('-created_at')
         else:
             notificaciones = None

@@ -535,13 +535,7 @@ def postView(request, post_id):
                     )
                 else:
                     adoption.pet = pet
-                    # marcar mascota como pendiente
-                    try:
-                        pet.status = "pending"
-                    except Exception:
-                        pass
                     adoption.save()
-                    pet.save()
                     adoption_success = True
                     messages.success(request, "Solicitud de adopción enviada.")
             except Exception as e:
