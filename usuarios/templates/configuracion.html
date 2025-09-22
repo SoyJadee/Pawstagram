@@ -9,6 +9,7 @@
     <button
       class="w-full text-left p-4 border border-gray-200 rounded-xl hover:border-mint transition-colors"
     >
+    <a href="{% url 'change_password' %}">
       <div class="flex items-center justify-between">
         <div>
           <h4 class="font-medium text-gray-800">Cambiar contraseña</h4>
@@ -16,8 +17,8 @@
         </div>
         <i class="fas fa-chevron-right text-gray-400"></i>
       </div>
-    </button>
-
+    </a>
+    
     <button
       id="btn-eliminar-cuenta"
       type="button"
