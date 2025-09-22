@@ -35,17 +35,21 @@ def user_authenticated(request):
                 notif_unread_adopciones = notificaciones_adopciones.filter(
                     is_read=False).count()
             except Exception:
+                mascotas = Pet.objects.none()
                 notificaciones_adopciones = None
                 notif_unread_adopciones = 0
         else:
+            mascotas = Pet.objects.none()
             notificaciones = []
             notif_unread = 0
             notificaciones_adopciones = None
+            notif_unread_adopciones = 0
         return {
             'user_authenticated': True,
             'notificaciones': notificaciones,
             'notif_unread': notif_unread + notif_unread_adopciones,
             'notificaciones_adopciones': notificaciones_adopciones,
+            'mascotas_usuario': mascotas,
             'countPosts': countPosts,
             'countPets': countPets,
             'countUsers': countUsers,
@@ -56,6 +60,7 @@ def user_authenticated(request):
             'notificaciones': None,
             'notif_unread': 0,
             'notificaciones_adopciones': None,
+            'mascotas_usuario': [],
             'countPosts': countPosts,
             'countPets': countPets,
             'countUsers': countUsers,

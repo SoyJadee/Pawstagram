@@ -6,8 +6,13 @@
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    window.USER_ID = {% if request.user.is_authenticated and request.user.id %}{{ request.user.id }}{% else %}null{% endif %};
-    window.MY_PET_IDS = [{% for mascota in mascotas_usuario %}{{ mascota.pk }}{% if not forloop.last %},{% endif %}{% endfor %}];
+    // Siempre define USER_ID y MY_PET_IDS, nunca undefined ni null
+    window.USER_ID = "{{ request.user.id|default_if_none:'0'|default:'0' }}";
+  </script>
+  <script id="my-pet-ids-json"
+    type="application/json">[{% for mascota in mascotas_usuario %}{{ mascota.pk }}{% if not forloop.last %}, {% endif %}{% endfor %}]</script>
+  <script>
+    window.MY_PET_IDS = JSON.parse(document.getElementById('my-pet-ids-json').textContent || "[]");
   </script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>
