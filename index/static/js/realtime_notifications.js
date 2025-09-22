@@ -3,9 +3,7 @@
 (function(){
   const SUPABASE_URL = 'https://arujlmplptyoyppahyhj.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFydWpsbXBscHR5b3lwcGFoeWhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjYwMTIsImV4cCI6MjA3MzcwMjAxMn0.H6YgCIeRpYPWgeP40ag-j53Yl34QAm-xaSUQa1dHqX0';
-  console.log('window.USER_ID:', window.USER_ID, typeof window.USER_ID);
   var userId = window.USER_ID ? parseInt(window.USER_ID) : null;
-  console.log('Suscribiendo a realtime para user:', userId);
   if (userId && SUPABASE_URL !== 'https://<TU-PROYECTO>.supabase.co') {
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     // Likes y comentarios
@@ -37,13 +35,17 @@
         }
       )
       .subscribe();
-    // Adopciones
+    // Adopciones SOLO de mis mascotas
     supabase
       .channel('public:adopcion_adoption')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'adopcion_adoption' },
         payload => {
+          const myPetIds = window.MY_PET_IDS || [];
+          const petId = payload.new.pet_id;
+          if (!myPetIds.includes(petId)) return;
+
           let notifCount = document.getElementById('notifCount');
           if (notifCount) {
             let current = parseInt(notifCount.textContent);
