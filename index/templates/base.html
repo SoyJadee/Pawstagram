@@ -3459,6 +3459,17 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
               class="absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center{% if notif_unread == 0 or notif_unread is None or not notif_unread|stringformat:'d' %} hidden{% endif %}">
               {{ notif_unread|default:0 }}</span>
           </button>
+          <!--Solicitudes de adopcion-->
+          <a href="{% url 'solicitudes_adopcion' %}">
+            <button
+              class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
+              title="Solicitudes de adopción">
+              <i class="bi bi-ui-checks"></i>
+              <span id="adopCount"
+                class="absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-green-500 text-white text-xs font-bold rounded-full flex items-center justify-center{% if adop_solicitudes == 0 or adop_solicitudes is None or not adop_solicitudes|stringformat:'d' %} hidden{% endif %}">
+                {{ adop_solicitudes|default:0 }}</span>
+            </button>
+          </a>
           <!-- Inicio  -->
           <a href="{% url 'principal' %}">
             <button
@@ -3468,7 +3479,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
             </button>
           </a>
           <!-- Tienda -->
-          <a href="#">
+          <a href="{% url 'tienda' %}">
             <button
               class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
               title="Tienda">

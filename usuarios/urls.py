@@ -1,12 +1,13 @@
 from django.urls import path, include
 from . import views
 from django.contrib.auth.views import (
-    PasswordChangeView,
+    PasswordResetView,
     PasswordResetConfirmView,
     PasswordResetCompleteView,
     PasswordResetDoneView,
     LogoutView,
 )
+from decouple import config
 
 urlpatterns = [
     path("iniciar_sesion/", views.login_view, name="login"),
@@ -14,8 +15,10 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(template_name="logout.html"), name="logout"),
     path(
         "change_password/",
-        PasswordChangeView.as_view(
-            template_name="change_password.html", success_url="/"
+        PasswordResetView.as_view(
+            template_name="change_password.html",
+            from_email=config('EMAIL_HOST_USER'),
+            html_email_template_name="password_reset_email.html",
         ),
         name="change_password",
     ),
@@ -28,7 +31,6 @@ urlpatterns = [
         "reset/<uidb64>/<token>/",
         PasswordResetConfirmView.as_view(
             template_name="password_reset_form.html",
-            success_url="iniciar_sesion/reset_password_complete/",
         ),
         name="password_reset_confirm",
     ),

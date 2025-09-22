@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}
+    <title>Solicitudes de Adopción - Pawly</title>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #E8F8F5 50%, #F0FDFA 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.1);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.15);
+        }
+        .turquoise-gradient {
+            background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
+        }
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        .input-focus:focus {
+            border-color: #40E0D0;
+            box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+        }
+        .status-pending {
+            background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+        }
+        .status-approved {
+            background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+        }
+        .status-rejected {
+            background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+    </style>
+{% endblock extra_head %}
+{% block content %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+<h1 class="text-3xl font-bold text-gray-800 mb-2">Solicitudes de Adopción</h1>
+            <p class="text-gray-600">Gestiona las solicitudes de adopción recibidas para tus mascotas.</p>
+        </div>
+
+        <!-- Applications List -->
+        <div class="space-y-6">
+            {% for item in pets_with_solicitudes %}
+            {% with pet=item.pet solicitudes=item.solicitudes %}
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-mint to-turquoise rounded-xl flex items-center justify-center text-2xl">
+                                <img src="{{ pet.profile_photo_url }}" alt="{{ pet.name }}" class="w-full h-full object-cover rounded-xl">
+                            </div>
+                            <div>
+                                <a href="{% url 'mascotaDetails' pet.pk %}">
+                                <h3 class="text-xl font-semibold text-gray-800">{{ pet.name }}</h3>
+                                </a>
+                                <p class="text-gray-600">{{ pet.breed }} • {{ pet.age }} años</p>
+                                <p class="text-sm text-gray-500">📍 {{ pet.location }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold mb-2">
+                                {{ solicitudes|length }} solicitudes pendientes
+                            </div>
+                            <button type="button" data-target="pet-{{ pet.idPet }}-content" onclick="togglePetAccordion(this)" class="text-turquoise hover:text-dark-mint font-medium">
+                                <i class="fas fa-chevron-down mr-1"></i>Ver solicitudes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="pet-{{ pet.idPet }}-content" class="accordion-content">
+                    <div class="p-6 space-y-4">
+                        <!-- Application 1 -->
+                        {% for solicitud in solicitudes %}
+                        <div class="border border-gray-200 rounded-xl p-4 hover-lift">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center text-white font-semibold">
+                                        {{ solicitud.adopterName|slice:":1"|upper }}{{ solicitud.adopterSurname|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">{{ solicitud.adopterName }}</h4>
+                                        <p class="text-sm text-gray-600">{{ solicitud.adopterEmail }}</p>
+                                        <p class="text-sm text-gray-500">📞 {{ solicitud.adopterPhone }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-gray-500">Hace {{ solicitud.created_at|timesince }}</span>
+                                </div>
+                            </div>
+                            
+
+                            
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-500">Mensaje para el equipo de adopción</p>
+                                <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                                    "{{ solicitud.message }}"
+                                </p>
+                            </div>
+                            
+
+                        </div>
+                        {% empty %}
+                        <div class="border border-gray-200 rounded-xl p-4 text-center">
+                            <p class="text-gray-500">No hay solicitudes para esta mascota.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}
+{% block extra_scripts %}
+    <script>
+        // Accordion functionality
+        function togglePetAccordion(btn) {
+            if (!btn) return;
+            const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+            const content = document.getElementById(targetId);
+            if (!content) return;
+            const icon = btn.querySelector('i');
+
+            content.classList.toggle('active');
+
+            if (icon) {
+                if (content.classList.contains('active')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            }
+        }
+
+        // Application actions
+        function approveApplication(petId, applicantId) {
+            if (confirm('¿Estás seguro de que quieres aprobar esta solicitud?')) {
+                alert(`Solicitud de ${applicantId} para ${petId} aprobada. Se enviará una notificación al solicitante.`);
+                // Here you would update the UI to reflect the approval
+            }
+        }
+
+        function rejectApplication(petId, applicantId) {
+            if (confirm('¿Estás seguro de que quieres rechazar esta solicitud?')) {
+                alert(`Solicitud de ${applicantId} para ${petId} rechazada. Se enviará una notificación al solicitante.`);
+                // Here you would update the UI to reflect the rejection
+            }
+        }
+
+        function contactApplicant(applicantId) {
+            alert(`Abriendo chat con ${applicantId}...`);
+        }
+
+        function viewAdoptionProgress(petId, applicantId) {
+            alert(`Viendo progreso de adopción de ${petId} por ${applicantId}...`);
+        }
+
+        // Filter functionality (solo si existe un <select>)
+        const selectEl = document.querySelector('select');
+        if (selectEl) {
+            selectEl.addEventListener('change', function() {
+                const filterBy = this.value;
+                alert(`Filtrando por: ${filterBy}`);
+            });
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'982d69fc258f614c',t:'MTc1ODQ5ODA5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+{% endblock extra_scripts %}
