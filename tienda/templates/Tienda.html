@@ -63,6 +63,7 @@
 <html lang="es">
 
 <head>
+  <script src="https://unpkg.com/@mapbox/polyline@1.1.1/src/polyline.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -414,62 +415,73 @@
     });
 
     openMapAddress.addEventListener('click', function () {
-      // Al presionar 'Mostrar dirección', usar Leaflet Routing Machine para ruta realista y datos
+      // Al presionar 'Mostrar dirección', consultar ruta por backend y dibujar con Polyline
       if (lastDestLat && lastDestLon) {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function (position) {
             const userLat = position.coords.latitude;
             const userLon = position.coords.longitude;
-            showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
-            // Usar Leaflet Routing Machine
-            if (leafletMap) {
-              if (window._routingControl) {
-                window._routingControl.remove();
-                window._routingControl = null;
-              }
-              window._routingControl = L.Routing.control({
-                waypoints: [
-                  L.latLng(userLat, userLon),
-                  L.latLng(lastDestLat, lastDestLon)
-                ],
-                routeWhileDragging: false,
-                show: false,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                fitSelectedRoutes: true,
-                createMarker: function (i, wp, nWps) {
-                  if (i === 0) {
-                    return L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32, 32] }) }).bindPopup('Tu ubicación');
-                  } else {
-                    return L.marker(wp.latLng).bindPopup('Destino');
+            // Consultar ruta al backend
+            fetch('/salud/ruta-direcciones/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                origen: [userLon, userLat],
+                destino: [parseFloat(lastDestLon), parseFloat(lastDestLat)]
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.routes && data.routes.length > 0) {
+                var route = data.routes[0];
+                var coords = [];
+                if (route.geometry && route.geometry.coordinates) {
+                  coords = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+                } else if (typeof route.geometry === 'string' && window.polyline) {
+                  coords = window.polyline.decode(route.geometry);
+                } else if (route.geometry && Array.isArray(route.geometry)) {
+                  coords = route.geometry.map(function (c) { return [c[1], c[0]]; });
+                } else {
+                  alert('La geometría de la ruta no está disponible en el formato esperado.');
+                  return;
+                }
+                showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: coords.map(function (c) { return [c[1], c[0]]; })
                   }
-                },
-                // Ocultar instrucciones visuales
-                showAlternatives: false,
-                routeDragInterval: 0,
-                collapsible: true,
-                createWaypoints: false,
-                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-                itineraryFormatter: null,
-                formatter: null,
-                autoRoute: true,
-                // Eliminar el panel de instrucciones visual
-                show: false,
-                // Eliminar el contenedor de instrucciones si aparece
-                container: document.createElement('div')
-              }).addTo(leafletMap);
-              window._routingControl.on('routesfound', function (e) {
-                var route = e.routes[0];
-                var km = (route.summary.totalDistance / 1000).toFixed(2);
-                var min = Math.ceil(route.summary.totalTime / 60);
+                });
+                // Distancia y duración
+                var km = (route.summary.distance / 1000).toFixed(2);
+                var min = Math.ceil(route.summary.duration / 60);
                 document.querySelectorAll('.modal-distance').forEach(function (el) {
                   el.textContent = km + ' km';
                 });
                 document.querySelectorAll('.modal-duration').forEach(function (el) {
                   el.textContent = min + ' minutos';
                 });
+              } else {
+                showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
+                document.querySelectorAll('.modal-distance').forEach(function (el) {
+                  el.textContent = 'No disponible';
+                });
+                document.querySelectorAll('.modal-duration').forEach(function (el) {
+                  el.textContent = 'No disponible';
+                });
+                alert('No se pudo calcular la ruta.');
+              }
+            })
+            .catch(() => {
+              showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
+              document.querySelectorAll('.modal-distance').forEach(function (el) {
+                el.textContent = 'No disponible';
               });
-            }
+              document.querySelectorAll('.modal-duration').forEach(function (el) {
+                el.textContent = 'No disponible';
+              });
+              alert('Error de red al consultar la ruta.');
+            });
           }, function () {
             showLeafletMap(null, null, lastDestLat, lastDestLon, null);
             document.querySelectorAll('.modal-distance').forEach(function (el) {
@@ -519,6 +531,13 @@
       if (userLat && userLon) {
         const userMarker = L.marker([parseFloat(userLat), parseFloat(userLon)], { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png', iconSize: [32, 32] }) }).addTo(leafletMap);
         leafletMarkers.push(userMarker);
+      }
+      // Dibujar la ruta si existe
+      if (routeFeature && routeFeature.geometry && routeFeature.geometry.coordinates) {
+        // Leaflet espera [lat, lon], pero GeoJSON es [lon, lat], así que invertimos
+        const latLngs = routeFeature.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+  leafletRoute = L.polyline(latLngs, { color: '#0050b3', weight: 7, opacity: 0.95 }).addTo(leafletMap);
+  leafletMap.fitBounds(leafletRoute.getBounds(), { padding: [40, 40] });
       }
       // Si solo se muestra el mapa, limpiar distancia/tiempo
       document.querySelectorAll('.modal-distance').forEach(function (el) {
