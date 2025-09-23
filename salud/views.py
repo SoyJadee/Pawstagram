@@ -1,3 +1,35 @@
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def obtener_ruta_openrouteservice(request):
+	if request.method == 'POST':
+		import json
+		data = json.loads(request.body.decode('utf-8'))
+		origen = data.get('origen')  # [lon, lat]
+		destino = data.get('destino')  # [lon, lat]
+		if not origen or not destino:
+			return JsonResponse({'error': 'Faltan coordenadas'}, status=400)
+		api_key = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQyYmI2ZGVmY2U5YzRlNTU5ZGIzMzA1OTgyODVjOTY4IiwiaCI6Im11cm11cjY0In0='
+		url = 'https://api.openrouteservice.org/v2/directions/driving-car'
+		body = {
+			'coordinates': [origen, destino]
+		}
+		headers = {
+			'Authorization': api_key,
+			'Content-Type': 'application/json',
+			'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
+		}
+		try:
+			response = requests.post(url, json=body, headers=headers, timeout=10)
+			if response.status_code == 200:
+				return JsonResponse(response.json())
+			else:
+				return JsonResponse({'error': 'Error en OpenRouteService', 'status': response.status_code}, status=500)
+		except Exception as e:
+			return JsonResponse({'error': str(e)}, status=500)
+	return JsonResponse({'error': 'Método no permitido'}, status=405)
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 @csrf_exempt

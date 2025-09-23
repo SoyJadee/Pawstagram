@@ -36,6 +36,7 @@
 <html lang="es">
 
 <head>
+    <script src="https://unpkg.com/@mapbox/polyline@1.1.1/src/polyline.js"></script>
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -517,10 +518,19 @@
             function openDirections() {
                 const address = document.getElementById('mapAddress').textContent;
                 // Trazar ruta desde ubicación actual hasta el destino
-                if (!window._mapDestino) return;
+                if (!window._mapDestino) {
+                    alert('No se ha seleccionado un destino.');
+                    return;
+                }
                 const lat = window._mapDestino.lat;
                 const lon = window._mapDestino.lon;
                 const title = window._mapDestino.title;
+                // Eliminar rutas previas si existen
+                // Elimina rutas previas dibujadas manualmente
+                if (window._mapRouteLayer && window._leafletMapInstance) {
+                    window._leafletMapInstance.removeLayer(window._mapRouteLayer);
+                    window._mapRouteLayer = null;
+                }
                 if (window._leafletMapInstance) {
                     window._leafletMapInstance.eachLayer(function (layer) {
                         if (layer instanceof L.Marker) {
@@ -532,34 +542,68 @@
                     navigator.geolocation.getCurrentPosition(function (position) {
                         var userLat = position.coords.latitude;
                         var userLon = position.coords.longitude;
-                        var routingControl = L.Routing.control({
-                            waypoints: [
-                                L.latLng(userLat, userLon),
-                                L.latLng(lat, lon)
-                            ],
-                            routeWhileDragging: false,
-                            show: false,
-                            addWaypoints: false,
-                            draggableWaypoints: false,
-                            fitSelectedRoutes: true,
-                            createMarker: function (i, wp, nWps) {
-                                if (i === 0) {
-                                    return L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] }) }).bindPopup('Tu ubicación');
+                        // Llamar al endpoint local de Django
+                        var url = '/salud/ruta-direcciones/';
+                        var body = {
+                            origen: [userLon, userLat],
+                            destino: [lon, lat]
+                        };
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(body)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            window._ultimaRutaData = data; // Depuración: guardar respuesta global
+                            if (data.routes && data.routes.length > 0) {
+                                var route = data.routes[0];
+                                var coords = [];
+                                if (route.geometry && route.geometry.coordinates) {
+                                    coords = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+                                } else if (typeof route.geometry === 'string' && window.polyline) {
+                                    coords = window.polyline.decode(route.geometry);
+                                } else if (route.geometry && Array.isArray(route.geometry)) {
+                                    coords = route.geometry.map(function (c) { return [c[1], c[0]]; });
                                 } else {
-                                    return L.marker(wp.latLng).bindPopup(title);
+                                    alert('La geometría de la ruta no está disponible en el formato esperado.');
+                                    return;
                                 }
+                                window._mapRouteLayer = L.polyline(coords, { color: 'blue', weight: 5 }).addTo(window._leafletMapInstance);
+                                // Marcadores de inicio y fin
+                                L.marker([userLat, userLon], { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] }) }).addTo(window._leafletMapInstance).bindPopup('Tu ubicación').openPopup();
+                                L.marker([lat, lon]).addTo(window._leafletMapInstance).bindPopup(title);
+                                // Distancia y duración
+                                var km = (route.summary.distance / 1000).toFixed(2);
+                                var min = Math.ceil(route.summary.duration / 60);
+                                document.querySelectorAll('.modal-distance').forEach(function (el) {
+                                    el.textContent = km + ' km';
+                                });
+                                document.querySelectorAll('.modal-duration').forEach(function (el) {
+                                    el.textContent = min + ' minutos';
+                                });
+                                // Ajustar vista del mapa
+                                window._leafletMapInstance.fitBounds(window._mapRouteLayer.getBounds());
+                            } else {
+                                document.querySelectorAll('.modal-distance').forEach(function (el) {
+                                    el.textContent = 'No disponible';
+                                });
+                                document.querySelectorAll('.modal-duration').forEach(function (el) {
+                                    el.textContent = 'No disponible';
+                                });
+                                alert('No se pudo calcular la ruta.');
                             }
-                        }).addTo(window._leafletMapInstance);
-                        routingControl.on('routesfound', function (e) {
-                            var route = e.routes[0];
-                            var km = (route.summary.totalDistance / 1000).toFixed(2);
-                            var min = Math.ceil(route.summary.totalTime / 60);
+                        })
+                        .catch(() => {
                             document.querySelectorAll('.modal-distance').forEach(function (el) {
-                                el.textContent = km + ' km';
+                                el.textContent = 'No disponible';
                             });
                             document.querySelectorAll('.modal-duration').forEach(function (el) {
-                                el.textContent = min + ' minutos';
+                                el.textContent = 'No disponible';
                             });
+                            alert('Error de red al consultar la ruta.');
                         });
                     }, function (error) {
                         document.querySelectorAll('.modal-distance').forEach(function (el) {
@@ -568,6 +612,7 @@
                         document.querySelectorAll('.modal-duration').forEach(function (el) {
                             el.textContent = 'No disponible';
                         });
+                        alert('No se pudo obtener tu ubicación. Activa los permisos de ubicación en tu navegador.');
                     });
                 } else {
                     document.querySelectorAll('.modal-distance').forEach(function (el) {
@@ -576,6 +621,7 @@
                     document.querySelectorAll('.modal-duration').forEach(function (el) {
                         el.textContent = 'No disponible';
                     });
+                    alert('Tu navegador no soporta geolocalización.');
                 }
             }
 
