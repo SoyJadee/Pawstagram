@@ -2,6 +2,17 @@
 // Lógica para subir historias y mostrar el modal tipo Instagram
 
 document.addEventListener('DOMContentLoaded', function () {
+  // Utilidades de seguridad
+  const MAX_BYTES = 10 * 1024 * 1024; // 10MB (alineado con backend)
+  const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+  const { getCSRF } = window.SecurityUtils || {};
+  const _getCSRF = (form) => (getCSRF ? getCSRF(form) : (form?.querySelector('input[name="csrfmiddlewaretoken"]')?.value || ''));
+  const showMsg = (msg) => {
+    if (typeof showToast === 'function') showToast(msg); else alert(msg);
+  };
+  let lastSubmit = 0;
+  let uploadController = null;
+
   // [Código existente para subir historias...]
   // Abrir modal de subir historia
   const addBtn = document.getElementById('add-historia-btn');
@@ -23,37 +34,66 @@ document.addEventListener('DOMContentLoaded', function () {
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      const now = Date.now();
+      if (now - lastSubmit < 1200) return; // throttle 1.2s
+      lastSubmit = now;
+
+      if (navigator.onLine === false) { showMsg('Estás sin conexión.'); return; }
       const fileInput = form.querySelector('input[name="foto_historia"]');
-      const file = fileInput.files[0];
+      const file = fileInput && fileInput.files ? fileInput.files[0] : null;
       if (!file) return;
+      if (!ALLOWED_TYPES.has(file.type)) {
+        showMsg('Tipo de archivo no válido. Solo imágenes JPEG, PNG, GIF o WebP.');
+        return;
+      }
+      if (file.size > MAX_BYTES) {
+        showMsg('La imagen es demasiado grande. Máximo 10MB.');
+        return;
+      }
       // Mostrar modal de cargando
       const modalCargando = document.getElementById('modal-cargando-historia');
       const btnSubir = document.getElementById('btn-subir-historia');
       if (modalCargando) modalCargando.classList.remove('hidden');
       if (btnSubir) btnSubir.disabled = true;
+
+      // Abortar subida previa si aún sigue en curso
+      try { if (uploadController) { uploadController.abort(); } } catch { /* noop */ }
+      uploadController = new AbortController();
+
+  const csrf = _getCSRF(form);
       const formData = new FormData();
       formData.append('foto_historia', file);
       fetch('/historias/subir/', {
         method: 'POST',
+        credentials: 'same-origin',
+        redirect: 'error',
+        referrerPolicy: 'same-origin',
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
+          ...(csrf ? { 'X-CSRFToken': csrf } : {}),
+          'Accept': 'application/json'
         },
-        body: formData
+        body: formData,
+        signal: uploadController.signal
       })
-        .then(r => r.json())
-        .then(data => {
-          if (data.success) {
+        .then(async (r) => {
+          if (!r.ok) throw new Error('bad_status');
+          const data = await r.json().catch(() => ({}));
+          if (data && data.success) {
             setTimeout(() => window.location.reload(), 600);
           } else {
             if (modalCargando) modalCargando.classList.add('hidden');
             if (btnSubir) btnSubir.disabled = false;
-            alert('Error al subir la historia: ' + (data.error || ''));
+            showMsg('Error al subir la historia: ' + (data && data.error ? data.error : ''));
           }
         })
         .catch(() => {
           if (modalCargando) modalCargando.classList.add('hidden');
           if (btnSubir) btnSubir.disabled = false;
-          alert('Error de red al subir la historia. Si ves tu historia al recargar, se subió correctamente.');
+          showMsg('Error de red al subir la historia. Si ves tu historia al recargar, se subió correctamente.');
+        })
+        .finally(() => {
+          uploadController = null;
         });
     });
   }
@@ -63,12 +103,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewDiv = document.getElementById('preview-historia');
     const img = previewDiv.querySelector('img');
     if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (!ALLOWED_TYPES.has(file.type)) { showMsg('Formato no soportado.'); return; }
+      if (file.size > MAX_BYTES) { showMsg('La imagen supera 10MB.'); return; }
       const reader = new FileReader();
       reader.onload = function(e) {
-        img.src = e.target.result;
+        img.src = String(e.target.result || '');
         previewDiv.classList.remove('hidden');
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
     } else {
       img.src = '#';
       previewDiv.classList.add('hidden');
@@ -308,15 +351,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Avatar: foto de perfil o logo por defecto
     if (modalAvatar) {
+      // Limpiar y crear imagen de forma segura (sin innerHTML)
+      while (modalAvatar.firstChild) modalAvatar.removeChild(modalAvatar.firstChild);
       let fotoPerfil = null;
       if (window.historiasPorUsuario && window.historiasPorUsuario[usuarioActual] && window.historiasPorUsuario[usuarioActual].user && window.historiasPorUsuario[usuarioActual].user.profile_photo_url) {
         fotoPerfil = window.historiasPorUsuario[usuarioActual].user.profile_photo_url;
       }
-      if (fotoPerfil) {
-        modalAvatar.innerHTML = `<img src="${fotoPerfil}" alt="avatar" class="w-10 h-10 rounded-full object-cover" style="background:#fff;">`;
-      } else {
-        modalAvatar.innerHTML = `<img src="/static/img/logo1.png" alt="avatar" class="w-10 h-10 rounded-full object-cover" style="background:#fff;">`;
-      }
+      const imgEl = document.createElement('img');
+      imgEl.alt = 'avatar';
+      imgEl.className = 'w-10 h-10 rounded-full object-cover';
+      imgEl.style.background = '#fff';
+      imgEl.src = fotoPerfil || '/static/img/logo1.png';
+      modalAvatar.appendChild(imgEl);
     }
 
     // Nombre usuario

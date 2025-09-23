@@ -9,6 +9,7 @@ from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.db.models import Q, QuerySet
 from mascota.models import Pet
 from .models import Post, Comment, Notifications as Notification
+from usuarios.models import UserProfile
 from tienda.models import Store, Product
 from salud.models import ServicesHealth
 from adopcion.forms import AdoptionForm
@@ -28,6 +29,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from django.http import StreamingHttpResponse
+import json,time
 
 
 @login_required
@@ -99,9 +102,7 @@ def adoption_notifications_fragment(request):
     )
     return HttpResponse(html)
 
-
 # Endpoint para subir historias tipo Instagram
-
 
 @login_required
 @require_POST
@@ -182,6 +183,96 @@ def notificaciones_json(request):
             }
         )
     return JsonResponse({"notificaciones": data}, encoder=DjangoJSONEncoder)
+
+
+# SSE: stream de notificaciones del usuario autenticado
+@login_required
+def notifications_stream(request):
+    """
+    Devuelve un stream SSE con eventos cuando haya nuevas notificaciones para el usuario.
+    Estrategia simple con long-polling en memoria (proceso) sobre la base de datos.
+    """
+    # Headers SSE
+    response = StreamingHttpResponse(content_type="text/event-stream; charset=utf-8")
+    response["Cache-Control"] = "no-cache, no-transform"
+    response["X-Accel-Buffering"] = "no"  # Nginx: desactivar buffering
+
+    user = request.user
+
+    def gen():
+
+        # Última marca temporal enviada para reducir queries
+        last_ts = None
+        # Primer envío: mandar un ping para abrir el canal
+        yield f": ping\n\n"
+
+        # Bucle de espera: 30 iteraciones x 2s = ~60s (luego el navegador reintenta)
+        for _ in range(30):
+            try:
+                # Notificaciones del usuario
+                notifs_qs = Notification.objects.filter(user=user)
+                if last_ts:
+                    notifs_qs = notifs_qs.filter(created_at__gt=last_ts)
+                notifs = list(
+                    notifs_qs.order_by("-created_at").values(
+                        "id", "type", "message", "created_at", "is_read", "post_id"
+                    )[:10]
+                )
+
+                # Adopciones para mascotas del usuario
+                user_profile = (
+                    UserProfile.objects.select_related("user").filter(user=user).first()
+                )
+                adopciones = []
+                if user_profile:
+                    mascotas = list(Pet.objects.filter(creator=user_profile))
+                    if mascotas:
+                        adop_qs = Adoption.objects.filter(pet__in=mascotas)
+                        if last_ts:
+                            adop_qs = adop_qs.filter(created_at__gt=last_ts)
+                        adopciones = list(
+                            adop_qs.order_by("-created_at").values(
+                                "id", "adopterName", "message", "created_at", "pet_id", "is_read"
+                            )[:10]
+                        )
+
+                payload = {
+                    "notifications": notifs,
+                    "adoptions": adopciones,
+                }
+
+                # Si hay algo nuevo, enviar evento
+                if notifs or adopciones:
+                    # actualizar last_ts con el más reciente
+                    newest_ts = None
+                    for n in notifs:
+                        ts = n.get("created_at")
+                        if ts and (newest_ts is None or ts > newest_ts):
+                            newest_ts = ts
+                    for a in adopciones:
+                        ts = a.get("created_at")
+                        if ts and (newest_ts is None or ts > newest_ts):
+                            newest_ts = ts
+                    if newest_ts:
+                        last_ts = newest_ts
+
+                    data = json.dumps(payload, cls=DjangoJSONEncoder)
+                    yield f"event: update\n"
+                    yield f"data: {data}\n\n"
+                else:
+                    # Enviar ping periódico para mantener la conexión
+                    yield f": ping\n\n"
+
+                time.sleep(2)
+            except Exception as e:
+                # Logear y romper el stream de forma segura
+                logger.error(f"SSE error: {e}")
+                yield f"event: error\n"
+                yield f"data: {json.dumps({'message': 'internal_error'})}\n\n"
+                break
+
+    response.streaming_content = gen()
+    return response
 
 
 # Marcar notificaciones como leídas
