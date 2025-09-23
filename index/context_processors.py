@@ -3,7 +3,7 @@ from adopcion.models import Adoption
 from usuarios.models import UserProfile
 from index.models import Post, Notifications as Notification
 from mascota.models import Pet
-
+from decouple import config
 
 def user_authenticated(request):
     countPosts = Post.objects.count()
@@ -61,6 +61,8 @@ def user_authenticated(request):
             "countPosts": countPosts,
             "countPets": countPets,
             "countUsers": countUsers,
+            "SUPABASE_URL": config('SUPABASE_URL'),
+            "SUPABASE_KEY": config('SUPABASE_KEY'),
         }
     else:
         return {
@@ -72,4 +74,6 @@ def user_authenticated(request):
             "countPosts": countPosts,
             "countPets": countPets,
             "countUsers": countUsers,
+            "SUPABASE_URL": config('SUPABASE_URL'),
+            "SUPABASE_KEY": config('SUPABASE_KEY'),
         }
