@@ -38,18 +38,20 @@ def register_view(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            email_exists = User.objects.filter(email=form.cleaned_data['email']).exists()
-            username_exists = User.objects.filter(username=form.cleaned_data['username']).exists()
-            phone_exists = UserProfile.objects.filter(phone=form.cleaned_data['phone']).exists()
+            email_exists = User.objects.filter(
+                email=form.cleaned_data["email"]
+            ).exists()
+            username_exists = User.objects.filter(
+                username=form.cleaned_data["username"]
+            ).exists()
+            phone_exists = UserProfile.objects.filter(
+                phone=form.cleaned_data["phone"]
+            ).exists()
             if email_exists:
-                messages.error(
-                    request,
-                    "Correo Electrónico ya registrado"
-                )
+                messages.error(request, "Correo Electrónico ya registrado")
             elif username_exists:
                 messages.error(
-                    request,
-                    "Elija otro nombre de usuario, este ya está en uso"
+                    request, "Elija otro nombre de usuario, este ya está en uso"
                 )
             else:
                 try:
@@ -493,6 +495,16 @@ def postView(request, post_id):
         # Comentario por submit normal (no AJAX)
         if request.POST.get("comment_content") is not None:
             comment_content = request.POST.get("comment_content", "").strip()
+            if not comment_content or len(comment_content) < 2:
+                messages.error(
+                    request, "El comentario no puede estar vacío o ser muy corto."
+                )
+                return redirect("post_view", post_id=post.id)
+            if len(comment_content) > 300:
+                messages.error(
+                    request, "El comentario es demasiado largo (máx. 300 caracteres)."
+                )
+                return redirect("post_view", post_id=post.id)
             if comment_content and not is_injection_attempt(comment_content):
                 try:
                     comment = Comment.objects.create(

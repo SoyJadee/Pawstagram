@@ -8,20 +8,22 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib import messages
 import logging
+import re
+
 # Create your views here.
 
 
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
-        return JsonResponse({'success': False, 'error': 'not_authenticated'})
-    post_id = request.POST.get('post_id')
+        return JsonResponse({"success": False, "error": "not_authenticated"})
+    post_id = request.POST.get("post_id")
     if not post_id:
-        return JsonResponse({'success': False, 'error': 'no_post'})
+        return JsonResponse({"success": False, "error": "no_post"})
     try:
         post = Post.objects.get(id=post_id)
     except Post.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'not_found'})
+        return JsonResponse({"success": False, "error": "not_found"})
     like, created = Like.objects.get_or_create(post=post, user=request.user)
     if not created:
         like.delete()
@@ -29,23 +31,25 @@ def like_post(request):
     else:
         liked = True
     likes_count = Like.objects.filter(post=post).count()
-    return JsonResponse({'success': True, 'liked': liked, 'likes': likes_count})
+    return JsonResponse({"success": True, "liked": liked, "likes": likes_count})
 
 
 # Configurar logging
 logger = logging.getLogger(__name__)
 
+
 def mascotaDetailsView(request, idPet):
     mascota = get_object_or_404(Pet, idPet=idPet)
     # Obtener posts relacionados a la mascota (por instancia)
-    posts = Post.objects.filter(pet=mascota).order_by('-created_at').all()
+    posts = Post.objects.filter(pet=mascota).order_by("-created_at").all()
     comentarios = {}
     likes = {}
     user_liked_post_ids = set()
     if request.user.is_authenticated:
         user_liked_post_ids = set(
             Like.objects.filter(user=request.user, post__in=posts).values_list(
-                'post_id', flat=True)
+                "post_id", flat=True
+            )
         )
     for post in posts:
         comentarios[post.id] = Comment.objects.filter(post=post).all()
@@ -59,58 +63,81 @@ def mascotaDetailsView(request, idPet):
         form = CommentForm(request.POST)
         adoption_form = AdoptionForm(request.POST)
 
-        if request.user.is_authenticated and 'comment_post_id' in request.POST:
-            comment_content = request.POST.get('comment_content', '').strip()
-            comment_post_id = request.POST.get('comment_post_id')
+        if request.user.is_authenticated and "comment_post_id" in request.POST:
+            comment_content = request.POST.get("comment_content", "").strip()
+            comment_content = request.POST.get("comment_content", "").strip()
+            # Validación de tipo y contra inyección SQL
+            if not comment_content or len(comment_content) < 2:
+                messages.error(
+                    request, "El comentario no puede estar vacío o ser muy corto."
+                )
+                return redirect("mascotaDetails", idPet=mascota.idPet)
+            if len(comment_content) > 300:
+                messages.error(
+                    request, "El comentario es demasiado largo (máx. 300 caracteres)."
+                )
+                return redirect("mascotaDetails", idPet=mascota.idPet)
+            patrones_sql = [
+                r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
+                r"(['\";=])",
+            ]
+            for patron in patrones_sql:
+                if re.search(patron, comment_content, re.IGNORECASE):
+                    messages.error(request, "El comentario contiene caracteres o palabras no permitidas.")
+                    return redirect("mascotaDetails", idPet=mascota.idPet)
+    
+            comment_post_id = request.POST.get("comment_post_id")
             if comment_content and comment_post_id:
                 try:
                     post = Post.objects.get(id=comment_post_id)
                     comment = Comment.objects.create(
-                        post=post,
-                        user=request.user,
-                        content=comment_content
+                        post=post, user=request.user, content=comment_content
                     )
                     # Notificación eliminada para evitar error de importación
-                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    if request.headers.get("x-requested-with") == "XMLHttpRequest":
                         from django.http import JsonResponse
-                        return JsonResponse({
-                            'success': True,
-                            'username': request.user.username,
-                            'content': comment_content
-                        })
-                    messages.success(request, 'Comentario publicado.')
+
+                        return JsonResponse(
+                            {
+                                "success": True,
+                                "username": request.user.username,
+                                "content": comment_content,
+                            }
+                        )
+                    messages.success(request, "Comentario publicado.")
                 except Exception as e:
                     logger.error(f"Error al guardar el comentario: {e}")
-                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    if request.headers.get("x-requested-with") == "XMLHttpRequest":
                         from django.http import JsonResponse
-                        return JsonResponse({'success': False})
-                    messages.error(
-                        request, 'No se pudo guardar el comentario.')
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+
+                        return JsonResponse({"success": False})
+                    messages.error(request, "No se pudo guardar el comentario.")
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 from django.http import JsonResponse
-                return JsonResponse({'success': False})
-            return redirect('perfil_mascota', idPet=mascota.idPet)
+
+                return JsonResponse({"success": False})
+            return redirect("perfil_mascota", idPet=mascota.idPet)
 
         if adoption_form.is_valid():
             try:
                 new_adoption = adoption_form.save(commit=False)
                 # permitir pet_id desde POST si viene del modal
-                pet_id = (request.POST.get('pet_id') or '').strip()
+                pet_id = (request.POST.get("pet_id") or "").strip()
                 pet_obj = None
                 if pet_id:
                     # intentar por idPet primero (clave primaria personalizada)
                     pet_obj = Pet.objects.filter(idPet=pet_id).first()
                     if not pet_obj:
                         try:
-                            pet_obj = Pet.objects.filter(
-                                pk=int(pet_id)).first()
+                            pet_obj = Pet.objects.filter(pk=int(pet_id)).first()
                         except Exception:
                             pet_obj = None
                 if pet_id and not pet_obj:
                     logger.warning(
-                        f"Solicitud de adopción (perfil): pet_id recibido='{pet_id}' no corresponde a ninguna Mascota")
-                    messages.error(request, 'Mascota no válida para adopción.')
-                    return redirect('perfil_mascota', idPet=mascota.idPet)
+                        f"Solicitud de adopción (perfil): pet_id recibido='{pet_id}' no corresponde a ninguna Mascota"
+                    )
+                    messages.error(request, "Mascota no válida para adopción.")
+                    return redirect("perfil_mascota", idPet=mascota.idPet)
                 if pet_obj:
                     new_adoption.pet = pet_obj
                 else:
@@ -118,14 +145,15 @@ def mascotaDetailsView(request, idPet):
 
                 new_adoption.save()
                 pet_obj.save()
-                adoption_form = AdoptionForm()  # Resetear el formulario después de guardar
+                adoption_form = (
+                    AdoptionForm()
+                )  # Resetear el formulario después de guardar
                 messages.success(
-                    request, 'Solicitud de adopción enviada correctamente.')
+                    request, "Solicitud de adopción enviada correctamente."
+                )
             except Exception as e:
-                logger.error(
-                    f"Error al guardar adopción en vista mascota: {e}")
-                messages.error(
-                    request, 'Error al procesar la solicitud de adopción.')
+                logger.error(f"Error al guardar adopción en vista mascota: {e}")
+                messages.error(request, "Error al procesar la solicitud de adopción.")
 
     return render(
         request,
