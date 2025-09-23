@@ -314,8 +314,9 @@
                 <div class="border-t pt-6">
                     <h4 class="font-semibold text-gray-800 mb-3">Agregar comentario</h4>
                     <div class="space-y-3">
-                        <input type="text" placeholder="Tu nombre"
-                            class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint">
+                        <div class="w-full p-3 border border-gray-200 rounded-xl bg-gray-100 text-gray-700">
+                            <span><strong>Usuario:</strong> {{ request.user.username }}</span>
+                        </div>
                         <textarea placeholder="Comparte tu experiencia..."
                             class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint h-20 resize-none"></textarea>
                         <div class="flex items-center gap-3">
