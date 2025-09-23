@@ -36,37 +36,45 @@ def all_notifications_fragment(request):
     from mascota.models import Pet
     from usuarios.models import UserProfile
     from index.models import Notifications as Notification
-    user_profile = UserProfile.objects.select_related(
-        'user').filter(user=request.user).first()
+
+    user_profile = (
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
+    )
     mascotas = []
     if user_profile:
         mascotas = list(Pet.objects.filter(creator=user_profile))
     # Traer notificaciones y agregar foto del post si existe
-    notificaciones = list(Notification.objects.filter(user=request.user).select_related(
-        'post').values('id', 'type', 'message', 'created_at', 'is_read', 'post_id'))
-    post_ids = [n['post_id'] for n in notificaciones if n['post_id']]
-    post_photos = {
-        p.id: p.photo_url for p in Post.objects.filter(id__in=post_ids)}
+    notificaciones = list(
+        Notification.objects.filter(user=request.user)
+        .select_related("post")
+        .values("id", "type", "message", "created_at", "is_read", "post_id")
+    )
+    post_ids = [n["post_id"] for n in notificaciones if n["post_id"]]
+    post_photos = {p.id: p.photo_url for p in Post.objects.filter(id__in=post_ids)}
     for n in notificaciones:
-        n['notif_type'] = n['type']
-        n['is_adoption'] = False
-        n['photo_url'] = post_photos.get(n['post_id'])
+        n["notif_type"] = n["type"]
+        n["is_adoption"] = False
+        n["photo_url"] = post_photos.get(n["post_id"])
     if mascotas:
-        adopciones = list(Adoption.objects.filter(pet__in=mascotas).values(
-            'id', 'adopterName', 'message', 'created_at', 'pet_id', 'is_read'))
+        adopciones = list(
+            Adoption.objects.filter(pet__in=mascotas).values(
+                "id", "adopterName", "message", "created_at", "pet_id", "is_read"
+            )
+        )
         pet_map = {p.idPet: p.name for p in mascotas}
     else:
         adopciones = []
         pet_map = {}
     for a in adopciones:
-        a['notif_type'] = 'adoption'
-        a['is_adoption'] = True
-        a['pet_name'] = pet_map.get(a['pet_id'], 'Mascota')
+        a["notif_type"] = "adoption"
+        a["is_adoption"] = True
+        a["pet_name"] = pet_map.get(a["pet_id"], "Mascota")
     all_notifs = notificaciones + adopciones
-    all_notifs.sort(key=lambda x: x['created_at'], reverse=True)
-    html = render_to_string('all_notifications_fragment.html', {
-                            'all_notifs': all_notifs})
-    return JsonResponse({'html': html})
+    all_notifs.sort(key=lambda x: x["created_at"], reverse=True)
+    html = render_to_string(
+        "all_notifications_fragment.html", {"all_notifs": all_notifs}
+    )
+    return JsonResponse({"html": html})
 
 
 # Endpoint para retornar solo el fragmento de solicitudes de adopción (para AJAX)
@@ -77,13 +85,18 @@ def adoption_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
     from usuarios.models import UserProfile
-    user_profile = UserProfile.objects.select_related(
-        'user').filter(user=request.user).first()
+
+    user_profile = (
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
+    )
     mascotas = Pet.objects.filter(creator=user_profile)
-    notificaciones_adopciones = Adoption.objects.filter(
-        pet__in=mascotas).order_by('-created_at')
-    html = render_to_string('adoption_notifications_fragment.html', {
-                            'notificaciones_adopciones': notificaciones_adopciones})
+    notificaciones_adopciones = Adoption.objects.filter(pet__in=mascotas).order_by(
+        "-created_at"
+    )
+    html = render_to_string(
+        "adoption_notifications_fragment.html",
+        {"notificaciones_adopciones": notificaciones_adopciones},
+    )
     return HttpResponse(html)
 
 
@@ -139,8 +152,7 @@ def subir_historia(request):
             return JsonResponse(
                 {"success": False, "error": upload_error or "upload_failed"}
             )
-    historia = Histories.objects.create(
-        author=request.user, photo_url=url or "")
+    historia = Histories.objects.create(author=request.user, photo_url=url or "")
     return JsonResponse({"success": True, "historia_id": historia.id, "photo_url": url})
 
 
@@ -180,17 +192,17 @@ def notificaciones_json(request):
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "not_authenticated"})
-    Notification.objects.filter(
-        user=request.user, is_read=False).update(is_read=True)
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     # Marcar adopciones como leídas
     from adopcion.models import Adoption
     from mascota.models import Pet
     from usuarios.models import UserProfile
-    user_profile = UserProfile.objects.select_related(
-        'user').filter(user=request.user).first()
+
+    user_profile = (
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
+    )
     mascotas = Pet.objects.filter(creator=user_profile)
-    Adoption.objects.filter(
-        pet__in=mascotas, is_read=False).update(is_read=True)
+    Adoption.objects.filter(pet__in=mascotas, is_read=False).update(is_read=True)
     return JsonResponse({"success": True})
 
 
@@ -248,8 +260,7 @@ def principal(request):
         try:
             from usuarios.models import UserProfile
 
-            user_profile = UserProfile.objects.filter(
-                user=request.user).first()
+            user_profile = UserProfile.objects.filter(user=request.user).first()
             if user_profile:
                 mascotas = Pet.objects.filter(creator=user_profile)
             else:
@@ -280,8 +291,7 @@ def principal(request):
                         request, "La imagen es demasiado grande. Máximo 5MB."
                     )
                     return redirect("principal")
-                allowed_types = ["image/jpeg",
-                                 "image/png", "image/gif", "image/webp"]
+                allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
                 if foto.content_type not in allowed_types:
                     messages.error(
                         request, "Tipo de archivo no válido. Solo se permiten imágenes."
@@ -308,8 +318,7 @@ def principal(request):
                         nombre_archivo = f"{uuid.uuid4()}_{foto.name}"
                         ruta_supabase = f"{usuario}/{nombre_mascota}/{nombre_archivo}"
                         rutaStorage = ruta_supabase
-                        logger.info(
-                            f"Subiendo imagen a Supabase: {ruta_supabase}")
+                        logger.info(f"Subiendo imagen a Supabase: {ruta_supabase}")
                         foto_data = foto.read()
                         foto.seek(0)
                         res = supabase.storage.from_("Usuarios").upload(
@@ -334,8 +343,7 @@ def principal(request):
                         )
                         return redirect("principal")
                 else:
-                    messages.error(
-                        request, "Servicio de almacenamiento no disponible.")
+                    messages.error(request, "Servicio de almacenamiento no disponible.")
                     return redirect("principal")
                 post_obj = Post.objects.create(
                     pet=mascota,
@@ -355,6 +363,28 @@ def principal(request):
         # Guardar comentario
         elif request.user.is_authenticated and "comment_post_id" in request.POST:
             comment_content = request.POST.get("comment_content", "").strip()
+            # Validación de tipo y contra inyección SQL
+            if not comment_content or len(comment_content) < 2:
+                messages.error(
+                    request, "El comentario no puede estar vacío o ser muy corto."
+                )
+                return redirect("principal")
+            if len(comment_content) > 300:
+                messages.error(
+                    request, "El comentario es demasiado largo (máx. 300 caracteres)."
+                )
+                return redirect("principal")
+            patrones_sql = [
+                r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
+                r"(['\";=])",
+            ]
+            for patron in patrones_sql:
+                if re.search(patron, comment_content, re.IGNORECASE):
+                    messages.error(
+                        request,
+                        "El comentario contiene caracteres o palabras no permitidas.",
+                    )
+                    return redirect("principal")
             comment_post_id = request.POST.get("comment_post_id")
             if comment_content and comment_post_id:
                 try:
@@ -392,8 +422,7 @@ def principal(request):
                         from django.http import JsonResponse
 
                         return JsonResponse({"success": False})
-                    messages.error(
-                        request, "No se pudo guardar el comentario.")
+                    messages.error(request, "No se pudo guardar el comentario.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 from django.http import JsonResponse
 
@@ -407,8 +436,7 @@ def principal(request):
                 adoption.is_read = False  # Siempre nueva solicitud no leída
                 # obtener pet id enviado desde el modal (limpiar y manejar varios casos)
                 pet_id = (
-                    request.POST.get("pet_id") or request.POST.get(
-                        "mascota_id") or ""
+                    request.POST.get("pet_id") or request.POST.get("mascota_id") or ""
                 ).strip()
                 pet = None
                 if pet_id:
@@ -456,8 +484,7 @@ def principal(request):
     user_liked_post_ids = set()
     if request.user.is_authenticated:
         user_liked_post_ids = set(
-            Like.objects.filter(user=request.user).values_list(
-                "post_id", flat=True)
+            Like.objects.filter(user=request.user).values_list("post_id", flat=True)
         )
     # Historias activas (últimas 24h)
     from django.utils import timezone
@@ -472,8 +499,7 @@ def principal(request):
     for h in historias_qs:
         username = h.author.username
         if username not in historias_por_usuario:
-            historias_por_usuario[username] = {
-                "user": h.author, "historias": []}
+            historias_por_usuario[username] = {"user": h.author, "historias": []}
         historias_por_usuario[username]["historias"].append(h)
     context = {
         "mascotas_usuario": mascotas,
@@ -550,8 +576,7 @@ def search(request):
         Pet.objects, ["name", "tipoAnimal__nombre", "breed"], querysearch
     )
     servicios_qs = search_with_rank(
-        ServicesHealth.objects, ["name", "type",
-                                 "services", "owner"], querysearch
+        ServicesHealth.objects, ["name", "type", "services", "owner"], querysearch
     )
     tiendas_qs = search_with_rank(Store.objects, ["name"], querysearch)
     # Fix: faltaba la coma entre "name" y "description"
