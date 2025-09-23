@@ -156,6 +156,17 @@
     <h2 class="text-2xl font-bold text-gray-800 text-center">
       Publicaciones de {{ mascota.name }}
     </h2>
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} p-4 rounded-md shadow-md {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
     {% if posts %}
     {% for post in posts %}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 instagram-card">
@@ -239,7 +250,6 @@
               <i class="fas fa-comment text-xl"></i>
               <span class="ml-1 text-xs align-middle font-semibold">{{ post.comments.count }}</span>
             </button>
-            <!-- Botón de compartir eliminado -->
             <span class="ml-auto text-sm font-semibold text-gray-700 like-count">{{ post.likes.count }} Me gusta</span>
           </div>
 

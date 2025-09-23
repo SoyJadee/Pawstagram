@@ -1,6 +1,8 @@
 from django import forms
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from .models import Pet
+import re
+
 
 class PetForm(forms.ModelForm):
     profile_photo_url = forms.ImageField(
@@ -76,7 +78,7 @@ class PetForm(forms.ModelForm):
     class Meta:
         model = Pet
         fields = [
-            'idPet',
+            "idPet",
             "profile_photo_url",
             "name",
             "age",
@@ -120,3 +122,17 @@ class PetForm(forms.ModelForm):
                 attrs={"class": "h-5 w-5 text-paw-teal focus:ring-paw-teal"}
             ),
         }
+
+    def clean_description(self):
+        description = self.cleaned_data.get("description", "")
+        # Patrones básicos de inyección SQL
+        patrones_sql = [
+            r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
+            r"(['\";=])",
+        ]
+        for patron in patrones_sql:
+            if re.search(patron, description, re.IGNORECASE):
+                raise forms.ValidationError(
+                    "La descripción contiene caracteres o palabras no permitidas."
+                )
+        return description
