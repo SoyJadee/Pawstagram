@@ -13,5 +13,7 @@ urlpatterns = [
          name='marcar_notificaciones_leidas'),
     path('notificaciones/json/', views.notificaciones_json,
          name='notificaciones_json'),
+     # Stream Server-Sent Events (SSE) como proxy backend seguro
+     path('notificaciones/stream/', views.notifications_stream, name='notifications_stream'),
     path('historias/subir/', views.subir_historia, name='subir_historia'),
 ]
