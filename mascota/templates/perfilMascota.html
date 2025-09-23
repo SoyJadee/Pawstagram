@@ -68,7 +68,7 @@
           {{ mascota.tipoAnimal.nombre }}
         </div>
         <p class="text-xl text-gray-600 mb-4">
-          {{ mascota.breed }} • {{ mascota.age }} años • {% if mascota.gender == 'male' %}
+          {{ mascota.breed|default:"N/A" }} • {{ mascota.age|default:"N/A" }} años • {% if mascota.gender == 'male' %}
           Macho
           {% elif mascota.gender == 'female' %}
           Hembra
