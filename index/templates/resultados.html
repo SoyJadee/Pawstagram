@@ -123,7 +123,14 @@
               </div>
               <div class="p-6">
                 <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ mascota.name|highlight:query }}</h4>
-                <p class="text-gray-600 mb-2">{{ mascota.tipoAnimal|highlight:query }} • {{ mascota.breed|highlight:query }} • {{ mascota.age }} años • {{ mascota.gender }}</p>
+                <p class="text-gray-600 mb-2">{{ mascota.tipoAnimal|highlight:query }} • {{ mascota.breed|highlight:query }} • {{ mascota.age }} años • {% if mascota.gender == 'male' %}
+                Macho
+                {% elif mascota.gender == 'female' %}
+                Hembra
+                {% else %}
+                Desconocido
+                {% endif %}
+                </p>
                 <p class="text-gray-500 text-sm mb-3">📍 {{ mascota.ubication }}</p>
                 <p class="text-gray-700 mb-4 leading-relaxed">{{ mascota.description|truncatechars:200 }}</p>
                 <a href="{% url 'mascotaDetails' mascota.idPet %}">
@@ -153,7 +160,7 @@
                         <p class="text-gray-600 mb-2">Precio de la consulta: {{ servicio.consultPrice }}</p>
                         <p class="text-gray-600 mb-2">Servicios: {{ servicio.services|highlight:query|safe }} </p>
                         <p class="text-gray-500 text-sm mb-3">📍 {{ servicio.address }}</p>
-                        <a href="#">
+                        <a href="{% url 'servicios_salud' %}">
                           <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
                             <i class="fas fa-eye mr-2"></i>Ver perfil
                           </button>
@@ -176,7 +183,7 @@
                         <p class="text-gray-600 mb-2">{{ tienda.owner }}</p>
                         <p class="text-gray-500 text-sm mb-3">📍 {{ tienda.location }}</p>
                         <p class="text-gray-700 mb-4 leading-relaxed">{{ tienda.description|truncatechars:200 }}</p>
-                        <a href="#">
+                        <a href="{% url 'catalogo' tienda.id %}">
                           <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
                             <i class="fas fa-eye mr-2"></i>Ver perfil
                           </button>
@@ -198,7 +205,7 @@
                         <p class="text-gray-600 mb-2">${{ producto.price }} - Stock: {{ producto.stock }}</p>
                         <p class="text-gray-500 text-sm mb-3"><i class="fas fa-store mr-2"></i> {{ producto.store.name }}</p>
                         <p class="text-gray-700 mb-4 leading-relaxed">{{ producto.description|highlight:query|truncatechars:200 }}</p>
-                        <a href="#">
+                        <a href="{% url 'catalogo' producto.store.id %}">
                           <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
                             <i class="fas fa-eye mr-2"></i>Ver perfil
                           </button>

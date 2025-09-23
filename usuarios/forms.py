@@ -125,7 +125,7 @@ class UserCreationForm(UserCreationForm):
                     "autocomplete": "new-password",
                     "placeholder": "Repite la contraseña",
                     "maxlength": "20",
-                    "id": "password2",
+                    "id": "password",
                     "class": common_classes,
                 }
             )
