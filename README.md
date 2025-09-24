@@ -1,42 +1,50 @@
-# Pawstagram
+# Pawly
 
-Pawstagram es una plataforma web tipo red social dedicada a los amantes de los animales, diseñada para conectar personas, tiendas, refugios y eventos relacionados con mascotas. El proyecto está construido con una arquitectura robusta y programación avanzada, integrando múltiples módulos para ofrecer una experiencia digital completa.
+¡Bienvenido a Pawly! 🐾
 
-## Funcionalidades principales
+Pawly es una plataforma social integral, creada con profesionalismo y un profundo amor por los animales. Nuestra misión es conectar personas, refugios, tiendas y eventos, facilitando la adopción responsable, el bienestar animal y la construcción de una comunidad solidaria.
 
-- **Visualización de tiendas especializadas:**
-  - Los usuarios pueden explorar tiendas de productos para mascotas.
+---
+
+## 🌟 Funcionalidades principales
+
+- **Adopción de mascotas:**
+  - Solicita la adopción de mascotas y consulta el estado de tus solicitudes.
+  - Perfiles completos de animales en adopción, con fotos, historias y salud.
+  - Notificaciones automáticas sobre el avance de tus procesos de adopción.
+
+- **Directorio de salud animal:**
+  - Encuentra veterinarias, peluquerías y spas para mascotas cercanos a ti.
+  - Consulta reseñas y calificaciones de otros usuarios.
+  - Visualiza servicios en mapas interactivos y obtén rutas desde tu ubicación.
+
+- **Tienda y catálogo de productos:**
+  - Explora tiendas especializadas y catálogos de productos para mascotas.
   - Filtros por categoría, ubicación y disponibilidad.
-  - Integración de APIs de mapas para mostrar ubicaciones.
-  - Validación de datos en tiempo real y diseño responsivo.
 
-- **Perfiles de mascotas en adopción:**
-  - Cada mascota cuenta con un perfil propio (fotos, historia, estado de salud).
-  - Contacto directo con refugios.
-  - Base de datos relacional bien estructurada.
-  - Validación de formularios y control de acceso seguro.
+- **Gestión de usuarios y perfiles:**
+  - Registro, inicio de sesión y edición de perfil.
+  - Publica, edita y elimina tus propias publicaciones y mascotas.
+  - Visualiza y administra tus mascotas adoptadas y disponibles.
 
-- **Geolocalización de tiendas, refugios y eventos:**
-  - Visualización de ubicaciones cercanas mediante servicios de geolocalización.
-  - Uso de la librería [Leaflet](https://leafletjs.com/) para mapas interactivos.
-  - Lógica backend para manejo de coordenadas y agrupamiento de puntos.
+- **Red social y comunidad:**
+  - Feed principal con publicaciones, historias y comentarios.
+  - Sistema de “likes”, notificaciones y búsqueda avanzada.
+  - Calendario de eventos y campañas animalistas.
 
-- **Gestión de usuarios y eventos:**
-  - Registro de usuarios.
-  - Visualización de eventos y fechas importantes.
-  - Notificaciones personalizadas.
+---
 
-## Instalación del proyecto
+## 🚀 Instalación rápida
 
-Sigue estos pasos para instalar y ejecutar Pawstagram en tu entorno local:
+Sigue estos pasos para tener Pawly funcionando en tu entorno local:
 
 1. **Clona el repositorio:**
 	```bash
-	git clone https://github.com/SoyJadee/Pawstagram.git
-	cd Pawstagram/pawstagram
+	git clone https://github.com/SoyJadee/Pawly.git
+	cd Pawly/Pawly
 	```
 
-2. **Crea y activa un entorno virtual (opcional pero recomendado):**
+2. **Crea y activa un entorno virtual (recomendado):**
 	```bash
 	python -m venv venv
 	# En Windows
@@ -49,6 +57,7 @@ Sigue estos pasos para instalar y ejecutar Pawstagram en tu entorno local:
 	```bash
 	pip install -r requirements.txt
 	```
+
 4. **Ejecuta el servidor de desarrollo:**
 	```bash
 	python manage.py runserver
@@ -57,11 +66,14 @@ Sigue estos pasos para instalar y ejecutar Pawstagram en tu entorno local:
 5. **Accede a la aplicación:**
 	Abre tu navegador y visita [http://localhost:8000](http://localhost:8000)
 
-## Notas adicionales
+---
 
-- Para la funcionalidad de mapas, asegúrate de tener acceso a internet para cargar Leaflet y los mapas base.
-- Puedes personalizar la configuración de la base de datos y otros parámetros en `.env`.
-- Si deseas contribuir, por favor abre un issue o un pull request en el repositorio.
+## 📝 Notas y recomendaciones
+
+- Para la visualización de mapas, asegúrate de tener conexión a internet.
+- Puedes personalizar la configuración de la base de datos y otros parámetros en el archivo `.env`.
+- Si compartes nuestro amor por los animales y la tecnología, ¡anímate a contribuir! Abre un issue o pull request y sé parte de la familia Pawly.
 
 ---
-Desarrollado por el equipo de Pawstagram.
+
+Desarrollado con dedicación, profesionalismo y mucho cariño por el equipo de Pawly. Porque cada mascota merece un hogar y cada persona un amigo fiel. 🐶🐱🐰
