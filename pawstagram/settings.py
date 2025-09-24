@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from urllib.parse import urlparse
 from pathlib import Path
 from decouple import config
 
@@ -40,6 +41,27 @@ if RENDER_HOST:
     origin = f"https://{RENDER_HOST}"
     if origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
+
+# También soportar RENDER_EXTERNAL_URL
+RENDER_URL = os.environ.get('RENDER_EXTERNAL_URL')
+if RENDER_URL:
+    try:
+        parsed = urlparse(RENDER_URL)
+        host_from_url = parsed.netloc
+        if host_from_url and host_from_url not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host_from_url)
+        origin_from_url = f"{parsed.scheme}://{host_from_url}"
+        if host_from_url and origin_from_url not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(origin_from_url)
+    except Exception:
+        pass
+
+# Fallback: si estamos en Render, permitir wildcard de onrender.com
+if os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID'):
+    if '.onrender.com' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('.onrender.com')
+    if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 # Application definition
 SUPABASE_URL = config("SUPABASE_URL")
