@@ -1,107 +1,156 @@
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from django.shortcuts import render, redirect
+from .models import ServicesHealth, Reviews
+from .forms import ReviewForm
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
+from django.utils import timezone
+from django.contrib import messages
 @csrf_exempt
 def obtener_ruta_openrouteservice(request):
-	if request.method == 'POST':
-		import json
-		data = json.loads(request.body.decode('utf-8'))
-		origen = data.get('origen')  # [lon, lat]
-		destino = data.get('destino')  # [lon, lat]
-		if not origen or not destino:
-			return JsonResponse({'error': 'Faltan coordenadas'}, status=400)
-		api_key = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQyYmI2ZGVmY2U5YzRlNTU5ZGIzMzA1OTgyODVjOTY4IiwiaCI6Im11cm11cjY0In0='
-		url = 'https://api.openrouteservice.org/v2/directions/driving-car'
-		body = {
-			'coordinates': [origen, destino]
-		}
-		headers = {
-			'Authorization': api_key,
-			'Content-Type': 'application/json',
-			'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
-		}
-		try:
-			response = requests.post(url, json=body, headers=headers, timeout=10)
-			if response.status_code == 200:
-				return JsonResponse(response.json())
-			else:
-				return JsonResponse({'error': 'Error en OpenRouteService', 'status': response.status_code}, status=500)
-		except Exception as e:
-			return JsonResponse({'error': str(e)}, status=500)
-	return JsonResponse({'error': 'Método no permitido'}, status=405)
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-@csrf_exempt
-def guardar_comentario_salud(request):
-	if request.method == 'POST':
-		user = request.POST.get('user')
-		comment = request.POST.get('comment')
-		rating = request.POST.get('rating')
-		service_id = request.POST.get('service_id')
-		if not (user and comment and rating and service_id):
-			return JsonResponse({'success': False, 'error': 'Faltan campos obligatorios'})
-		try:
-			review = Reviews.objects.create(
-				user=user,
-				comment=comment,
-				rating=rating,
-				service_id=service_id,
-				created_at=timezone.now()
-			)
-			return JsonResponse({'success': True})
-		except Exception as e:
-			return JsonResponse({'success': False, 'error': str(e)})
-	return JsonResponse({'success': False, 'error': 'Método no permitido'})
+    if request.method == "POST":
+        import json
 
+        data = json.loads(request.body.decode("utf-8"))
+        origen = data.get("origen")  # [lon, lat]
+        destino = data.get("destino")  # [lon, lat]
+        if not origen or not destino:
+            return JsonResponse({"error": "Faltan coordenadas"}, status=400)
+        api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQyYmI2ZGVmY2U5YzRlNTU5ZGIzMzA1OTgyODVjOTY4IiwiaCI6Im11cm11cjY0In0="
+        url = "https://api.openrouteservice.org/v2/directions/driving-car"
+        body = {"coordinates": [origen, destino]}
+        headers = {
+            "Authorization": api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
+        }
+        try:
+            response = requests.post(url, json=body, headers=headers, timeout=10)
+            if response.status_code == 200:
+                return JsonResponse(response.json())
+            else:
+                return JsonResponse(
+                    {
+                        "error": "Error en OpenRouteService",
+                        "status": response.status_code,
+                    },
+                    status=500,
+                )
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Método no permitido"}, status=405)
 
-from django.shortcuts import render
-from .models import ServicesHealth, Reviews
-from django.http import JsonResponse
 def obtener_comentarios_salud(request):
-	service_id = request.GET.get('service_id')
-	comentarios = []
-	if service_id:
-		reviews = Reviews.objects.filter(service_id=service_id).order_by('-created_at')
-		for r in reviews:
-			comentarios.append({
-				'user': r.user,
-				'rating': float(r.rating),
-				'comment': r.comment,
-				'created_at': r.created_at.isoformat()
-			})
-	return JsonResponse({'success': True, 'comentarios': comentarios})
+    service_id = request.GET.get("service_id")
+    comentarios = []
+    if not service_id:
+        return JsonResponse({"success": False, "error": "Falta service_id"}, status=400)
+    # Validar que sea un entero para evitar 500 por conversión
+    try:
+        service_id_int = int(service_id)
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "error": "service_id inválido"}, status=400)
+
+    reviews = Reviews.objects.filter(service_id=service_id_int).order_by("-created_at")
+    for r in reviews:
+        comentarios.append(
+            {
+                "rating": float(r.rating),
+                "comment": r.comment,
+                "created_at": r.created_at.isoformat(),
+            }
+        )
+    return JsonResponse({"success": True, "comentarios": comentarios})
 
 def servicios_salud(request):
-	servicios = ServicesHealth.objects.all()
-	veterinarias = []
-	from datetime import datetime
-	now = datetime.now().time()
-	for s in servicios:
-		# Parsear coordenadas si existen
-		coords = None
-		if s.coordinates:
-			try:
-				lat, lon = map(float, s.coordinates.split(','))
-				coords = {'lat': lat, 'lon': lon}
-			except:
-				coords = None
-		# Determinar estado abierto/cerrado
-		estado = 'cerrado'
-		if s.horarioStart and s.horarioEnd:
-			if s.horarioStart <= now <= s.horarioEnd:
-				estado = 'abierto'
-		veterinarias.append({
-			'id': s.id,
-			'name': s.name,
-			'address': s.address,
-			'coords': coords,
-			'type': s.type,
-			'email': s.email,
-			'services': s.services,
-			'description': s.description,
-			'consultprice': s.consultPrice,
-			'estado': estado,
-			'phone': s.phone
-		})
-	return render(request, 'salud.html', {'veterinarias': veterinarias})
+    if request.method == "GET":
+        servicios = ServicesHealth.objects.all()
+        veterinarias = []
+
+        now = datetime.now().time()
+        for s in servicios:
+            # Parsear coordenadas si existen
+            coords = None
+            if s.coordinates:
+                try:
+                    lat, lon = map(float, s.coordinates.split(","))
+                    coords = {"lat": lat, "lon": lon}
+                except:
+                    coords = None
+            # Determinar estado abierto/cerrado
+            estado = "cerrado"
+            if s.horarioStart and s.horarioEnd:
+                if s.horarioStart <= now <= s.horarioEnd:
+                    estado = "abierto"
+            veterinarias.append(
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "address": s.address,
+                    "coords": coords,
+                    "type": s.type,
+                    "email": s.email,
+                    "services": s.services,
+                    "description": s.description,
+                    "consultprice": s.consultPrice,
+                    "estado": estado,
+                    "phone": s.phone,
+                }
+            )
+        return render(request, "salud.html", {"veterinarias": veterinarias, "form": ReviewForm(initial={
+			"email": request.user.email if request.user.is_authenticated else ""})})
+
+    elif request.method == "POST":
+        form = ReviewForm(request.POST)
+        rating = request.POST.get("rating")
+        service_id = request.POST.get("servicio")
+
+        # Validaciones básicas fuera del form (rating/servicio vienen de inputs ocultos)
+        if not rating or not service_id:
+            messages.error(request, "Faltan campos obligatorios (calificación o servicio).")
+            return redirect("servicios_salud")
+
+        try:
+            rating_val = int(rating)
+            if rating_val < 1 or rating_val > 5:
+                raise ValueError()
+        except (TypeError, ValueError):
+            messages.error(request, "La calificación es inválida.")
+            return redirect("servicios_salud")
+
+        try:
+            initial_service = ServicesHealth.objects.get(id=service_id)
+        except ServicesHealth.DoesNotExist:
+            messages.error(request, "El servicio seleccionado no existe.")
+            return redirect("servicios_salud")
+
+        if not form.is_valid():
+            # Mostrar errores del formulario en mensajes y redirigir (PRG)
+            for field, errs in form.errors.items():
+                for err in errs:
+                    messages.error(request, f"{field}: {err}")
+            return redirect("servicios_salud")
+
+        # Evitar duplicados por email + servicio
+        registroPasado = Reviews.objects.filter(
+            email=form.cleaned_data.get("email"), service_id=service_id
+        ).exists()
+        if registroPasado:
+            messages.warning(request, "Ya has enviado una reseña para este servicio.")
+            return redirect("servicios_salud")
+
+        try:
+            Reviews.objects.create(
+                email=form.cleaned_data.get("email"),
+                comment=form.cleaned_data.get("comment"),
+                rating=rating_val,
+                service=initial_service,
+                created_at=timezone.now(),
+            )
+            messages.success(request, "¡Gracias por tu reseña!")
+        except Exception as e:
+            messages.error(request, f"No se pudo guardar tu reseña: {str(e)}")
+        return redirect("servicios_salud")

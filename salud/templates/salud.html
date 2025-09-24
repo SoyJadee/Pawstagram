@@ -93,6 +93,21 @@
             <p class="text-xl text-gray-600">Encuentra los mejores veterinarios, peluquerías y spas cerca de ti</p>
         </div>
 
+        {# Mostrar mensajes de Django si existen #}
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="px-4 py-3 rounded-xl text-sm font-medium {{ message.tags }} {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-gray-50 text-gray-700 border border-gray-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if message %}
+        {% for msg in message %}
+        <div class="alert alert-info">{{ msg }}</div>
+        {% endfor %}
+        {% endif %}
         <!-- Filtros -->
         <div class="bg-white rounded-3xl card-shadow p-6 mb-8">
             <div class="flex flex-wrap gap-4 items-center justify-between">
@@ -195,7 +210,7 @@
                         <p class="text-gray-700 leading-relaxed">{{ veterinaria.description }}</p>
                     </div>
                     <!-- Botones de acción -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <button
                             onclick="showContact('{{ veterinaria.name }}', '{{ veterinaria.phone }}', '{{ veterinaria.email }}')"
                             class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all hover:shadow-md">
@@ -209,6 +224,10 @@
                             data-service-name="{{ veterinaria.name }}"
                             class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
                             💬 Comentarios
+                        </button>
+                        <button onclick="showRating(this)" data-service-id="{{ veterinaria.id }}" data-service-name="{{ veterinaria.name|escapejs }}"
+                            class="bg-yellow-400 hover:bg-yellow-500 text-white py-3 rounded-xl font-semibold transition-all hover:shadow-lg">
+                            ⭐ Calificar
                         </button>
                     </div>
                 </div>
@@ -268,7 +287,8 @@
                     <div class="text-6xl mb-4">⭐</div>
                     <h3 id="ratingServiceName" class="text-2xl font-bold text-gray-800 mb-4"></h3>
                     <p class="text-gray-600 mb-6">¿Cómo calificarías este servicio?</p>
-
+                    <form method="post" id="ratingForm" action="{% url 'servicios_salud' %}">
+                        {% csrf_token %}
                     <!-- Estrellas interactivas -->
                     <div class="rating-interactive flex justify-center gap-2 mb-6">
                         <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="1"></i>
@@ -277,21 +297,29 @@
                         <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="4"></i>
                         <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="5"></i>
                     </div>
-
+                    <input type="hidden" name="rating" id="ratingValue" value="">
+                    <input type="hidden" name="servicio" id="serviceIdInput" value="">
                     <div class="mb-6">
-                        <textarea id="ratingComment" placeholder="Comparte tu experiencia (opcional)..."
-                            class="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:border-mint h-24 resize-none"></textarea>
+                        Email*
+                        {{ form.email }}
                     </div>
 
+                                                            <div class="mb-6">
+                                                                    <label class="block text-gray-700 font-medium mb-2">Comentario (opcional)</label>
+                                                                    {{ form.comment }}
+                                                                    <p class="text-sm text-gray-500 mt-1">Puedes dejarlo vacío si solo deseas enviar una calificación.</p>
+                                                            </div>
+
                     <div class="flex gap-3">
-                        <button onclick="closeRatingModal()"
+                        <button type="button" onclick="closeRatingModal()"
                             class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
                             Cancelar
                         </button>
-                        <button onclick="submitRating()"
+                        <button type="submit"
                             class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
                             Enviar calificación
                         </button>
+                    </form>
                     </div>
                 </div>
             </div>
@@ -309,16 +337,23 @@
 
                 <!-- Lista de comentarios -->
                 <div class="space-y-4 mb-6"></div>
-
+                <form method="post" id="commentForm" action="{% url 'servicios_salud' %}">
+                    {% csrf_token %}
+                    <!-- Hidden necesarios para POST a servicios_salud -->
+                    <input type="hidden" name="rating" id="commentsRatingValue" value="">
+                    <input type="hidden" name="servicio" id="commentsServiceIdInput" value="">
                 <!-- Agregar comentario -->
                 <div class="border-t pt-6">
                     <h4 class="font-semibold text-gray-800 mb-3">Agregar comentario</h4>
                     <div class="space-y-3">
                         <div class="w-full p-3 border border-gray-200 rounded-xl bg-gray-100 text-gray-700">
-                            <span><strong>Usuario:</strong> {{ request.user.username }}</span>
+                            <span><strong>Email*</strong></span>
+                            {{ form.email }}
                         </div>
-                        <textarea placeholder="Comparte tu experiencia..."
-                            class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-mint h-20 resize-none"></textarea>
+                        
+                        <label class="block text-gray-700 font-medium mb-2">Comentario (opcional)</label>
+                                                                    {{ form.comment }}
+                                                                    <p class="text-sm text-gray-500 mt-1">Puedes dejarlo vacío si solo deseas enviar una calificación.</p>
                         <div class="flex items-center gap-3">
                             <span class="text-gray-600">Tu calificación:</span>
                             <div class="rating-interactive flex gap-1">
@@ -342,16 +377,71 @@
                         class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
                         Cerrar
                     </button>
-                    <button onclick="submitComment()"
+                    <button type="submit"
                         class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
                         Publicar comentario
                     </button>
+                </form>
                 </div>
             </div>
         </div>
 
         <script>
             var currentRating = 0;
+
+            // Helper global: crea una tarjeta de comentario sin usar innerHTML para el texto del comentario
+            function createCommentCard(c, fechaLocal) {
+                const card = document.createElement('div');
+                card.className = 'bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20';
+                const outer = document.createElement('div');
+                outer.className = 'flex items-start gap-3';
+                const body = document.createElement('div');
+                body.className = 'flex-1';
+                const head = document.createElement('div');
+                head.className = 'flex items-center gap-2 mb-1';
+                const stars = document.createElement('div');
+                stars.className = 'flex text-yellow-400 text-sm';
+                const filled = Math.max(0, Math.min(5, Math.round(Number(c.rating) || 0)));
+                for (let i = 0; i < filled; i++) {
+                    const iEl = document.createElement('i');
+                    iEl.className = 'fas fa-star';
+                    stars.appendChild(iEl);
+                }
+                for (let i = filled; i < 5; i++) {
+                    const iEl = document.createElement('i');
+                    iEl.className = 'far fa-star';
+                    stars.appendChild(iEl);
+                }
+                head.appendChild(stars);
+                const p = document.createElement('p');
+                p.className = 'text-gray-700 text-sm';
+                p.textContent = c.comment || '';
+                const footer = document.createElement('div');
+                footer.className = 'text-gray-500 text-xs mt-2';
+                footer.textContent = fechaLocal || '';
+                body.appendChild(head);
+                body.appendChild(p);
+                body.appendChild(footer);
+                outer.appendChild(body);
+                card.appendChild(outer);
+                return card;
+            }
+
+            // Helper global para CSRF
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
 
             function getUserLocation(callback) {
                 if (navigator.geolocation) {
@@ -626,16 +716,29 @@
                 }
             }
 
-            function showRating(serviceName) {
-                document.getElementById('ratingServiceName').textContent = serviceName;
+            function showRating(arg1, arg2) {
+                // Permite ser llamado como showRating(this) o showRating(id, name)
+                var serviceId, serviceName;
+                if (arg1 && arg1.dataset) {
+                    serviceId = arg1.getAttribute('data-service-id');
+                    serviceName = arg1.getAttribute('data-service-name');
+                } else {
+                    serviceId = arg1;
+                    serviceName = arg2;
+                }
+                document.getElementById('ratingServiceName').textContent = serviceName || '';
                 document.getElementById('ratingModal').classList.remove('hidden');
+                // Setear el servicio en input hidden
+                var serviceInput = document.getElementById('serviceIdInput');
+                if (serviceInput) serviceInput.value = String(serviceId);
+                // Limpiar rating previo
+                var ratingInput = document.getElementById('ratingValue');
+                if (ratingInput) ratingInput.value = '';
                 resetRatingStars();
             }
 
             function closeRatingModal() {
                 document.getElementById('ratingModal').classList.add('hidden');
-                currentRating = 0;
-                document.getElementById('ratingComment').value = '';
             }
 
             function resetRatingStars() {
@@ -646,16 +749,7 @@
                 });
             }
 
-            function submitRating() {
-                if (currentRating === 0) {
-                    alert('Por favor selecciona una calificación');
-                    return;
-                }
-                const comment = document.getElementById('ratingComment').value;
-                const serviceName = document.getElementById('ratingServiceName').textContent;
-                alert(`¡Gracias por calificar a ${serviceName} con ${currentRating} estrellas!`);
-                closeRatingModal();
-            }
+            // submitRating(): no se usa, la validación se realiza en el submit del formulario
 
             function showComments(button) {
                 const serviceName = button.getAttribute('data-service-name');
@@ -668,12 +762,20 @@
                 modal.setAttribute('data-service-id', serviceId);
                 modal.setAttribute('data-service-name', serviceName);
                 document.getElementById('commentsServiceName').textContent = serviceName;
+                // Setear hidden de servicio y limpiar rating previo
+                const serviceInput = document.getElementById('commentsServiceIdInput');
+                if (serviceInput) serviceInput.value = String(serviceId);
+                const ratingInput = document.getElementById('commentsRatingValue');
+                if (ratingInput) ratingInput.value = '';
+                // Resetear estrellas del bloque de comentarios
+                const commentStars = modal.querySelectorAll('.rating-interactive .star');
+                commentStars.forEach(star => { star.classList.remove('text-yellow-400'); star.classList.add('text-gray-300'); });
                 // Limpiar comentarios previos y mostrar cargando
                 const lista = modal.querySelector('.space-y-4.mb-6');
                 lista.innerHTML = '<div class="text-center text-gray-400">Cargando comentarios...</div>';
                 // Obtener comentarios reales por AJAX
-                fetch(`/salud/obtener-comentarios-salud/?service_id=${serviceId}`)
-                    .then(res => res.json())
+                fetch(`/salud/obtener-comentarios-salud/?service_id=${encodeURIComponent(serviceId)}`)
+                    .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
                     .then(data => {
                         if (data.success) {
                             if (data.comentarios.length === 0) {
@@ -700,26 +802,8 @@
                                             fechaLocal = d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
                                         }
                                     } catch { fechaLocal = c.created_at; }
-                                    lista.innerHTML += `
-                                    <div class=\"bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20\">
-                                        <div class=\"flex items-start gap-3\">
-                                            <div class=\"w-10 h-10 bg-gradient-to-br from-mint to-light-blue rounded-full flex items-center justify-center text-white font-bold\">
-                                                ${c.user.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div class=\"flex-1\">
-                                                <div class=\"flex items-center gap-2 mb-1\">
-                                                    <span class=\"font-semibold text-gray-800\">${c.user}</span>
-                                                    <div class=\"flex text-yellow-400 text-sm\">
-                                                        ${'<i class=\"fas fa-star\"></i>'.repeat(Math.round(c.rating))}
-                                                        ${'<i class=\"far fa-star\"></i>'.repeat(5 - Math.round(c.rating))}
-                                                    </div>
-                                                </div>
-                                                <p class=\"text-gray-700 text-sm\">${c.comment}</p>
-                                                <div class=\"text-gray-500 text-xs mt-2\">${fechaLocal}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
+                                    // Agregar tarjeta sin autor con DOM seguro
+                                    lista.appendChild(createCommentCard(c, fechaLocal));
                                 });
                             }
                         } else {
@@ -739,129 +823,7 @@
                 modal.setAttribute('data-service-name', '');
             }
 
-            function submitComment() {
-                // Obtener los valores del formulario
-                const modal = document.getElementById('commentsModal');
-                const nombre = modal.querySelector('input[type="text"]').value;
-                const comentario = modal.querySelector('textarea').value;
-                let rating = 0;
-                const stars = modal.querySelectorAll('.rating-interactive .star');
-                stars.forEach((star, idx) => {
-                    if (star.classList.contains('text-yellow-400')) rating = idx + 1;
-                });
-                const serviceId = modal.getAttribute('data-service-id');
-                const serviceName = modal.getAttribute('data-service-name');
-
-                // Validar campos
-                if (!nombre || !comentario || rating === 0) {
-                    alert('Por favor completa todos los campos y selecciona una calificación.');
-                    return;
-                }
-
-                // CSRF token
-                function getCookie(name) {
-                    let cookieValue = null;
-                    if (document.cookie && document.cookie !== '') {
-                        const cookies = document.cookie.split(';');
-                        for (let i = 0; i < cookies.length; i++) {
-                            const cookie = cookies[i].trim();
-                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                break;
-                            }
-                        }
-                    }
-                    return cookieValue;
-                }
-                const csrf = getCookie('csrftoken');
-                // Enviar datos al backend
-                fetch('/salud/guardar-comentario-salud/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': csrf
-                    },
-                    body: `user=${encodeURIComponent(nombre)}&comment=${encodeURIComponent(comentario)}&rating=${encodeURIComponent(rating)}&service_id=${encodeURIComponent(serviceId)}&service_name=${encodeURIComponent(serviceName)}`
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Limpiar campos del formulario
-                            modal.querySelector('input[type="text"]').value = '';
-                            modal.querySelector('textarea').value = '';
-                            modal.querySelectorAll('.rating-interactive .star').forEach(star => {
-                                star.classList.remove('text-yellow-400');
-                                star.classList.add('text-gray-300');
-                            });
-                            // Actualizar comentarios en el modal sin cerrarlo
-                            const lista = modal.querySelector('.space-y-4.mb-6');
-                            fetch(`/salud/obtener-comentarios-salud/?service_id=${serviceId}`)
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        if (data.comentarios.length === 0) {
-                                            lista.innerHTML = '<div class="text-center text-gray-400">No hay comentarios aún.</div>';
-                                        } else {
-                                            lista.innerHTML = '';
-                                            data.comentarios.forEach(c => {
-                                                // Mostrar solo la hora si es del mismo día, si no la fecha
-                                                let fechaLocal = '';
-                                                try {
-                                                    // Convertir correctamente la fecha ISO con zona horaria
-                                                    let fechaIso = c.created_at;
-                                                    // Si termina en +00:00, convertir a formato compatible con Date
-                                                    if (fechaIso.endsWith('+00:00')) {
-                                                        fechaIso = fechaIso.replace('+00:00', 'Z');
-                                                    }
-                                                    const d = new Date(fechaIso);
-                                                    const ahora = new Date();
-                                                    if (
-                                                        d.getFullYear() === ahora.getFullYear() &&
-                                                        d.getMonth() === ahora.getMonth() &&
-                                                        d.getDate() === ahora.getDate()
-                                                    ) {
-                                                        fechaLocal = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                                                    } else {
-                                                        fechaLocal = d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
-                                                    }
-                                                } catch { fechaLocal = c.created_at; }
-                                                lista.innerHTML += `
-                                            <div class=\"bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20\">
-                                                <div class=\"flex items-start gap-3\">
-                                                    <div class=\"w-10 h-10 bg-gradient-to-br from-mint to-light-blue rounded-full flex items-center justify-center text-white font-bold\">
-                                                        ${c.user.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div class=\"flex-1\">
-                                                        <div class=\"flex items-center gap-2 mb-1\">
-                                                            <span class=\"font-semibold text-gray-800\">${c.user}</span>
-                                                            <div class=\"flex text-yellow-400 text-sm\">
-                                                                ${'<i class=\"fas fa-star\"></i>'.repeat(Math.round(c.rating))}
-                                                                ${'<i class=\"far fa-star\"></i>'.repeat(5 - Math.round(c.rating))}
-                                                            </div>
-                                                        </div>
-                                                        <p class=\"text-gray-700 text-sm\">${c.comment}</p>
-                                                        <div class=\"text-gray-500 text-xs mt-2\">${fechaLocal}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        `;
-                                            });
-                                        }
-                                    } else {
-                                        lista.innerHTML = '<div class="text-center text-red-400">Error al cargar comentarios</div>';
-                                    }
-                                })
-                                .catch(() => {
-                                    lista.innerHTML = '<div class="text-center text-red-400">Error de red al cargar comentarios</div>';
-                                });
-                        } else {
-                            alert('Error al guardar el comentario: ' + (data.error || 'Intenta de nuevo.'));
-                        }
-                    })
-                    .catch(error => {
-                        alert('Error de red al guardar el comentario.');
-                    });
-            }
+            // submitComment(): ya no se usa; el formulario enviará directo a servicios_salud
 
             // Manejo de estrellas interactivas
             document.addEventListener('click', function (e) {
@@ -873,6 +835,13 @@
                     // Si es el modal de calificación principal
                     if (container.closest('#ratingModal')) {
                         currentRating = rating;
+                        var ratingInput = document.getElementById('ratingValue');
+                        if (ratingInput) ratingInput.value = String(rating);
+                    }
+                    // Si es el modal de comentarios
+                    if (container.closest('#commentsModal')) {
+                        var commentsRatingInput = document.getElementById('commentsRatingValue');
+                        if (commentsRatingInput) commentsRatingInput.value = String(rating);
                     }
 
                     // Actualizar estrellas
@@ -934,6 +903,40 @@
                     document.getElementById('mobileMenu').classList.add('hidden');
                 }
             });
+
+            // Envío por Django: dejamos que el form haga POST tradicional; solo validamos visualmente que haya rating
+            (function(){
+                var ratingForm = document.getElementById('ratingForm');
+                if (!ratingForm) return;
+                ratingForm.addEventListener('submit', function(e){
+                    var ratingInput = document.getElementById('ratingValue');
+                    var serviceInput = document.getElementById('serviceIdInput');
+                    var ratingVal = ratingInput ? ratingInput.value : '';
+                    var serviceVal = serviceInput ? serviceInput.value : '';
+                    if (!ratingVal || !serviceVal) {
+                        e.preventDefault();
+                        alert('Selecciona una calificación antes de enviar.');
+                        return false;
+                    }
+                });
+            })();
+
+            // Validación del formulario de comentarios: rating y servicio obligatorios
+            (function(){
+                var commentForm = document.getElementById('commentForm');
+                if (!commentForm) return;
+                commentForm.addEventListener('submit', function(e){
+                    var ratingInput = document.getElementById('commentsRatingValue');
+                    var serviceInput = document.getElementById('commentsServiceIdInput');
+                    var ratingVal = ratingInput ? ratingInput.value : '';
+                    var serviceVal = serviceInput ? serviceInput.value : '';
+                    if (!ratingVal || !serviceVal) {
+                        e.preventDefault();
+                        alert('Selecciona una calificación y un servicio antes de enviar.');
+                        return false;
+                    }
+                });
+            })();
         </script>
         <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'980b0078d6ada4f2',t:'MTc1ODEzNzI1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>

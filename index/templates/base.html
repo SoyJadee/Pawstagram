@@ -3451,27 +3451,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
         <!-- Acciones del usuario -->
         <div class="flex items-center space-x-3">
-          {% if user.is_authenticated %}
-
-          <button id="notifBtn"
-            class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
-            title="Notificaciones">
-            <i class="fas fa-bell text-lg"></i>
-            <span id="notifCount"
-              class="absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center{% if notif_unread == 0 or notif_unread is None or not notif_unread|stringformat:'d' %} hidden{% endif %}">
-              {{ notif_unread|default:0 }}</span>
-          </button>
-          <!--Solicitudes de adopcion-->
-          <a href="{% url 'solicitudes_adopcion' %}">
-            <button
-              class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
-              title="Solicitudes de adopción">
-              <i class="bi bi-ui-checks"></i>
-              <span id="adopCount"
-                class="absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-green-500 text-white text-xs font-bold rounded-full flex items-center justify-center{% if adop_solicitudes == 0 or adop_solicitudes is None or not adop_solicitudes|stringformat:'d' %} hidden{% endif %}">
-                {{ adop_solicitudes|default:0 }}</span>
-            </button>
-          </a>
           <!-- Inicio  -->
           <a href="{% url 'principal' %}">
             <button
@@ -3493,10 +3472,32 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
           <a href="{% url 'servicios_salud' %}">
             <button
               class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
-              title="Salud">
+              title="Servicios">
               <i class="bi bi-clipboard-heart-fill"></i></span>
             </button>
           </a>
+          {% if user.is_authenticated %}
+
+          <button id="notifBtn"
+            class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
+            title="Notificaciones">
+            <i class="fas fa-bell text-lg"></i>
+            <span id="notifCount"
+              class="absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center{% if notif_unread == 0 or notif_unread is None or not notif_unread|stringformat:'d' %} hidden{% endif %}">
+              {{ notif_unread|default:0 }}</span>
+          </button>
+          <!--Solicitudes de adopcion-->
+          <a href="{% url 'solicitudes_adopcion' %}">
+            <button
+              class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300"
+              title="Solicitudes de adopción">
+              <i class="bi bi-ui-checks"></i>
+              <span id="adopCount"
+                class="absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-green-500 text-white text-xs font-bold rounded-full flex items-center justify-center{% if adop_solicitudes == 0 or adop_solicitudes is None or not adop_solicitudes|stringformat:'d' %} hidden{% endif %}">
+                {{ adop_solicitudes|default:0 }}</span>
+            </button>
+          </a>
+          
 
           <div class="relative group">
             <button class="flex items-center space-x-3 p-2 rounded-full hover:bg-gray-100 transition-all duration-300">
