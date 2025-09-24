@@ -77,7 +77,7 @@ def register_view(request):
     else:
         form = UserCreationForm()
 
-    return render(request, "Registro.html", {"form": form})
+    return render(request, "registro.html", {"form": form})
 
 
 def login_view(request):
@@ -114,7 +114,7 @@ def login_view(request):
         else:
             messages.error(request, "Usuario o contraseña incorrectos.")
 
-    return render(request, "login.html", {"form": form})
+    return render(request, "Login.html", {"form": form})
 
 
 INJECTION_PATTERNS = [
