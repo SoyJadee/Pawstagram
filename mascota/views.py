@@ -134,7 +134,7 @@ def mascotaDetailsView(request, idPet):
                             pet_obj = None
                 if pet_id and not pet_obj:
                     logger.warning(
-                        f"Solicitud de adopción (perfil): pet_id recibido='{pet_id}' no corresponde a ninguna Mascota"
+                        f"Solicitud de adopción (perfil): no corresponde a ninguna Mascota"
                     )
                     messages.error(request, "Mascota no válida para adopción.")
                     return redirect("perfil_mascota", idPet=mascota.idPet)
@@ -143,14 +143,24 @@ def mascotaDetailsView(request, idPet):
                 else:
                     new_adoption.pet = mascota
 
-                new_adoption.save()
-                pet_obj.save()
-                adoption_form = (
-                    AdoptionForm()
-                )  # Resetear el formulario después de guardar
-                messages.success(
-                    request, "Solicitud de adopción enviada correctamente."
-                )
+                solicitudPasada = Adoption.objects.filter(
+                    pet=new_adoption.pet, adopterEmail=new_adoption.adopterEmail
+                ).exists()
+                if solicitudPasada:
+                    messages.error(
+                        request,
+                        "Ya has enviado una solicitud de adopción para esta mascota.",
+                    )
+                    return redirect("perfil_mascota", idPet=mascota.idPet)
+                else:
+                    new_adoption.save()
+                    pet_obj.save()
+                    adoption_form = (
+                        AdoptionForm()
+                    )  # Resetear el formulario después de guardar
+                    messages.success(
+                        request, "Solicitud de adopción enviada correctamente."
+                    )
             except Exception as e:
                 logger.error(f"Error al guardar adopción en vista mascota: {e}")
                 messages.error(request, "Error al procesar la solicitud de adopción.")

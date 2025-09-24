@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from index.models import Post, Comment, Like, Notifications
 from mascota.models import Pet
+from adopcion.models import Adoption
 from .forms import UserCreationForm, LoginForm, DeleteUserForm, EditProfileForm
 from index.views import like_post
 from index.forms import PostForm
@@ -443,8 +444,6 @@ def publicacionesUserView(request):
         },
     )
 
-
-@login_required
 def postView(request, post_id):
     user_profile = (
         UserProfile.objects.select_related("user").filter(user=request.user).first()
@@ -456,10 +455,15 @@ def postView(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     adoption_success = False
-    form = AdoptionForm()
+    form = AdoptionForm(
+        initial={
+            "adopterEmail": request.user.email,
+            "adopterName": request.user.first_name + " " + request.user.last_name,
+            "adopterPhone": user_profile.phone,
+        }
+    )
 
     if request.method == "POST":
-        # Comentario por AJAX
         if (
             request.POST.get("comment_content") is not None
             and request.headers.get("x-requested-with") == "XMLHttpRequest"
@@ -530,25 +534,32 @@ def postView(request, post_id):
         if form.is_valid():
             try:
                 adoption = form.save(commit=False)
-                pet_id = (
-                    request.POST.get("pet_id") or request.POST.get("mascota_id") or ""
-                ).strip()
-                pet = None
-                if pet_id:
+                pet = post.pet
+                if pet:
                     pet = (
-                        Pet.objects.filter(idPet=pet_id).first()
-                        or Pet.objects.filter(pk=pet_id).first()
+                        Pet.objects.filter(idPet=pet.idPet).first()
+                        or Pet.objects.filter(pk=pet.idPet).first()
                     )
                 if not pet:
-                    logger.warning(f"Solicitud de adopción: pet_id='{pet_id}' inválido")
+                    logger.warning(f"Solicitud de adopción: inválido")
                     messages.error(
                         request,
                         "Mascota inválida. No se pudo procesar la solicitud de adopción.",
                     )
                 else:
-                    adoption.pet = pet
-                    adoption.save()
-                    adoption_success = True
+                    solicitudPasada = Adoption.objects.filter(
+                        adopterEmail=adoption.adopterEmail, pet=pet
+                    )
+                    if solicitudPasada.exists():
+                        messages.error(
+                            request,
+                            "Ya has enviado una solicitud de adopción para esta mascota.",
+                        )
+                        return redirect("post_view", post_id=post_id)
+                    else:
+                        adoption.pet = pet
+                        adoption.save()
+                        adoption_success = True
                     messages.success(request, "Solicitud de adopción enviada.")
             except Exception as e:
                 logger.exception(f"Error al guardar adopción: {e}")

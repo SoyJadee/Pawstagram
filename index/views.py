@@ -30,7 +30,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import StreamingHttpResponse
-import json,time
+import json, time
 
 
 @login_required
@@ -102,7 +102,9 @@ def adoption_notifications_fragment(request):
     )
     return HttpResponse(html)
 
+
 # Endpoint para subir historias tipo Instagram
+
 
 @login_required
 @require_POST
@@ -190,18 +192,23 @@ def notificaciones_json(request):
 @require_GET
 def notificaciones_count(request):
     try:
-        unread_app = Notification.objects.filter(user=request.user, is_read=False).count()
+        unread_app = Notification.objects.filter(
+            user=request.user, is_read=False
+        ).count()
     except Exception:
         unread_app = 0
     try:
         # Adopciones no leídas de mis mascotas
         from mascota.models import Pet
+
         pets = Pet.objects.filter(creator__user=request.user)
         unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
     except Exception:
         unread_adop = 0
     total_unread = int(unread_app) + int(unread_adop)
-    return JsonResponse({"unread": total_unread, "unread_app": unread_app, "unread_adop": unread_adop})
+    return JsonResponse(
+        {"unread": total_unread, "unread_app": unread_app, "unread_adop": unread_adop}
+    )
 
 
 # SSE: stream de notificaciones del usuario autenticado
@@ -251,7 +258,12 @@ def notifications_stream(request):
                             adop_qs = adop_qs.filter(created_at__gt=last_ts)
                         adopciones = list(
                             adop_qs.order_by("-created_at").values(
-                                "id", "adopterName", "message", "created_at", "pet_id", "is_read"
+                                "id",
+                                "adopterName",
+                                "message",
+                                "created_at",
+                                "pet_id",
+                                "is_read",
                             )[:10]
                         )
 
@@ -310,6 +322,7 @@ def notifications_count_stream(request):
             unread_app = 0
         try:
             from mascota.models import Pet
+
             pets = Pet.objects.filter(creator__user=user)
             unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
         except Exception:
@@ -605,7 +618,7 @@ def principal(request):
                             pet = None
                 if not pet:
                     logger.warning(
-                        f"Solicitud de adopción: pet_id recibido='{pet_id}' no corresponde a ninguna Mascota"
+                        f"Solicitud de adopción  no corresponde a ninguna Mascota"
                     )
                     messages.error(
                         request,
@@ -613,9 +626,17 @@ def principal(request):
                     )
                 else:
                     adoption.pet = pet
-                    adoption.save()
-                    adoption_success = True
-                    pet.save()
+                    solicitudPasada = Adoption.objects.filter(
+                        pet=pet, adopterEmail=adoption.adopterEmail
+                    ).exists()
+                    if solicitudPasada:
+                        messages.warning(
+                            request,
+                            "Ya has enviado una solicitud de adopción para esta mascota.",
+                        )
+                    else:
+                        adoption.save()
+                        adoption_success = True
             except Exception as e:
                 logger.error(f"Error al guardar adopción: {e}")
                 messages.error(
