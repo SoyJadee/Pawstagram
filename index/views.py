@@ -185,6 +185,25 @@ def notificaciones_json(request):
     return JsonResponse({"notificaciones": data}, encoder=DjangoJSONEncoder)
 
 
+# Conteo rápido de notificaciones no leídas (para polling)
+@login_required
+@require_GET
+def notificaciones_count(request):
+    try:
+        unread_app = Notification.objects.filter(user=request.user, is_read=False).count()
+    except Exception:
+        unread_app = 0
+    try:
+        # Adopciones no leídas de mis mascotas
+        from mascota.models import Pet
+        pets = Pet.objects.filter(creator__user=request.user)
+        unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
+    except Exception:
+        unread_adop = 0
+    total_unread = int(unread_app) + int(unread_adop)
+    return JsonResponse({"unread": total_unread, "unread_app": unread_app, "unread_adop": unread_adop})
+
+
 # SSE: stream de notificaciones del usuario autenticado
 @login_required
 def notifications_stream(request):
@@ -268,6 +287,51 @@ def notifications_stream(request):
                 # Logear y romper el stream de forma segura
                 logger.error(f"SSE error: {e}")
                 yield f"event: error\n"
+                yield f"data: {json.dumps({'message': 'internal_error'})}\n\n"
+                break
+
+    response.streaming_content = gen()
+    return response
+
+
+# SSE de conteo de notificaciones no leídas
+@login_required
+def notifications_count_stream(request):
+    response = StreamingHttpResponse(content_type="text/event-stream; charset=utf-8")
+    response["Cache-Control"] = "no-cache, no-transform"
+    response["X-Accel-Buffering"] = "no"
+
+    user = request.user
+
+    def current_unread():
+        try:
+            unread_app = Notification.objects.filter(user=user, is_read=False).count()
+        except Exception:
+            unread_app = 0
+        try:
+            from mascota.models import Pet
+            pets = Pet.objects.filter(creator__user=user)
+            unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
+        except Exception:
+            unread_adop = 0
+        return int(unread_app) + int(unread_adop)
+
+    def gen():
+        last_val = None
+        yield ": ping\n\n"
+        for _ in range(60):  # ~120s si sleep=2
+            try:
+                v = current_unread()
+                if v != last_val:
+                    last_val = v
+                    yield "event: count\n"
+                    yield f"data: {json.dumps({'unread': v})}\n\n"
+                else:
+                    yield ": ping\n\n"
+                time.sleep(2)
+            except Exception as e:
+                logger.error(f"SSE count error: {e}")
+                yield "event: error\n"
                 yield f"data: {json.dumps({'message': 'internal_error'})}\n\n"
                 break
 

@@ -10,6 +10,13 @@
   <script>
     window.MY_PET_IDS = JSON.parse(document.getElementById('my-pet-ids-json').textContent || "[]");
   </script>
+  <script>
+    // Inicializa variables globales antes de cargar scripts que las usan
+    window.SUPABASE_URL = "{{ SUPABASE_URL|default:'' }}";
+    window.SUPABASE_KEY = "{{ SUPABASE_KEY|default:'' }}";
+    window.USER_ID = "{{ request.user.id|default:'' }}";
+    window.USER_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
+  </script>
   <script src="{% static 'js/security_utils.js' %}"></script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>

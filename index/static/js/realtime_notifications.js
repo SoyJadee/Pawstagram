@@ -3,6 +3,8 @@
 (function () {
   'use strict';
 
+
+
   const SUPABASE_URL = String(window.SUPABASE_URL || '');
   const SUPABASE_KEY = String(window.SUPABASE_KEY || '');
   const { sanitizeId, throttle } = window.SecurityUtils || {};
@@ -21,12 +23,16 @@
     let el = document.getElementById('notifCount');
     if (!el) {
       const btn = document.getElementById('notifBtn');
-      if (!btn) return null;
+      if (!btn) {
+        console.warn('[Notif Debug] No se encontró notifBtn en el DOM');
+        return null;
+      }
       el = document.createElement('span');
       el.id = 'notifCount';
       el.className = 'absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center';
       el.textContent = '0';
       btn.appendChild(el);
+      console.log('[Notif Debug] Badge creado');
     }
     return el;
   };
@@ -64,6 +70,59 @@
 
   // Realtime con Supabase si es posible
   const channels = [];
+  let _pollingId = null;
+  let _sseCount = null;
+  const startSSECount = () => {
+    if (_sseCount || !('EventSource' in window) || !validUser) return;
+    try {
+      const es = new EventSource('/notificaciones/count/stream/');
+      _sseCount = es;
+      es.addEventListener('count', (evt) => {
+        try {
+          const payload = JSON.parse(evt.data || '{}');
+          const n = parseInt(payload.unread);
+          const badge = ensureBadge();
+          if (!badge) return;
+          const val = Number.isFinite(n) && n > 0 ? n : 0;
+          badge.textContent = String(val);
+          if (val > 0) badge.classList.remove('hidden');
+          else badge.classList.add('hidden');
+        } catch (_) { /* noop */ }
+      });
+      es.addEventListener('error', () => {
+        try { es.close(); } catch(_) {}
+        _sseCount = null;
+        // como último recurso, polling
+        startPolling();
+      });
+      window.addEventListener('beforeunload', () => { try { es.close(); } catch(_) {} });
+      document.addEventListener('visibilitychange', () => { if (document.hidden && _sseCount) { try { _sseCount.close(); } catch(_) {} _sseCount = null; } });
+    } catch (_) { /* noop */ }
+  };
+  const startPolling = () => {
+    if (_pollingId) return; // ya iniciado
+    try {
+      const POLL_MS = 15000;
+      const poll = () => {
+        fetch('/notificaciones/count/', { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : { unread: 0 })
+          .then(({ unread }) => {
+            const n = parseInt(unread);
+            const badge = ensureBadge();
+            if (!badge) return;
+            const val = Number.isFinite(n) && n > 0 ? n : 0;
+            badge.textContent = String(val);
+            if (val > 0) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+          })
+          .catch(() => {});
+      };
+      poll();
+      _pollingId = setInterval(poll, POLL_MS);
+      window.addEventListener('beforeunload', () => { if (_pollingId) clearInterval(_pollingId); });
+      document.addEventListener('visibilitychange', () => { if (document.hidden && _pollingId) { clearInterval(_pollingId); _pollingId = null; } });
+    } catch (_) { /* noop */ }
+  };
   if (canUseSupabase) {
     try {
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -78,6 +137,7 @@
           )
           .subscribe((status) => {
             if (status !== 'SUBSCRIBED') console.warn('Canal index_notifications estado:', status);
+            if (status === 'CLOSED' || status === 'CHANNEL_ERROR') { startSSECount(); }
           });
         channels.push(ch1);
       }
@@ -102,6 +162,7 @@
           )
           .subscribe((status) => {
             if (status !== 'SUBSCRIBED') console.warn('Canal adopcion_adoption estado:', status);
+            if (status === 'CLOSED' || status === 'CHANNEL_ERROR') { startSSECount(); }
           });
         channels.push(ch2);
       }
@@ -114,27 +175,53 @@
       document.addEventListener('visibilitychange', () => { if (document.hidden) cleanup(); });
     } catch (e) {
       console.error('Error creando canales Realtime:', e);
+      startSSECount();
     }
   } else if ('EventSource' in window && validUser) {
-    // Fallback SSE: usa el proxy backend autenticado
+    // SSE de conteo dedicado: actualiza el badge cuando cambie el total
     try {
-      const es = new EventSource('/notificaciones/stream/');
-      es.addEventListener('update', (evt) => {
+      const esCount = new EventSource('/notificaciones/count/stream/');
+      esCount.addEventListener('count', (evt) => {
         try {
-          const data = JSON.parse(evt.data || '{}');
-          const dn = Array.isArray(data.notifications) ? data.notifications.length : 0;
-          const da = Array.isArray(data.adoptions) ? data.adoptions.length : 0;
-          const delta = dn + da;
-          if (delta > 0) safeIncrement(delta);
+          const payload = JSON.parse(evt.data || '{}');
+          const n = parseInt(payload.unread);
+          const badge = ensureBadge();
+          if (!badge) return;
+          const val = Number.isFinite(n) && n > 0 ? n : 0;
+          badge.textContent = String(val);
+          if (val > 0) badge.classList.remove('hidden');
+          else badge.classList.add('hidden');
         } catch (_) { /* noop */ }
       });
-      es.addEventListener('error', () => {
-        // Silencioso: el navegador reintenta automáticamente
-      });
-      window.addEventListener('beforeunload', () => es.close());
-      document.addEventListener('visibilitychange', () => { if (document.hidden) es.close(); });
+      esCount.addEventListener('error', () => { /* el navegador reintenta */ });
+      window.addEventListener('beforeunload', () => esCount.close());
+      document.addEventListener('visibilitychange', () => { if (document.hidden) esCount.close(); });
     } catch (e) {
       console.warn('No se pudo iniciar SSE fallback:', e);
     }
+    // Fallback final: polling periódico al backend
+    try {
+      const POLL_MS = 15000; // 15s
+      const poll = () => {
+        fetch('/notificaciones/count/', { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : { unread: 0 })
+          .then(({ unread }) => {
+            const n = parseInt(unread);
+            if (Number.isFinite(n) && n > 0) {
+              const badge = ensureBadge();
+              if (badge) {
+                badge.textContent = String(n);
+                badge.classList.remove('hidden');
+              }
+            }
+          })
+          .catch(() => {});
+      };
+      // primera corrida y luego intervalo
+      poll();
+      const id = setInterval(poll, POLL_MS);
+      window.addEventListener('beforeunload', () => clearInterval(id));
+      document.addEventListener('visibilitychange', () => { if (document.hidden) clearInterval(id); });
+    } catch (_) { /* noop */ }
   }
 })();
