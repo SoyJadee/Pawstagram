@@ -15,9 +15,10 @@ from django.contrib.auth.decorators import login_required
 import re
 import logging
 import uuid
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from supabase import create_client
 from django.conf import settings
+from django.template.loader import select_template
 
 allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 logger = logging.getLogger(__name__)
@@ -77,7 +78,13 @@ def register_view(request):
     else:
         form = UserCreationForm()
 
-    return render(request, "usuarios/registro.html", {"form": form})
+    template = select_template([
+        "usuarios/registro.html",
+        "registro.html",
+        "usuarios/Registro.html",
+        "Registro.html",
+    ])
+    return HttpResponse(template.render({"form": form}, request))
 
 
 def login_view(request):
@@ -114,7 +121,13 @@ def login_view(request):
         else:
             messages.error(request, "Usuario o contraseña incorrectos.")
 
-    return render(request, "usuarios/Login.html", {"form": form})
+    template = select_template([
+        "usuarios/Login.html",
+        "Login.html",
+        "usuarios/login.html",
+        "login.html",
+    ])
+    return HttpResponse(template.render({"form": form}, request))
 
 
 INJECTION_PATTERNS = [
