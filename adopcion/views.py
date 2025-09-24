@@ -9,23 +9,28 @@ from django.db.models import Count
 @login_required
 def solicitudes_adopcion(request):
     if request.user.is_authenticated and not request.user.is_superuser:
-        # Filtrar solo mascotas del usuario que tengan al menos una solicitud
-        pets = (
-            Pet.objects.filter(creator__user=request.user)
-            .annotate(adoption_count=Count("adoptions"))
-            .filter(adoption_count__gt=0)
-            .prefetch_related("adoptions")
-        )
+        try:
+            # Filtrar solo mascotas del usuario que tengan al menos una solicitud
+            pets = (
+                Pet.objects.filter(creator__user=request.user)
+                .annotate(adoption_count=Count("adoptions"))
+                .filter(adoption_count__gt=0)
+                .prefetch_related("adoptions")
+            )
 
-        pets_with_solicitudes = [
-            {"pet": pet, "solicitudes": list(pet.adoptions.all())} for pet in pets
-        ]
+            pets_with_solicitudes = [
+                {"pet": pet, "solicitudes": list(pet.adoptions.all())} for pet in pets
+            ]
+        except Exception:
+            pets_with_solicitudes = []
+            # Puedes agregar un mensaje en plantilla si quieres
         return render(
             request,
             "solicitudes_adopcion.html",
             {
                 "pets_with_solicitudes": pets_with_solicitudes,
                 "user": request.user,
+                "db_error": len(pets_with_solicitudes) == 0,
             },
         )
     else:
