@@ -72,14 +72,10 @@ def servicios_salud(request):
 
         now = datetime.now().time()
         for s in servicios:
-            # Parsear coordenadas si existen
+            # Usar latitude y longitude si existen
             coords = None
-            if s.coordinates:
-                try:
-                    lat, lon = map(float, s.coordinates.split(","))
-                    coords = {"lat": lat, "lon": lon}
-                except:
-                    coords = None
+            if s.latitude is not None and s.longitude is not None:
+                coords = {"lat": s.latitude, "lon": s.longitude}
             # Determinar estado abierto/cerrado
             estado = "cerrado"
             if s.horarioStart and s.horarioEnd:

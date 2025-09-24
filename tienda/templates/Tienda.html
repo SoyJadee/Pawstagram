@@ -210,7 +210,7 @@
           </div>
           <a href="#"
             class="ver-mapa-btn w-full block py-4 bg-gradient-to-r from-turquesa to-azul-claro text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-center"
-            data-coords="{{ store.coordinates }}">
+            data-lat="{{ store.latitude }}" data-lon="{{ store.longitude }}">
             Ver en mapa 📍
           </a>
         </div>
@@ -371,8 +371,10 @@
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const coords = this.getAttribute('data-coords');
-        lastCoords = coords;
+        let destLat = this.getAttribute('data-lat');
+        let destLon = this.getAttribute('data-lon');
+        lastDestLat = destLat ? destLat.replace(',', '.') : null;
+        lastDestLon = destLon ? destLon.replace(',', '.') : null;
         // Limpiar cualquier instancia previa de Leaflet y Routing Machine
         if (leafletMap) {
           leafletMap.remove();
@@ -385,10 +387,7 @@
           window._routingControl = null;
         }
         // No recrear el div, solo reutilizarlo
-        if (coords) {
-          const [destLat, destLon] = coords.split(',');
-          lastDestLat = destLat;
-          lastDestLon = destLon;
+        if (lastDestLat && lastDestLon) {
           showLeafletMap(null, null, lastDestLat, lastDestLon, false);
           mapModal.classList.remove('hidden');
           setTimeout(() => {

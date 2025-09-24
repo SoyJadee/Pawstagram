@@ -12,7 +12,22 @@ class Store(models.Model):
     location = models.CharField(max_length=255, null=True, blank=True, verbose_name="Ubicación")
     photo_url = models.URLField(null=True, blank=True, verbose_name="URL de foto")
     created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Fecha de creación")
-    coordinates = models.CharField(max_length=100, null=True, blank=True, verbose_name="Coordenadas")
+    latitude = models.FloatField(null=True, blank=True, verbose_name="Latitud")
+    longitude = models.FloatField(null=True, blank=True, verbose_name="Longitud")
+
+    def save(self, *args, **kwargs):
+        # Si los valores son string y tienen coma, convertir a punto
+        if isinstance(self.latitude, str) and ',' in self.latitude:
+            try:
+                self.latitude = float(self.latitude.replace(',', '.'))
+            except Exception:
+                pass
+        if isinstance(self.longitude, str) and ',' in self.longitude:
+            try:
+                self.longitude = float(self.longitude.replace(',', '.'))
+            except Exception:
+                pass
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name or str(self.id)

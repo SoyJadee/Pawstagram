@@ -24,7 +24,8 @@ class ServicesHealth(models.Model):
     horarioStart = models.TimeField(null=True, blank=True, verbose_name="Horario de apertura")
     horarioEnd = models.TimeField(null=True, blank=True, verbose_name="Horario de cierre")
     specialties = models.TextField(max_length=200, null=True, blank=True, verbose_name="Especialidades")
-    coordinates = models.CharField(max_length=100, null=True, blank=True, verbose_name="Coordenadas")
+    latitude = models.FloatField(null=True, blank=True, verbose_name="Latitud")
+    longitude = models.FloatField(null=True, blank=True, verbose_name="Longitud")
 
     def __str__(self):
         return self.name
