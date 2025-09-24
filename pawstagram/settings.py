@@ -123,14 +123,28 @@ WSGI_APPLICATION = 'pawstagram.wsgi.application'
 # Base de datos: usar Postgres si se proveen variables, si no, fallback a SQLite
 DB_NAME = config('DB_NAME', default=None)
 if DB_NAME:
+    DB_HOST = config('DB_HOST', default='localhost')
+    DB_PORT = config('DB_PORT', default='5432')
+    DB_USER = config('DB_USER', default='')
+    DB_PASSWORD = config('DB_PASSWORD', default='')
+    # Forzar SSL si es Supabase o si se configura explícitamente
+    DB_SSLMODE = config('DB_SSLMODE', default=None)
+    if not DB_SSLMODE and ('supabase' in DB_HOST or DB_HOST.endswith('.supabase.com') or DB_HOST.endswith('.supabase.co')):
+        DB_SSLMODE = 'require'
+    DB_CONNECT_TIMEOUT = int(config('DB_CONNECT_TIMEOUT', default='10'))
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': DB_NAME,
-            'USER': config('DB_USER', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'PORT': config('DB_PORT', default='5432'),
+            'USER': DB_USER,
+            'HOST': DB_HOST,
+            'PASSWORD': DB_PASSWORD,
+            'PORT': DB_PORT,
+            'CONN_MAX_AGE': int(config('DB_CONN_MAX_AGE', default='60')),
+            'OPTIONS': {k: v for k, v in {
+                'sslmode': DB_SSLMODE,
+                'connect_timeout': DB_CONNECT_TIMEOUT,
+            }.items() if v is not None},
         }
     }
 else:

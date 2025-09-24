@@ -31,6 +31,9 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import StreamingHttpResponse
 import json,time
+def healthz(request):
+    return HttpResponse("ok", content_type="text/plain")
+
 
 
 @login_required

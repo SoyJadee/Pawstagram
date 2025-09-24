@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+     path('healthz', views.healthz, name='healthz'),
     path('notificaciones/adopciones/fragment/',
          views.adoption_notifications_fragment, name='adoption_notifications_fragment'),
     path('notificaciones/all/fragment/', views.all_notifications_fragment,
