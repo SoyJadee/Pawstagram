@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <title>Pawly - Iniciar Sesión</title>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paw-teal': '#3dd5f3',
+                        'paw-green': '#2dd4aa',
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock extra_head %}
+{% block content %}
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center p-4">
+        <!-- Card de login -->
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-paw-teal to-paw-green p-8 text-center">
+                <div class="w-16 h-16 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <img src="{% static 'img/logo1.png' %}" alt="Logo" class="w-10 h-10 object-cover rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-2">¡Bienvenido de vuelta!</h1>
+                <p class="text-white/80 text-sm">Inicia sesión en Pawly</p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="p-8">
+                <form method="post" action="{% url 'login' %}" class="space-y-6">
+                    {% csrf_token %}
+                    {% if messages %}
+                        <div class="space-y-2">
+                            {% for message in messages %}
+                                <div class="rounded-lg p-3 text-sm {{ message.tags }} {% if 'error' in message.tags %}bg-red-50 border border-red-200 text-red-700{% elif 'success' in message.tags %}bg-green-50 border border-green-200 text-green-700{% else %}bg-gray-50 border border-gray-200 text-gray-700{% endif %}">
+                                    {{ message|striptags }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if message %}
+                    <div class="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                        {{ message|striptags }}
+                    </div>
+                    {% endif %}
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user text-paw-teal mr-2"></i>Usuario o email
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.username.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-lock text-paw-teal mr-2"></i>Contraseña
+                        </label>
+                        <div class="relative">
+                            {{ form.password }}
+                        </div>
+                        {% if form.password.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.password.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                            {{ form.non_field_errors|striptags }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Recordar / Olvidé contraseña -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="remember" value="1" class="rounded border-gray-300 text-paw-teal focus:ring-paw-teal">
+                            <span class="ml-2 text-sm text-gray-600">Recordarme</span>
+                        </label>
+                        <a href="{% url 'change_password' %}" class="text-sm text-paw-teal hover:text-paw-green transition-colors">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+
+                    <!-- Botón de login -->
+                    <button 
+                        type="submit"
+                        class="w-full bg-gradient-to-r from-paw-teal to-paw-green text-white font-semibold py-3 rounded-xl hover:from-paw-green hover:to-paw-teal transform hover:scale-[1.02] transition-all duration-200"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                    </button>
+                </form>
+
+                <!-- Separador -->
+                <div class="my-6 flex items-center">
+                    <div class="flex-1 border-t border-gray-200"></div>
+                    <span class="px-4 text-sm text-gray-500">o</span>
+                    <div class="flex-1 border-t border-gray-200"></div>
+                </div>
+
+                <!-- Registro -->
+                <p class="text-center text-sm text-gray-600 mt-6">
+                    ¿No tienes cuenta? 
+                    <a href="{% url 'register' %}" class="text-paw-teal hover:text-paw-green font-medium transition-colors">
+                        Regístrate aquí
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block extra_scripts %}
+    <script src="{% static 'js/auth.js' %}"></script>
+{% endblock extra_scripts %}
