@@ -121,8 +121,9 @@ WSGI_APPLICATION = 'pawstagram.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Base de datos: usar Postgres si se proveen variables, si no, fallback a SQLite
+USE_SQLITE = config('USE_SQLITE', cast=bool, default=False)
 DB_NAME = config('DB_NAME', default=None)
-if DB_NAME:
+if DB_NAME and not USE_SQLITE:
     DB_HOST = config('DB_HOST', default='localhost')
     DB_PORT = config('DB_PORT', default='5432')
     DB_USER = config('DB_USER', default='')
