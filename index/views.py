@@ -429,6 +429,7 @@ def principal(request):
 
     form = AdoptionForm()
     adoption_success = False
+    db_error = False
 
     if request.method == "POST":
         # Publicar un post
@@ -633,32 +634,48 @@ def principal(request):
             )
 
     # GET request or after POST handling, always render the page
-    posts = (
-        Post.objects.all()
-        .order_by("-created_at")
-        .prefetch_related("comments__user", "pet", "author")
-    )
+    try:
+        posts = (
+            Post.objects.all()
+            .order_by("-created_at")
+            .prefetch_related("comments__user", "pet", "author")
+        )
+    except Exception as e:
+        logger.error(f"Error al cargar posts: {e}")
+        messages.error(request, "La base de datos no está disponible. Mostrando vista limitada.")
+        db_error = True
+        posts = Post.objects.none()
     # IDs de posts que el usuario ya ha dado like
     user_liked_post_ids = set()
     if request.user.is_authenticated:
-        user_liked_post_ids = set(
-            Like.objects.filter(user=request.user).values_list("post_id", flat=True)
-        )
+        try:
+            user_liked_post_ids = set(
+                Like.objects.filter(user=request.user).values_list("post_id", flat=True)
+            )
+        except Exception as e:
+            logger.error(f"Error al cargar likes del usuario: {e}")
+            db_error = True
+            user_liked_post_ids = set()
     # Historias activas (últimas 24h)
     from django.utils import timezone
 
     desde = timezone.now() - timezone.timedelta(hours=24)
-    historias_qs = (
-        Histories.objects.filter(created_at__gte=desde)
-        .select_related("author")
-        .order_by("author", "created_at")
-    )
     historias_por_usuario = {}
-    for h in historias_qs:
-        username = h.author.username
-        if username not in historias_por_usuario:
-            historias_por_usuario[username] = {"user": h.author, "historias": []}
-        historias_por_usuario[username]["historias"].append(h)
+    try:
+        historias_qs = (
+            Histories.objects.filter(created_at__gte=desde)
+            .select_related("author")
+            .order_by("author", "created_at")
+        )
+        for h in historias_qs:
+            username = h.author.username
+            if username not in historias_por_usuario:
+                historias_por_usuario[username] = {"user": h.author, "historias": []}
+            historias_por_usuario[username]["historias"].append(h)
+    except Exception as e:
+        logger.error(f"Error al cargar historias: {e}")
+        db_error = True
+        historias_por_usuario = {}
     context = {
         "mascotas_usuario": mascotas,
         "form": form,
@@ -671,6 +688,8 @@ def principal(request):
             request.user.username if request.user.is_authenticated else ""
         ),
     }
+    if db_error:
+        context["db_error"] = True
     return render(request, "Principal.html", context)
 
 
