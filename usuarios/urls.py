@@ -7,7 +7,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     LogoutView,
 )
-from decouple import config
+from django.conf import settings
 
 urlpatterns = [
     path("iniciar_sesion/", views.login_view, name="login"),
@@ -17,7 +17,7 @@ urlpatterns = [
         "change_password/",
         PasswordResetView.as_view(
             template_name="change_password.html",
-            from_email=config('EMAIL_HOST_USER'),
+            from_email=getattr(settings, 'EMAIL_HOST_USER', None),
             html_email_template_name="password_reset_email.html",
         ),
         name="change_password",

@@ -3,7 +3,7 @@ from adopcion.models import Adoption
 from usuarios.models import UserProfile
 from index.models import Post, Notifications as Notification
 from mascota.models import Pet
-from decouple import config
+from django.conf import settings
 
 def user_authenticated(request):
     countPosts = Post.objects.count()
@@ -61,8 +61,8 @@ def user_authenticated(request):
             "countPosts": countPosts,
             "countPets": countPets,
             "countUsers": countUsers,
-            "SUPABASE_URL": config('SUPABASE_URL'),
-            "SUPABASE_KEY": config('SUPABASE_KEY'),
+            "SUPABASE_URL": getattr(settings, 'SUPABASE_URL', None),
+            "SUPABASE_KEY": getattr(settings, 'SUPABASE_KEY', None),
         }
     else:
         return {
@@ -74,6 +74,6 @@ def user_authenticated(request):
             "countPosts": countPosts,
             "countPets": countPets,
             "countUsers": countUsers,
-            "SUPABASE_URL": config('SUPABASE_URL'),
-            "SUPABASE_KEY": config('SUPABASE_KEY'),
+            "SUPABASE_URL": getattr(settings, 'SUPABASE_URL', None),
+            "SUPABASE_KEY": getattr(settings, 'SUPABASE_KEY', None),
         }
