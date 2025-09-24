@@ -6,11 +6,20 @@ from mascota.models import Pet
 from django.conf import settings
 
 def user_authenticated(request):
-    countPosts = Post.objects.count()
-    countPets = Pet.objects.count()
-    countUsers = UserProfile.objects.filter(
-        user__is_active=True, user__is_staff=False, user__is_superuser=False
-    ).count()
+    try:
+        countPosts = Post.objects.count()
+    except Exception:
+        countPosts = 0
+    try:
+        countPets = Pet.objects.count()
+    except Exception:
+        countPets = 0
+    try:
+        countUsers = UserProfile.objects.filter(
+            user__is_active=True, user__is_staff=False, user__is_superuser=False
+        ).count()
+    except Exception:
+        countUsers = 0
     notificaciones = []
     notif_unread = 0
     notif_unread_adopciones = 0
