@@ -50,6 +50,8 @@ SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_KEY = config("SUPABASE_KEY")
 SUPABASE_SERVICE_ROLE_KEY = config("SUPABASE_SERVICE_ROLE_KEY")
 INSTALLED_APPS = [
+    #'django.contrib.admin',
+    'hide_admin.apps.HideAdminConfig',  # Custom admin app to hide admin panel
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
