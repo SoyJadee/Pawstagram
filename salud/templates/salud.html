@@ -204,7 +204,23 @@
                     <div class="mb-6">
                         <h4 class="font-semibold text-gray-800 mb-3">Servicios disponibles</h4>
                         <div class="flex flex-wrap gap-2">
-                            {{ veterinaria.services }}
+                            <ul>
+                                {% for servicio in veterinaria.services %}
+                                    <li class="bg-blue-100 text-blue-800 px-2 py-1 rounded-xl inline-block mr-2 mb-1">{{ servicio }}</li>
+                                {% empty %}
+                                    <li>No hay servicios registrados.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="mt-2">
+                            <h4 class="font-semibold text-gray-800 mb-2">Especialidades</h4>
+                            <ul>
+                                {% for especialidad in veterinaria.specialties %}
+                                    <li class="bg-green-100 text-green-800 px-2 py-1 rounded-xl inline-block mr-2 mb-1">{{ especialidad }}</li>
+                                {% empty %}
+                                    <li>No hay especialidades registradas.</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-2xl mb-6">

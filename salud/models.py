@@ -4,6 +4,7 @@ from decimal import Decimal
 
 # Create your models here.
 
+
 class ServicesHealth(models.Model):
     name = models.CharField(max_length=30)
     type = models.CharField(max_length=30, choices=[('veterinaria', 'Veterinaria'), ('peluqueria', 'Peluquería'), ('spa', 'Spa')])
@@ -18,14 +19,26 @@ class ServicesHealth(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
     owner = models.CharField(max_length=40, verbose_name="Dueño del servicio",default=None)
-    services = models.TextField(max_length=200, null=True, blank=True, verbose_name="Servicios")
     description = models.TextField(max_length=200, null=True, blank=True, verbose_name="Descripción")
     photo_url = models.URLField(null=True, blank=True, verbose_name="URL de foto")
     horarioStart = models.TimeField(null=True, blank=True, verbose_name="Horario de apertura")
     horarioEnd = models.TimeField(null=True, blank=True, verbose_name="Horario de cierre")
-    specialties = models.TextField(max_length=200, null=True, blank=True, verbose_name="Especialidades")
     latitude = models.FloatField(null=True, blank=True, verbose_name="Latitud")
     longitude = models.FloatField(null=True, blank=True, verbose_name="Longitud")
+
+    def __str__(self):
+        return self.name
+
+class Service(models.Model):
+    serviceshealth = models.ForeignKey(ServicesHealth, on_delete=models.CASCADE, related_name='services')
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+class Specialty(models.Model):
+    serviceshealth = models.ForeignKey(ServicesHealth, on_delete=models.CASCADE, related_name='specialties')
+    name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name

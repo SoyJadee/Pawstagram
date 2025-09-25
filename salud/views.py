@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .models import ServicesHealth, Reviews
+from .models import ServicesHealth, Reviews, Service, Specialty
 from .forms import ReviewForm
 from django.http import JsonResponse
 from datetime import datetime
@@ -36,7 +36,6 @@ def obtener_ruta_openrouteservice(request):
             return JsonResponse({"error": "Faltan coordenadas"}, status=400)
         api_key = getattr(settings, 'OPENROUTESERVICE_API_KEY', '')
         if not api_key:
-            # Service temporarily unavailable due to missing configuration.
             return JsonResponse({"error": "Servicio no disponible"}, status=503)
         url = "https://api.openrouteservice.org/v2/directions/driving-car"
         body = {"coordinates": [origen, destino]}
@@ -97,15 +96,16 @@ def servicios_salud(request):
 
         now = datetime.now().time()
         for s in servicios:
-            # Usar latitude y longitude si existen
             coords = None
             if s.latitude is not None and s.longitude is not None:
                 coords = {"lat": s.latitude, "lon": s.longitude}
-            # Determinar estado abierto/cerrado
             estado = "cerrado"
             if s.horarioStart and s.horarioEnd:
                 if s.horarioStart <= now <= s.horarioEnd:
                     estado = "abierto"
+            # Obtener servicios y especialidades relacionados
+            services_list = list(s.services.all().values_list('name', flat=True))
+            specialties_list = list(s.specialties.all().values_list('name', flat=True))
             veterinarias.append(
                 {
                     "id": s.id,
@@ -114,7 +114,8 @@ def servicios_salud(request):
                     "coords": coords,
                     "type": s.type,
                     "email": s.email,
-                    "services": s.services,
+                    "services": services_list,
+                    "specialties": specialties_list,
                     "description": s.description,
                     "consultprice": s.consultPrice,
                     "estado": estado,
