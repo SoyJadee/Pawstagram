@@ -1,7 +1,9 @@
 from django import forms
 from .models import Reviews
+import re
+from common.forms_mixins import XSSCleanMixin
 
-class ReviewForm(forms.ModelForm):
+class ReviewForm(XSSCleanMixin, forms.ModelForm):
     email = forms.EmailField(
         max_length=254,
         widget=forms.EmailInput(attrs={
@@ -50,7 +52,6 @@ class ReviewForm(forms.ModelForm):
             if len(comment) > 500:
                 raise forms.ValidationError("El comentario es demasiado largo (máx. 500 caracteres).")
             # Anti-inyección SQL básica
-            import re
             patrones_sql = [
                 r"(--|;|/\*|\*/|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
                 r"(['\"=])"

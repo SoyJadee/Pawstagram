@@ -9,6 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
+from django_smart_ratelimit import rate_limit
+from common.security import sanitize_string
 @csrf_exempt
 def obtener_ruta_openrouteservice(request):
     if request.method == "POST":
@@ -45,6 +47,7 @@ def obtener_ruta_openrouteservice(request):
 
 def obtener_comentarios_salud(request):
     service_id = request.GET.get("service_id")
+    service_id = sanitize_string(service_id)
     comentarios = []
     if not service_id:
         return JsonResponse({"success": False, "error": "Falta service_id"}, status=400)
@@ -65,6 +68,7 @@ def obtener_comentarios_salud(request):
         )
     return JsonResponse({"success": True, "comentarios": comentarios})
 
+@rate_limit(key='ip', rate='5/m',)
 def servicios_salud(request):
     if request.method == "GET":
         servicios = ServicesHealth.objects.all()
@@ -102,7 +106,9 @@ def servicios_salud(request):
     elif request.method == "POST":
         form = ReviewForm(request.POST)
         rating = request.POST.get("rating")
+        rating = sanitize_string(rating)
         service_id = request.POST.get("servicio")
+        service_id = sanitize_string(service_id)
 
         # Validaciones básicas fuera del form (rating/servicio vienen de inputs ocultos)
         if not rating or not service_id:

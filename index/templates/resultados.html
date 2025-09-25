@@ -158,7 +158,7 @@
                         <h5 class="text-gray-600 mb-2">Dueño: {{ servicio.owner|highlight:query }}</h5>
                         <p class="text-gray-600 mb-2">{{ servicio.specialties }} • {{ servicio.phone }} • {{ servicio.email }} • {{ servicio.horarioStart }}-{{ servicio.horarioEnd }}</p>
                         <p class="text-gray-600 mb-2">Precio de la consulta: {{ servicio.consultPrice }}</p>
-                        <p class="text-gray-600 mb-2">Servicios: {{ servicio.services|highlight:query|safe }} </p>
+                        <p class="text-gray-600 mb-2">Servicios: {{ servicio.services|highlight:query }} </p>
                         <p class="text-gray-500 text-sm mb-3">📍 {{ servicio.address }}</p>
                         <a href="{% url 'servicios_salud' %}">
                           <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">

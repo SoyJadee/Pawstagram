@@ -15,7 +15,7 @@
     window.SUPABASE_URL = "{{ SUPABASE_URL|default:'' }}";
     window.SUPABASE_KEY = "{{ SUPABASE_KEY|default:'' }}";
     window.USER_ID = "{{ request.user.id|default:'' }}";
-    window.USER_AUTHENTICATED = {{ user.is_authenticated | yesno: "true,false" }};
+    window.USER_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}";
   </script>
   <script src="{% static 'js/security_utils.js' %}"></script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>

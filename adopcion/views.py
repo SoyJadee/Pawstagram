@@ -3,10 +3,11 @@ from .models import Adoption
 from mascota.models import Pet
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-
+from django_smart_ratelimit import rate_limit
 
 # Create your views here.
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def solicitudes_adopcion(request):
     if request.user.is_authenticated and not request.user.is_superuser:
         # Filtrar solo mascotas del usuario que tengan al menos una solicitud

@@ -24,26 +24,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Use env var to control DEBUG; default True for local dev
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True
 
-# Comma-separated hostnames, e.g. "example.com,api.example.com"
-ALLOWED_HOSTS = [h for h in config(
-    'ALLOWED_HOSTS', default='').split(',') if h]
+ALLOWED_HOSTS = []
 
 # Application definition
 SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_KEY = config("SUPABASE_KEY")
 SUPABASE_SERVICE_ROLE_KEY = config("SUPABASE_SERVICE_ROLE_KEY")
 INSTALLED_APPS = [
-    # 'hide_admin.apps.HideAdminConfig',
-    'django.contrib.admin',
+    'hide_admin.apps.HideAdminConfig',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+    'django_smart_ratelimit',
     'mascota',
     'index',
     'usuarios',
@@ -51,6 +49,8 @@ INSTALLED_APPS = [
     'tienda',
     'adopcion',
 ]
+
+RATELIMIT_BACKEND = 'database'  # Use the database backend for rate limiting
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -140,11 +140,6 @@ DATETIME_FORMAT = 'Y-m-d H:i'
 
 STATIC_URL = 'static/'
 
-# Static/Media configuration for deploys
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -154,34 +149,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'perfil'
 
-# email configuration
+#email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-
-# Security hardening (enabled when not DEBUG)
-CSRF_TRUSTED_ORIGINS = [o for o in config(
-    'CSRF_TRUSTED_ORIGINS', default='').split(',') if o]
-
-if not DEBUG:
-    # Force HTTPS-related settings in production
-    SECURE_SSL_REDIRECT = config(
-        'SECURE_SSL_REDIRECT', default=True, cast=bool)
-    SESSION_COOKIE_SECURE = config(
-        'SESSION_COOKIE_SECURE', default=True, cast=bool)
-    CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
-    # HSTS (set preload/include_subdomains cautiously)
-    SECURE_HSTS_SECONDS = config(
-        'SECURE_HSTS_SECONDS', default=31536000, cast=int)  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
-        'SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
-    SECURE_HSTS_PRELOAD = config(
-        'SECURE_HSTS_PRELOAD', default=True, cast=bool)
-    # Cookie SameSite
-    CSRF_COOKIE_SAMESITE = config('CSRF_COOKIE_SAMESITE', default='Lax')
-    SESSION_COOKIE_SAMESITE = config('SESSION_COOKIE_SAMESITE', default='Lax')
-    # Frame options
-    X_FRAME_OPTIONS = config('X_FRAME_OPTIONS', default='DENY')

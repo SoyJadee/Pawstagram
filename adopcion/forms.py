@@ -1,9 +1,10 @@
 from django import forms
 from adopcion.models import Adoption
+from common.forms_mixins import XSSCleanMixin
 import re
 
 
-class AdoptionForm(forms.ModelForm):
+class AdoptionForm(XSSCleanMixin, forms.ModelForm):
     class Meta:
         model = Adoption
         fields = ["adopterName", "adopterEmail", "adopterPhone", "message"]
