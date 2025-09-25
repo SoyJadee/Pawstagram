@@ -178,12 +178,6 @@ class UserCreationForm(XSSCleanMixin, UserCreationForm):
             )
         return last_name
 
-    def clean_email(self):
-        email = self.cleaned_data.get("email", "")
-        if self._contains_sql_injection(email):
-            raise forms.ValidationError("El email contiene caracteres no permitidos.")
-        return email
-
     def clean_phone(self):
         phone = self.cleaned_data.get("phone", "")
         if not re.match(r"^\+?\d{7,15}$", phone):

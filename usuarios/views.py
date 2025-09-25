@@ -131,12 +131,6 @@ def register_view(request):
                 value = form.cleaned_data.get(field_name)
                 if field_name == "email" and field_name == "password1" and field_name == "password2":
                     continue
-                if isinstance(value, str) and is_injection_attempt(value):
-                    messages.error(
-                        request,
-                        "El formulario contiene caracteres no permitidos.",
-                    )
-                    return render(request, "Registro.html", {"form": form})
             else:
                 try:
                     with transaction.atomic():
@@ -181,12 +175,6 @@ def login_view(request):
         form = LoginForm(request, data=request.POST)
         for field_name in form.fields:
             value = request.POST.get(field_name, "")
-            if isinstance(value, str) and is_injection_attempt(value):
-                messages.error(
-                    request,
-                    "El formulario contiene caracteres no permitidos.",
-                )
-                return render(request, "login.html", {"form": form})
         username_input = request.POST.get("username", "").strip()
         username_input = sanitize_string(username_input)
         if "@" in username_input:
