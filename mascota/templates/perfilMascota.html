@@ -81,17 +81,11 @@
               <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-soft-mint p-3 rounded-xl">
                   <div class="text-sm text-gray-600">Estado</div>
-                  {% if mascota.is_available_for_adoption %}
+                  {% if mascota.status == "available" %}
                   <div class="font-semibold text-green-600">🟢 Disponible</div>
                   {% else %}
                   <div class="font-semibold text-red-600">🔴 No disponible</div>
                   {% endif %}
-                </div>
-                <div class="bg-blue-50 p-3 rounded-xl">
-                  <div class="text-sm text-gray-600">Ubicación</div>
-                  <div class="font-semibold text-light-blue">
-                    📍 {{mascota.ubication}}
-                  </div>
                 </div>
                 <div class="bg-soft-mint p-3 rounded-xl">
                   <div class="text-sm text-gray-600">Vacunas</div>
@@ -132,7 +126,7 @@
                   {% endif %}
                 </div>
               </div>
-              {% if mascota.is_available_for_adoption and mascota.creator.user != request.user %}
+              {% if mascota.status == "available" and mascota.creator.user != request.user %}
               <button onclick="showInterest('{{ mascota.pk }}')"
                 class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
                 💕 ¡Me interesa adoptar!
@@ -183,7 +177,7 @@
                 <span class="text-gray-500 font-normal">-{{ post.author.user.username }}</span>
                 <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
               </div>
-              {% if post.pet.is_available_for_adoption and post.author.user != request.user %}
+              {% if post.pet.status == "available" and post.author.user != request.user %}
               <button onclick="showInterest('{{ post.pet.pk }}')"
                 class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
                 💕 ¡Me interesa adoptar!
@@ -341,7 +335,7 @@
           </div>
           {% endif %}
           <!-- Footer -->
-          {% if mascota.is_available_for_adoption and mascota.creator.user != request.user %}
+          {% if mascota.status == "available" and mascota.creator.user != request.user %}
           <div class="text-center mt-12 p-6">
             <div class="bg-white rounded-2xl card-shadow p-6">
               <h3 class="text-xl font-bold text-gray-800 mb-2">

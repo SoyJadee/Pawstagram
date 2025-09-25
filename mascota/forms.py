@@ -86,7 +86,7 @@ class PetForm(XSSCleanMixin, forms.ModelForm):
             "tipoAnimal",
             "breed",
             "gender",
-            "is_available_for_adoption",
+            "status",
             "description",
             "vacunas",
             "desparasitacion",
@@ -107,8 +107,11 @@ class PetForm(XSSCleanMixin, forms.ModelForm):
                     "required": True,
                 }
             ),
-            "is_available_for_adoption": forms.CheckboxInput(
-                attrs={"class": "h-5 w-5 text-paw-teal focus:ring-paw-teal"}
+            "status": forms.Select(
+                attrs={
+                    "class": "w-full px-4 py-3 border border-gray-200 rounded-xl input-focus",
+                    "required": True,
+                }
             ),
             "vacunas": forms.CheckboxInput(
                 attrs={"class": "h-5 w-5 text-paw-teal focus:ring-paw-teal"}

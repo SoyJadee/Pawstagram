@@ -3,8 +3,8 @@ from .models import Pet, Animals
 
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
-    list_display = ('idPet', 'name', 'creator_first_name', 'creator_last_name', 'breed', 'age', 'gender', 'is_available_for_adoption')
-    list_filter = ('gender', 'is_available_for_adoption')
+    list_display = ('idPet', 'name', 'creator__user__username', 'breed', 'age', 'gender', 'status')
+    list_filter = ('gender', 'status')
     search_fields = ('name', 'breed', 'description', 'creator__user__first_name', 'creator__user__last_name')
 
     @admin.display(description='Nombre creador')

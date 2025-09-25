@@ -54,7 +54,7 @@ class Like(models.Model):
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID de comentario")
-    content = models.TextField(
+    content = models.TextField(max_length=400,
         null=True, blank=True, verbose_name="Contenido del comentario"
     )
     created_at = models.DateTimeField(

@@ -185,7 +185,7 @@
                         <p class="text-gray-700 mb-4 leading-relaxed">{{ tienda.description|truncatechars:200 }}</p>
                         <a href="{% url 'catalogo' tienda.id %}">
                           <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
-                            <i class="fas fa-eye mr-2"></i>Ver perfil
+                            <i class="fas fa-eye mr-2"></i>Ver catalogo
                           </button>
                         </a>
                       </div>
@@ -198,7 +198,7 @@
                     <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
                     data-type="productos">
                       <div class="relative">
-                        <img src="{{ producto.photo_url }}" alt="{{ producto.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
+                            <img src="{{ producto.images.first.url }}" alt="{{ producto.images.first.alt_text|default:producto.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
                       </div>
                       <div class="p-6">
                         <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ producto.name|highlight:query }}</h4>
@@ -207,7 +207,7 @@
                         <p class="text-gray-700 mb-4 leading-relaxed">{{ producto.description|highlight:query|truncatechars:200 }}</p>
                         <a href="{% url 'catalogo' producto.store.id %}">
                           <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
-                            <i class="fas fa-eye mr-2"></i>Ver perfil
+                            <i class="fas fa-eye mr-2"></i>Ver stock
                           </button>
                         </a>
                       </div>
@@ -221,17 +221,17 @@
               <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Tiendas</h4>
               <div class="flex flex-wrap items-center gap-2">
                 {% if tiendas_page.has_previous %}
-                  <a href="?search={{ query }}&page_t={{ tiendas_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">«</a>
+                  <a href="?search={{ query }}&page_t={{ tiendas_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
                 {% endif %}
                 {% for num in tiendas_page.paginator.page_range %}
                   {% if num == tiendas_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold">{{ num }}</span>
+                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
                   {% elif num <= tiendas_page.number|add:2 and num >= tiendas_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_t={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">{{ num }}</a>
+                    <a href="?search={{ query }}&page_t={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                   {% endif %}
                 {% endfor %}
                 {% if tiendas_page.has_next %}
-                  <a href="?search={{ query }}&page_t={{ tiendas_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">»</a>
+                  <a href="?search={{ query }}&page_t={{ tiendas_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
               </div>
             </div>
@@ -242,17 +242,17 @@
               <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Productos</h4>
               <div class="flex flex-wrap items-center gap-2">
                 {% if productos_page.has_previous %}
-                  <a href="?search={{ query }}&page_p={{ productos_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">«</a>
+                  <a href="?search={{ query }}&page_p={{ productos_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
                 {% endif %}
                 {% for num in productos_page.paginator.page_range %}
                   {% if num == productos_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold">{{ num }}</span>
+                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
                   {% elif num <= productos_page.number|add:2 and num >= productos_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_p={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">{{ num }}</a>
+                    <a href="?search={{ query }}&page_p={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                   {% endif %}
                 {% endfor %}
                 {% if productos_page.has_next %}
-                  <a href="?search={{ query }}&page_p={{ productos_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">»</a>
+                  <a href="?search={{ query }}&page_p={{ productos_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
               </div>
             </div>
@@ -263,17 +263,17 @@
               <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Mascotas</h4>
               <div class="flex flex-wrap items-center gap-2">
                 {% if mascotas_page.has_previous %}
-                  <a href="?search={{ query }}&page_m={{ mascotas_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">«</a>
+                  <a href="?search={{ query }}&page_m={{ mascotas_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
                 {% endif %}
                 {% for num in mascotas_page.paginator.page_range %}
                   {% if num == mascotas_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold">{{ num }}</span>
+                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
                   {% elif num <= mascotas_page.number|add:2 and num >= mascotas_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_m={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">{{ num }}</a>
+                    <a href="?search={{ query }}&page_m={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                   {% endif %}
                 {% endfor %}
                 {% if mascotas_page.has_next %}
-                  <a href="?search={{ query }}&page_m={{ mascotas_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">»</a>
+                  <a href="?search={{ query }}&page_m={{ mascotas_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
               </div>
             </div>
@@ -284,17 +284,17 @@
               <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Servicios</h4>
               <div class="flex flex-wrap items-center gap-2">
                 {% if servicios_page.has_previous %}
-                  <a href="?search={{ query }}&page_s={{ servicios_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">«</a>
+                  <a href="?search={{ query }}&page_s={{ servicios_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
                 {% endif %}
                 {% for num in servicios_page.paginator.page_range %}
                   {% if num == servicios_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold">{{ num }}</span>
+                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
                   {% elif num <= servicios_page.number|add:2 and num >= servicios_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_s={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">{{ num }}</a>
+                    <a href="?search={{ query }}&page_s={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                   {% endif %}
                 {% endfor %}
                 {% if servicios_page.has_next %}
-                  <a href="?search={{ query }}&page_s={{ servicios_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-pink-400">»</a>
+                  <a href="?search={{ query }}&page_s={{ servicios_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
               </div>
             </div>

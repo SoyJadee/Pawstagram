@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django_smart_ratelimit import rate_limit
 from common.security import sanitize_string
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,15 @@ RL = getattr(settings, 'RATE_LIMITS', {})
 RL_ORS_IP = RL.get('ors_ip', '60/m')
 RL_SALUD_IP = RL.get('salud_ip', '120/m')
 
+patrones_sql = [
+    r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
+    r"(['\";=])",
+]
+def contiene_sql_injection(texto):
+    for patron in patrones_sql:
+        if re.search(patron, texto, re.IGNORECASE):
+            return True
+    return False
 
 @csrf_protect
 @rate_limit(key='ip', rate=RL_ORS_IP)
@@ -58,7 +68,7 @@ def obtener_ruta_openrouteservice(request):
                     status=500,
                 )
         except Exception as e:
-            logger.exception(f"Error solicitando ruta a ORS: {e}")
+            logger.exception(f"Error solicitando ruta")
             return JsonResponse({"error": "internal_error"}, status=500)
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
@@ -132,6 +142,14 @@ def servicios_salud(request):
         service_id = request.POST.get("servicio")
         service_id = sanitize_string(service_id)
 
+        if contiene_sql_injection(service_id) and contiene_sql_injection(rating) and contiene_sql_injection(request.POST.get("email")) and contiene_sql_injection(request.POST.get("comment")):
+            messages.error(
+                request,
+                "Los datos ingresados contienen caracteres o palabras no permitidas.",
+            )
+            return redirect("servicios_salud")
+        
+
         # Validaciones básicas fuera del form (rating/servicio vienen de inputs ocultos)
         if not rating or not service_id:
             messages.error(
@@ -171,7 +189,7 @@ def servicios_salud(request):
         try:
             Reviews.objects.create(
                 email=form.cleaned_data.get("email"),
-                comment=form.cleaned_data.get("comment"),
+                comment=sanitize_string(form.cleaned_data.get("comment")),
                 rating=rating_val,
                 service=initial_service,
                 created_at=timezone.now(),

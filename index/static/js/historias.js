@@ -3,8 +3,8 @@
 
 document.addEventListener('DOMContentLoaded', function () {
   // Utilidades de seguridad
-  const MAX_BYTES = 10 * 1024 * 1024; // 10MB (alineado con backend)
-  const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+  const MAX_BYTES = 5 * 1024 * 1024; 
+  const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/jpg']);
   const { getCSRF } = window.SecurityUtils || {};
   const _getCSRF = (form) => (getCSRF ? getCSRF(form) : (form?.querySelector('input[name="csrfmiddlewaretoken"]')?.value || ''));
   const showMsg = (msg) => {
@@ -43,11 +43,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const file = fileInput && fileInput.files ? fileInput.files[0] : null;
       if (!file) return;
       if (!ALLOWED_TYPES.has(file.type)) {
-        showMsg('Tipo de archivo no válido. Solo imágenes JPEG, PNG, GIF o WebP.');
+        showMsg('Tipo de archivo no válido. Solo imágenes JPEG, PNG o JPG.');
         return;
       }
       if (file.size > MAX_BYTES) {
-        showMsg('La imagen es demasiado grande. Máximo 10MB.');
+        showMsg('La imagen es demasiado grande. Máximo 5MB.');
         return;
       }
       // Mostrar modal de cargando

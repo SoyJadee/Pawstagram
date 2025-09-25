@@ -20,7 +20,7 @@
           🐾
         </div>
         {% endif %} 
-        {% if pet.is_available_for_adoption %}
+        {% if pet.status == "available" %}
         <div
           class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold"
         >
@@ -147,7 +147,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-2"
             >Disponible para adopción</label
           >
-          {{ form.is_available_for_adoption }}
+          {{ form.status }}
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -308,9 +308,9 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Disponible para adopción</label>
-          {{ form.is_available_for_adoption }}
-          {% if form.is_available_for_adoption.errors %}
-          <div class="text-red-500 text-sm mt-1">{{ form.is_available_for_adoption.errors|first }}</div>
+          {{ form.status }}
+          {% if form.status.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ form.status.errors|first }}</div>
           {% endif %}
         </div>
       </div>

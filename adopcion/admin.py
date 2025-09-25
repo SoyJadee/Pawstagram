@@ -1,11 +1,10 @@
 from django.contrib import admin
 from .models import Adoption
 
-
 # Register your models here.
 @admin.register(Adoption)
 class AdoptionAdmin(admin.ModelAdmin):
-    list_display = ("id", "pet", "pet__creator", "created_at")
+    list_display = ("id", "pet", "pet__creator", "message", "created_at")
     list_filter = ("created_at",)
     search_fields = (
         "pet__name",
@@ -23,3 +22,4 @@ class AdoptionAdmin(admin.ModelAdmin):
     @admin.display(description="Mascota")
     def pet_name(self, obj):
         return obj.pet.name if obj.pet else ""
+

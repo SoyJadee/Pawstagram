@@ -48,12 +48,6 @@ class Pet(models.Model):
         blank=True,
         verbose_name="Ruta de almacenamiento de la foto de perfil",
     )
-    is_available_for_adoption = models.BooleanField(
-        default=False, verbose_name="Disponible para adopción"
-    )
-    ubication = models.CharField(
-        max_length=100, null=True, blank=True, verbose_name="Ubicación"
-    )
     status = models.CharField(
         max_length=10,
         choices=[("available", "Disponible"), ("adopted", "Adoptado")],

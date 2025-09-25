@@ -9,7 +9,7 @@ from django.db.models import Q, QuerySet
 from mascota.models import Pet
 from .models import Post, Comment, Notifications as Notification
 from usuarios.models import UserProfile
-from tienda.models import Store, Product
+from tienda.models import Store, Product,ProductImage
 from salud.models import ServicesHealth
 from adopcion.forms import AdoptionForm
 from adopcion.models import Adoption
@@ -42,21 +42,30 @@ import time
 
 # Image validation is handled via common.security.validate_uploaded_image
 
-RL = getattr(settings, 'RATE_LIMITS', {})
-RL_ALL_NOTIFS = RL.get('all_notifs_user', '120/m')
-RL_ADOPTION_NOTIFS = RL.get('adoption_notifs_user', '120/m')
-RL_SUBIR_HISTORIA = RL.get('subir_historia_user', '60/m')
-RL_NOTIFS_JSON = RL.get('notifs_json_user', '120/m')
-RL_NOTIFS_COUNT = RL.get('notifs_count_user', '180/m')
-RL_SSE = RL.get('sse_user', '600/m')
-RL_MARK_READ = RL.get('mark_read_ip', '300/m')
-RL_LIKE_POST = RL.get('like_ip', '300/m')
-RL_PRINCIPAL = RL.get('principal_ip', '60/m')
-RL_SEARCH = RL.get('principal_ip', '60/m')
+RL = getattr(settings, "RATE_LIMITS", {})
+RL_ALL_NOTIFS = RL.get("all_notifs_user", "120/m")
+RL_ADOPTION_NOTIFS = RL.get("adoption_notifs_user", "120/m")
+RL_SUBIR_HISTORIA = RL.get("subir_historia_user", "60/m")
+RL_NOTIFS_JSON = RL.get("notifs_json_user", "120/m")
+RL_NOTIFS_COUNT = RL.get("notifs_count_user", "180/m")
+RL_SSE = RL.get("sse_user", "600/m")
+RL_MARK_READ = RL.get("mark_read_ip", "300/m")
+RL_LIKE_POST = RL.get("like_ip", "300/m")
+RL_PRINCIPAL = RL.get("principal_ip", "60/m")
+RL_SEARCH = RL.get("principal_ip", "60/m")
 
+patrones_sql = [
+    r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
+    r"(['\";=])",
+]
+def contiene_sql_injection(texto):
+    for patron in patrones_sql:
+        if re.search(patron, texto, re.IGNORECASE):
+            return True
+    return False
 
 @login_required
-@rate_limit(key='user', rate=RL_ALL_NOTIFS)
+@rate_limit(key="user", rate=RL_ALL_NOTIFS)
 def all_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
@@ -64,8 +73,7 @@ def all_notifications_fragment(request):
     from index.models import Notifications as Notification
 
     user_profile = (
-        UserProfile.objects.select_related(
-            "user").filter(user=request.user).first()
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
     )
     mascotas = []
     if user_profile:
@@ -77,8 +85,7 @@ def all_notifications_fragment(request):
         .values("id", "type", "message", "created_at", "is_read", "post_id")
     )
     post_ids = [n["post_id"] for n in notificaciones if n["post_id"]]
-    post_photos = {
-        p.id: p.photo_url for p in Post.objects.filter(id__in=post_ids)}
+    post_photos = {p.id: p.photo_url for p in Post.objects.filter(id__in=post_ids)}
     for n in notificaciones:
         n["notif_type"] = n["type"]
         n["is_adoption"] = False
@@ -107,16 +114,16 @@ def all_notifications_fragment(request):
 
 # Endpoint para retornar solo el fragmento de solicitudes de adopción (para AJAX)
 
+
 @login_required
-@rate_limit(key='user', rate=RL_ADOPTION_NOTIFS)
+@rate_limit(key="user", rate=RL_ADOPTION_NOTIFS)
 def adoption_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
     from usuarios.models import UserProfile
 
     user_profile = (
-        UserProfile.objects.select_related(
-            "user").filter(user=request.user).first()
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
     )
     mascotas = Pet.objects.filter(creator=user_profile)
     notificaciones_adopciones = Adoption.objects.filter(pet__in=mascotas).order_by(
@@ -131,8 +138,9 @@ def adoption_notifications_fragment(request):
 
 # Endpoint para subir historias tipo Instagram
 
+
 @login_required
-@rate_limit(key='user', rate=RL_SUBIR_HISTORIA)
+@rate_limit(key="user", rate=RL_SUBIR_HISTORIA)
 @require_POST
 def subir_historia(request):
     if not request.user.is_authenticated:
@@ -161,8 +169,11 @@ def subir_historia(request):
             res = supabase.storage.from_("Usuarios").upload(
                 ruta_supabase,
                 foto_data,
-                {"content-type": detected_mime or getattr(
-                    foto, "content_type", None) or "application/octet-stream"},
+                {
+                    "content-type": detected_mime
+                    or getattr(foto, "content_type", None)
+                    or "application/octet-stream"
+                },
             )
             # Si la respuesta indica error, lanzar excepción
             if hasattr(res, "error") and res.error:
@@ -187,15 +198,15 @@ def subir_historia(request):
             return JsonResponse(
                 {"success": False, "error": upload_error or "upload_failed"}
             )
-    historia = Histories.objects.create(
-        author=request.user, photo_url=url or "")
+    historia = Histories.objects.create(author=request.user, photo_url=url or "")
     return JsonResponse({"success": True, "historia_id": historia.id, "photo_url": url})
 
 
 # Endpoint AJAX para obtener notificaciones del usuario autenticado
 
+
 @login_required
-@rate_limit(key='user', rate=RL_NOTIFS_JSON)
+@rate_limit(key="user", rate=RL_NOTIFS_JSON)
 @require_GET
 def notificaciones_json(request):
     notificaciones = Notification.objects.filter(user=request.user).order_by(
@@ -222,7 +233,7 @@ def notificaciones_json(request):
 
 # Conteo rápido de notificaciones no leídas (para polling)
 @login_required
-@rate_limit(key='user', rate=RL_NOTIFS_COUNT)
+@rate_limit(key="user", rate=RL_NOTIFS_COUNT)
 @require_GET
 def notificaciones_count(request):
     try:
@@ -236,8 +247,7 @@ def notificaciones_count(request):
         from mascota.models import Pet
 
         pets = Pet.objects.filter(creator__user=request.user)
-        unread_adop = Adoption.objects.filter(
-            pet__in=pets, is_read=False).count()
+        unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
     except Exception:
         unread_adop = 0
     total_unread = int(unread_app) + int(unread_adop)
@@ -248,15 +258,14 @@ def notificaciones_count(request):
 
 # SSE: stream de notificaciones del usuario autenticado
 @login_required
-@rate_limit(key='user', rate=RL_SSE)
+@rate_limit(key="user", rate=RL_SSE)
 def notifications_stream(request):
     """
     Devuelve un stream SSE con eventos cuando haya nuevas notificaciones para el usuario.
     Estrategia simple con long-polling en memoria (proceso) sobre la base de datos.
     """
     # Headers SSE
-    response = StreamingHttpResponse(
-        content_type="text/event-stream; charset=utf-8")
+    response = StreamingHttpResponse(content_type="text/event-stream; charset=utf-8")
     response["Cache-Control"] = "no-cache, no-transform"
     response["X-Accel-Buffering"] = "no"  # Nginx: desactivar buffering
 
@@ -284,8 +293,7 @@ def notifications_stream(request):
 
                 # Adopciones para mascotas del usuario
                 user_profile = (
-                    UserProfile.objects.select_related(
-                        "user").filter(user=user).first()
+                    UserProfile.objects.select_related("user").filter(user=user).first()
                 )
                 adopciones = []
                 if user_profile:
@@ -346,10 +354,9 @@ def notifications_stream(request):
 
 # SSE de conteo de notificaciones no leídas
 @login_required
-@rate_limit(key='user', rate=RL_SSE)
+@rate_limit(key="user", rate=RL_SSE)
 def notifications_count_stream(request):
-    response = StreamingHttpResponse(
-        content_type="text/event-stream; charset=utf-8")
+    response = StreamingHttpResponse(content_type="text/event-stream; charset=utf-8")
     response["Cache-Control"] = "no-cache, no-transform"
     response["X-Accel-Buffering"] = "no"
 
@@ -357,16 +364,14 @@ def notifications_count_stream(request):
 
     def current_unread():
         try:
-            unread_app = Notification.objects.filter(
-                user=user, is_read=False).count()
+            unread_app = Notification.objects.filter(user=user, is_read=False).count()
         except Exception:
             unread_app = 0
         try:
             from mascota.models import Pet
 
             pets = Pet.objects.filter(creator__user=user)
-            unread_adop = Adoption.objects.filter(
-                pet__in=pets, is_read=False).count()
+            unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
         except Exception:
             unread_adop = 0
         return int(unread_app) + int(unread_adop)
@@ -396,29 +401,27 @@ def notifications_count_stream(request):
 
 # Marcar notificaciones como leídas
 
-@rate_limit(key='ip', rate=RL_MARK_READ)
+
+@rate_limit(key="ip", rate=RL_MARK_READ)
 @require_POST
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "not_authenticated"})
-    Notification.objects.filter(
-        user=request.user, is_read=False).update(is_read=True)
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     # Marcar adopciones como leídas
     from adopcion.models import Adoption
     from mascota.models import Pet
     from usuarios.models import UserProfile
 
     user_profile = (
-        UserProfile.objects.select_related(
-            "user").filter(user=request.user).first()
+        UserProfile.objects.select_related("user").filter(user=request.user).first()
     )
     mascotas = Pet.objects.filter(creator=user_profile)
-    Adoption.objects.filter(
-        pet__in=mascotas, is_read=False).update(is_read=True)
+    Adoption.objects.filter(pet__in=mascotas, is_read=False).update(is_read=True)
     return JsonResponse({"success": True})
 
 
-@rate_limit(key='ip', rate=RL_LIKE_POST)
+@rate_limit(key="ip", rate=RL_LIKE_POST)
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
@@ -462,7 +465,7 @@ except Exception as e:
     supabase = None
 
 
-@rate_limit(key='ip', rate=RL_PRINCIPAL)
+@rate_limit(key="ip", rate=RL_PRINCIPAL)
 def principal(request):
     # Eliminar comentarios con '{{' en el contenido (limpieza de datos)
     from .models import Comment
@@ -481,8 +484,7 @@ def principal(request):
         try:
             from usuarios.models import UserProfile
 
-            user_profile = UserProfile.objects.filter(
-                user=request.user).first()
+            user_profile = UserProfile.objects.filter(user=request.user).first()
             if user_profile:
                 mascotas = Pet.objects.filter(creator=user_profile)
             else:
@@ -503,6 +505,19 @@ def principal(request):
                 mascota_id = sanitize_string(mascota_id)
                 descripcion = request.POST.get("descripcion", "").strip()
                 descripcion = sanitize_string(descripcion)
+
+                if contiene_sql_injection(descripcion):
+                    messages.error(
+                        request,
+                        "La descripción contiene caracteres o palabras no permitidas.",
+                    )
+                    return redirect("principal")
+                if len(descripcion) > 300:
+                    messages.error(
+                        request, "La descripción es demasiado larga (máx. 300 caracteres)."
+                    )
+                    return redirect("principal")
+
                 foto = request.FILES.get("foto")
                 if not descripcion:
                     messages.error(request, "Debes escribir una descripción.")
@@ -510,8 +525,7 @@ def principal(request):
                 if not foto:
                     messages.error(request, "Debes subir una foto.")
                     return redirect("principal")
-                ok, info = validate_uploaded_image(
-                    foto, max_bytes=5 * 1024 * 1024)
+                ok, info = validate_uploaded_image(foto, max_bytes=5 * 1024 * 1024)
                 if not ok:
                     code = str(info)
                     error_msg = {
@@ -547,19 +561,21 @@ def principal(request):
                             detected_fmt = info.get("format")
                             detected_mime = info.get("mime")
                         nombre_normalizado = normalize_image_name(
-                            foto.name, detected_fmt)
+                            foto.name, detected_fmt
+                        )
                         nombre_archivo = f"{uuid.uuid4()}_{nombre_normalizado}"
                         ruta_supabase = f"{usuario}/{nombre_mascota}/{nombre_archivo}"
                         rutaStorage = ruta_supabase
-                        logger.info(
-                            f"Subiendo imagen a Supabase: {ruta_supabase}")
                         foto_data = foto.read()
                         foto.seek(0)
                         res = supabase.storage.from_("Usuarios").upload(
                             ruta_supabase,
                             foto_data,
-                            {"content-type": detected_mime or getattr(
-                                foto, "content_type", None) or "application/octet-stream"},
+                            {
+                                "content-type": detected_mime
+                                or getattr(foto, "content_type", None)
+                                or "application/octet-stream"
+                            },
                         )
                         url_result = supabase.storage.from_("Usuarios").get_public_url(
                             ruta_supabase
@@ -570,16 +586,13 @@ def principal(request):
                             url = url_result
                         if url and url.endswith("?"):
                             url = url[:-1]
-                        logger.info(f"URL de imagen generada: {url}")
                     except Exception as e:
-                        logger.error(f"Error al subir imagen a Supabase: {e}")
                         messages.error(
                             request, "Error al subir la imagen. Inténtalo de nuevo."
                         )
                         return redirect("principal")
                 else:
-                    messages.error(
-                        request, "Servicio de almacenamiento no disponible.")
+                    messages.error(request, "Servicio de almacenamiento no disponible.")
                     return redirect("principal")
                 post_obj = Post.objects.create(
                     pet=mascota,
@@ -589,9 +602,7 @@ def principal(request):
                     photo_storage_path=rutaStorage,
                 )
                 messages.success(request, "¡Publicación realizada con éxito!")
-                logger.info(f"Post creado exitosamente: {post_obj.id}")
             except Exception as e:
-                logger.error(f"Error al crear el post: {e}")
                 messages.error(
                     request, "Error al crear la publicación. Inténtalo de nuevo."
                 )
@@ -606,15 +617,18 @@ def principal(request):
                     request, "El comentario no puede estar vacío o ser muy corto."
                 )
                 return redirect("principal")
-            if len(comment_content) > 300:
+            if len(comment_content) > 400:
                 messages.error(
-                    request, "El comentario es demasiado largo (máx. 300 caracteres)."
+                    request, "El comentario es demasiado largo (máx. 400 caracteres)."
                 )
                 return redirect("principal")
-            patrones_sql = [
-                r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
-                r"(['\";=])",
-            ]
+            if contiene_sql_injection(comment_content):
+                messages.error(
+                    request,
+                    "El comentario contiene caracteres o palabras no permitidas.",
+                )
+                return redirect("principal")
+
             for patron in patrones_sql:
                 if re.search(patron, comment_content, re.IGNORECASE):
                     messages.error(
@@ -660,8 +674,7 @@ def principal(request):
                         from django.http import JsonResponse
 
                         return JsonResponse({"success": False})
-                    messages.error(
-                        request, "No se pudo guardar el comentario.")
+                    messages.error(request, "No se pudo guardar el comentario.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 from django.http import JsonResponse
 
@@ -675,8 +688,7 @@ def principal(request):
                 adoption.is_read = False  # Siempre nueva solicitud no leída
                 # obtener pet id enviado desde el modal (limpiar y manejar varios casos)
                 pet_id = (
-                    request.POST.get("pet_id") or request.POST.get(
-                        "mascota_id") or ""
+                    request.POST.get("pet_id") or request.POST.get("mascota_id") or ""
                 ).strip()
                 pet_id = sanitize_string(pet_id)
                 pet = None
@@ -708,10 +720,31 @@ def principal(request):
                             "Ya has enviado una solicitud de adopción para esta mascota.",
                         )
                     else:
+                        adoption.adopterName = sanitize_string(
+                            adoption.adopterName
+                        )
+                        adoption.adopterEmail = sanitize_string(
+                            adoption.adopterEmail
+                        )
+                        adoption.adopterPhone = sanitize_string(
+                            adoption.adopterPhone
+                        )
+                        adoption.message = sanitize_string(adoption.message)
+                        if adoption.message and len(adoption.message) > 150:
+                            adoption.message = adoption.message[:150]
+                        if contiene_sql_injection(adoption.message) or contiene_sql_injection(
+                            adoption.adopterName
+                        ) or contiene_sql_injection(adoption.adopterEmail) or contiene_sql_injection(
+                            adoption.adopterPhone
+                        ):
+                            messages.error(
+                                request,
+                                "Los datos ingresados contienen caracteres o palabras no permitidas.",
+                            )
+                            return redirect("principal")
                         adoption.save()
                         adoption_success = True
             except Exception as e:
-                logger.error(f"Error al guardar adopción: {e}")
                 messages.error(
                     request,
                     "Error al procesar la solicitud de adopción. Inténtalo de nuevo.",
@@ -733,11 +766,8 @@ def principal(request):
     user_liked_post_ids = set()
     if request.user.is_authenticated:
         user_liked_post_ids = set(
-            Like.objects.filter(user=request.user).values_list(
-                "post_id", flat=True)
+            Like.objects.filter(user=request.user).values_list("post_id", flat=True)
         )
-    # Historias activas (últimas 24h)
-    from django.utils import timezone
 
     desde = timezone.now() - timezone.timedelta(hours=24)
     historias_qs = (
@@ -749,8 +779,7 @@ def principal(request):
     for h in historias_qs:
         username = h.author.username
         if username not in historias_por_usuario:
-            historias_por_usuario[username] = {
-                "user": h.author, "historias": []}
+            historias_por_usuario[username] = {"user": h.author, "historias": []}
         historias_por_usuario[username]["historias"].append(h)
     context = {
         "mascotas_usuario": mascotas,
@@ -793,13 +822,14 @@ def search_with_rank(
     )
 
 
-@rate_limit(key='ip', rate=RL_SEARCH)
+@rate_limit(key="ip", rate=RL_SEARCH)
 def search(request):
     querysearch = request.GET.get("search", "").strip()
     querysearch = sanitize_string(querysearch)
     context = {
         "mascots": [],
         "stores": [],
+        "specialties": [],
         "services": [],
         "products": [],
         "query": querysearch,
@@ -807,34 +837,45 @@ def search(request):
 
     # Retornar vacío si no hay término
     if not querysearch:
-        return render(request, "results.html", context)
+        return render(request, "resultados.html", context)
 
     # Validaciones básicas
     if len(querysearch) > 50:
         messages.error(request, "El término de búsqueda es demasiado largo.")
-        return render(request, "results.html", context)
-    if not re.match(r"^[a-zA-Z0-9\s]*$", querysearch):
+        return render(request, "resultados.html", context)
+    if not re.match(r"^[a-zA-Z0-9ñÑ\s]*$", querysearch):
         messages.error(
             request, "La búsqueda solo puede contener letras, números y espacios."
         )
-        return render(request, "results.html", context)
+        return render(request, "resultados.html", context)
     if len(querysearch) < 3:
         messages.warning(request, "Ingresa al menos 3 caracteres para buscar.")
-        return render(request, "results.html", context)
+        return render(request, "resultados.html", context)
+    if len(querysearch) > 50:
+        messages.error(request, "El término de búsqueda es demasiado largo.")
+        return render(request, "resultados.html", context)
+    if contiene_sql_injection(querysearch):
+        messages.error(
+            request,
+            "El término de búsqueda contiene caracteres o palabras no permitidas.",
+        )
+        return render(request, "resultados.html", context)
 
     # Búsquedas con rank (evalúan al iterar)
-    # tipoAnimal es FK: usar el campo relacionado 'nombre' para el vector
     mascotas_qs = search_with_rank(
         Pet.objects, ["name", "tipoAnimal__nombre", "breed"], querysearch
     )
     servicios_qs = search_with_rank(
-        ServicesHealth.objects, ["name", "type",
-                                 "services", "owner"], querysearch
+        ServicesHealth.objects, ["name", "type", "owner", "specialties__name", "services__name"], querysearch
+    )
+    servicios_qs = search_with_rank(
+        ServicesHealth.objects, ["name", "type", "owner", "specialties__name", "services__name"], querysearch
     )
     tiendas_qs = search_with_rank(Store.objects, ["name"], querysearch)
-    # Fix: faltaba la coma entre "name" y "description"
     productos_qs = search_with_rank(
-        Product.objects, ["name", "description"], querysearch
+        Product.objects.select_related("store").prefetch_related("images"),
+        ["name", "description"],
+        querysearch,
     )
 
     # Materializar en listas (evita reevaluaciones)
@@ -866,7 +907,6 @@ def search(request):
     tiendas_count = tiendas_qs.count()
     productos_count = productos_qs.count()
     total_count = mascotas_count + servicios_count + tiendas_count + productos_count
-
     context.update(
         {
             "query": querysearch,
