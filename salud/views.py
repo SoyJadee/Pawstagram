@@ -12,52 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
-
-# Lightweight rate limiter using Django cache (per-IP, per-view)
-
-
-def _client_ip(request):
-    xff = request.META.get('HTTP_X_FORWARDED_FOR')
-    if xff:
-        return xff.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR', 'unknown')
-
-
-def rate_limit(limit=10, period=60):
-    """Allow at most `limit` requests per `period` seconds per client IP.
-    Returns 429 with Retry-After when exceeded.
-    """
-    def decorator(view_func):
-        def _wrapped(request, *args, **kwargs):
-            ip = _client_ip(request)
-            key = f"rl:{view_func.__name__}:{ip}"
-            # Initialize counter with TTL if not present, else increment
-            added = cache.add(key, 1, timeout=period)
-            if not added:
-                try:
-                    current = cache.get(key, 0)
-                    if current >= limit:
-                        resp = JsonResponse(
-                            {"error": "Demasiadas solicitudes"}, status=429)
-                        resp["Retry-After"] = str(period)
-                        return resp
-                    cache.incr(key)
-                except Exception:
-                    # Fallback if backend doesn't support incr
-                    current = cache.get(key, 0)
-                    if current >= limit:
-                        resp = JsonResponse(
-                            {"error": "Demasiadas solicitudes"}, status=429)
-                        resp["Retry-After"] = str(period)
-                        return resp
-                    cache.set(key, current + 1, timeout=period)
-            return view_func(request, *args, **kwargs)
-        return _wrapped
-    return decorator
-
+from django_smart_ratelimit import rate_limit
+from common.security import sanitize_string
 
 @csrf_protect
-@rate_limit(limit=10, period=60)
 def obtener_ruta_openrouteservice(request):
     if request.method == "POST":
         import json
@@ -98,6 +56,7 @@ def obtener_ruta_openrouteservice(request):
 
 def obtener_comentarios_salud(request):
     service_id = request.GET.get("service_id")
+    service_id = sanitize_string(service_id)
     comentarios = []
     if not service_id:
         return JsonResponse({"success": False, "error": "Falta service_id"}, status=400)
@@ -119,7 +78,7 @@ def obtener_comentarios_salud(request):
         )
     return JsonResponse({"success": True, "comentarios": comentarios})
 
-
+@rate_limit(key='ip', rate='5/m',)
 def servicios_salud(request):
     if request.method == "GET":
         servicios = ServicesHealth.objects.all()
@@ -157,7 +116,9 @@ def servicios_salud(request):
     elif request.method == "POST":
         form = ReviewForm(request.POST)
         rating = request.POST.get("rating")
+        rating = sanitize_string(rating)
         service_id = request.POST.get("servicio")
+        service_id = sanitize_string(service_id)
 
         # Validaciones básicas fuera del form (rating/servicio vienen de inputs ocultos)
         if not rating or not service_id:

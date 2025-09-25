@@ -50,7 +50,7 @@
 
                     <fieldset class="mt-6">
                         <legend class="text-sm font-medium text-gray-700">Cambiar imagen</legend>
-                        <p class="text-xs text-gray-400 mt-1">Formato: JPG/PNG/GIF/WEBP — Máx 5MB</p>
+                        <p class="text-xs text-gray-400 mt-1">Formato: JPG/PNG/JPEG — Máx 5MB</p>
                         <div class="mt-3">
                             {{ form.image }}
                             {% if form.image.errors %}
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Validaciones cliente (ayuda UX)
         const maxSize = 5 * 1024 * 1024; // 5MB
-        const allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+        const allowed = ['image/jpeg','image/png','image/jpg'];
         if (file.size > maxSize) {
             const p = document.createElement('p');
             p.className = 'text-red-600 text-sm';

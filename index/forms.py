@@ -1,7 +1,8 @@
 from django import forms
 from index.models import Comment, Post
+from common.forms_mixins import XSSCleanMixin
 
-class CommentForm(forms.ModelForm):
+class CommentForm(XSSCleanMixin, forms.ModelForm):
     class Meta:
         model = Comment
         fields = [
@@ -17,17 +18,17 @@ class CommentForm(forms.ModelForm):
             ),
         }
 
-class PostForm(forms.ModelForm):
+class PostForm(XSSCleanMixin, forms.ModelForm):
     # Campo extra para subir/cambiar imagen (no está mapeado al modelo directamente)
     image = forms.ImageField(
         required=False,
         widget=forms.ClearableFileInput(
             attrs={
                 'class': 'w-full text-gray-500 file:bg-paw-teal file:text-white file:px-4 file:py-2 file:rounded-lg file:border-0 file:cursor-pointer hover:file:bg-dark-mint transition-all',
-                'accept': 'image/jpeg,image/png,image/gif,image/webp',
+                'accept': 'image/jpeg,image/png,image/jpg',
             }
         ),
-        help_text='Sube una imagen (JPG, PNG, GIF o WEBP).',
+        help_text='Sube una imagen (JPG, PNG, JPEG).',
     )
 
     class Meta:

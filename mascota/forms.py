@@ -2,9 +2,10 @@ from django import forms
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from .models import Pet
 import re
+from common.forms_mixins import XSSCleanMixin
 
 
-class PetForm(forms.ModelForm):
+class PetForm(XSSCleanMixin, forms.ModelForm):
     profile_photo_url = forms.ImageField(
         required=False,
         widget=forms.ClearableFileInput(

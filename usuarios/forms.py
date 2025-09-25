@@ -1,10 +1,11 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from common.forms_mixins import XSSCleanMixin
 from django import forms
 from django.contrib.auth.models import User
 from .models import UserProfile
 import re
 
-class UserCreationForm(UserCreationForm):
+class UserCreationForm(XSSCleanMixin, UserCreationForm):
     email = forms.EmailField(required=True)
     phone = forms.CharField(max_length=15, required=True)
     is_foundation = forms.BooleanField(required=False, label="¿Eres una fundación?")
@@ -207,7 +208,7 @@ class UserCreationForm(UserCreationForm):
         return False
 
 
-class LoginForm(AuthenticationForm):
+class LoginForm(XSSCleanMixin, AuthenticationForm):
     """Formulario de login con estilos Tailwind.
     """
 
@@ -249,7 +250,7 @@ class LoginForm(AuthenticationForm):
         return False
 
 
-class EditProfileForm(forms.ModelForm):
+class EditProfileForm(XSSCleanMixin, forms.ModelForm):
     first_name = forms.CharField(
         max_length=30,
         required=True,
@@ -371,7 +372,7 @@ class EditProfileForm(forms.ModelForm):
         return False
 
 
-class DeleteUserForm(forms.Form):
+class DeleteUserForm(XSSCleanMixin, forms.Form):
     email = forms.EmailField(
         required=True,
         label="Confirma tu email para eliminar la cuenta",

@@ -13,6 +13,8 @@ from mascota.forms import PetForm
 from adopcion.forms import AdoptionForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django_smart_ratelimit import rate_limit
+from common.security import sanitize_string
 import re
 import logging
 import uuid
@@ -20,7 +22,7 @@ from django.http import JsonResponse
 from supabase import create_client
 from django.conf import settings
 
-allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+allowed_types = ["image/jpeg", "image/png", "image/jpg"]
 logger = logging.getLogger(__name__)
 
 try:
@@ -29,7 +31,7 @@ except Exception as e:
     logger.error(f"Error al inicializar Supabase: {e}")
     supabase = None
 
-
+@rate_limit(key='ip', rate='5/m',)
 def register_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
@@ -80,7 +82,7 @@ def register_view(request):
 
     return render(request, "Registro.html", {"form": form})
 
-
+@rate_limit(key='ip', rate='5/m',)
 def login_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
@@ -93,6 +95,7 @@ def login_view(request):
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
         username_input = request.POST.get("username", "").strip()
+        username_input = sanitize_string(username_input)
         if "@" in username_input:
             try:
                 related_user = User.objects.get(email__iexact=username_input)
@@ -146,8 +149,8 @@ def petAvailable(request):
         return redirect("login")
     return Pet.objects.filter(creator=user, status="available").count()
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def perfil_view(request):
     user_profile = (
         UserProfile.objects.select_related("user").filter(user=request.user).first()
@@ -165,8 +168,8 @@ def perfil_view(request):
         },
     )
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def editProfileView(request):
     user_profile = (
         UserProfile.objects.select_related("user").filter(user=request.user).first()
@@ -193,8 +196,8 @@ def editProfileView(request):
         },
     )
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def configuracion_view(request):
     def is_injection_attempt(value):
         for pattern in INJECTION_PATTERNS:
@@ -234,8 +237,8 @@ def configuracion_view(request):
         },
     )
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def petsUserView(request):
     user_profile = (
         UserProfile.objects.select_related("user").filter(user=request.user).first()
@@ -250,6 +253,7 @@ def petsUserView(request):
 
     if request.method == "GET":
         pet_id = request.GET.get("editar", "").strip()
+        pet_id = sanitize_string(pet_id)
         if pet_id:
             instance = Pet.objects.filter(idPet=pet_id, creator=user_profile).first()
             if instance:
@@ -262,6 +266,7 @@ def petsUserView(request):
 
     elif request.method == "POST":
         pet_id = request.POST.get("pet_id", "").strip()
+        pet_id = sanitize_string(pet_id)
         if pet_id:
             instance = Pet.objects.filter(idPet=pet_id, creator=user_profile).first()
             if not instance:
@@ -422,7 +427,8 @@ def petsUserView(request):
         },
     )
 
-
+@login_required
+@rate_limit(key='user', rate='5/m',)
 def publicacionesUserView(request):
     user_profile = (
         UserProfile.objects.select_related("user").filter(user=request.user).first()
@@ -443,7 +449,7 @@ def publicacionesUserView(request):
             "disponibles": petAvailable(request),
         },
     )
-
+@rate_limit(key='ip', rate='5/m',)
 def postView(request, post_id):
     user_profile = (
         UserProfile.objects.select_related("user").filter(user=request.user).first()
@@ -469,6 +475,7 @@ def postView(request, post_id):
             and request.headers.get("x-requested-with") == "XMLHttpRequest"
         ):
             comment_content = request.POST.get("comment_content", "").strip()
+            comment_content = sanitize_string(comment_content)
             if not comment_content:
                 return JsonResponse({"success": False})
             try:
@@ -499,6 +506,7 @@ def postView(request, post_id):
         # Comentario por submit normal (no AJAX)
         if request.POST.get("comment_content") is not None:
             comment_content = request.POST.get("comment_content", "").strip()
+            comment_content = sanitize_string(comment_content)
             if not comment_content or len(comment_content) < 2:
                 messages.error(
                     request, "El comentario no puede estar vacío o ser muy corto."
@@ -592,7 +600,8 @@ def postView(request, post_id):
         },
     )
 
-
+@login_required
+@rate_limit(key='user', rate='5/m',)
 def deletePostView(request, post_id):
     post = Post.objects.filter(id=post_id).first()
     if not post:
@@ -631,8 +640,8 @@ def deletePostView(request, post_id):
         messages.error(request, "Error al eliminar la publicación. Inténtalo de nuevo.")
     return redirect("posts_user")
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def editPostView(request, post_id):
     post = Post.objects.filter(id=post_id).first()
     if not post:

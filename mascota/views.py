@@ -7,12 +7,13 @@ from adopcion.forms import AdoptionForm
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib import messages
+from django_smart_ratelimit import rate_limit
 import logging
 import re
 
 # Create your views here.
 
-
+@rate_limit(key='ip', rate='5/m',)
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
@@ -37,7 +38,7 @@ def like_post(request):
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-
+@rate_limit(key='ip', rate='5/m',)
 def mascotaDetailsView(request, idPet):
     mascota = get_object_or_404(Pet, idPet=idPet)
     # Obtener posts relacionados a la mascota (por instancia)

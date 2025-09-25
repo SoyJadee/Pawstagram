@@ -16,6 +16,7 @@ from adopcion.models import Adoption
 from django.contrib import messages
 from supabase import create_client
 from django.conf import settings
+from django_smart_ratelimit import rate_limit
 import os
 import uuid
 import re
@@ -29,11 +30,14 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import StreamingHttpResponse
-import json
-import time
+from common.security import sanitize_string
+import json, time
 
+
+allowed_types = ["image/jpeg", "image/png", "image/jpg"]
 
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def all_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
@@ -84,8 +88,8 @@ def all_notifications_fragment(request):
 
 # Endpoint para retornar solo el fragmento de solicitudes de adopción (para AJAX)
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def adoption_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
@@ -108,8 +112,8 @@ def adoption_notifications_fragment(request):
 
 # Endpoint para subir historias tipo Instagram
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 @require_POST
 def subir_historia(request):
     if not request.user.is_authenticated:
@@ -117,9 +121,8 @@ def subir_historia(request):
     foto = request.FILES.get("foto_historia")
     if not foto:
         return JsonResponse({"success": False, "error": "no_file"})
-    if foto.size > 10 * 1024 * 1024:
+    if foto.size > 5 * 1024 * 1024:
         return JsonResponse({"success": False, "error": "file_too_large"})
-    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     if foto.content_type not in allowed_types:
         return JsonResponse({"success": False, "error": "invalid_type"})
     url = None
@@ -164,8 +167,8 @@ def subir_historia(request):
 
 # Endpoint AJAX para obtener notificaciones del usuario autenticado
 
-
 @login_required
+@rate_limit(key='user', rate='5/m',)
 @require_GET
 def notificaciones_json(request):
     notificaciones = Notification.objects.filter(user=request.user).order_by(
@@ -192,6 +195,7 @@ def notificaciones_json(request):
 
 # Conteo rápido de notificaciones no leídas (para polling)
 @login_required
+@rate_limit(key='user', rate='5/m',)
 @require_GET
 def notificaciones_count(request):
     try:
@@ -217,6 +221,7 @@ def notificaciones_count(request):
 
 # SSE: stream de notificaciones del usuario autenticado
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def notifications_stream(request):
     """
     Devuelve un stream SSE con eventos cuando haya nuevas notificaciones para el usuario.
@@ -314,6 +319,7 @@ def notifications_stream(request):
 
 # SSE de conteo de notificaciones no leídas
 @login_required
+@rate_limit(key='user', rate='5/m',)
 def notifications_count_stream(request):
     response = StreamingHttpResponse(
         content_type="text/event-stream; charset=utf-8")
@@ -363,7 +369,7 @@ def notifications_count_stream(request):
 
 # Marcar notificaciones como leídas
 
-
+@rate_limit(key='ip', rate='5/m',)
 @require_POST
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:
@@ -384,12 +390,13 @@ def marcar_notificaciones_leidas(request):
         pet__in=mascotas, is_read=False).update(is_read=True)
     return JsonResponse({"success": True})
 
-
+@rate_limit(key='ip', rate='5/m',)
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "not_authenticated"})
     post_id = request.POST.get("post_id")
+    post_id = sanitize_string(post_id)
     if not post_id:
         return JsonResponse({"success": False, "error": "no_post"})
     try:
@@ -426,7 +433,7 @@ except Exception as e:
     logger.error(f"Error al inicializar Supabase: {e}")
     supabase = None
 
-
+@rate_limit(key='ip', rate='5/m',)
 def principal(request):
     # Eliminar comentarios con '{{' en el contenido (limpieza de datos)
     from .models import Comment
@@ -458,7 +465,9 @@ def principal(request):
             try:
                 rutaStorage = None
                 mascota_id = request.POST.get("mascota_id")
+                mascota_id = sanitize_string(mascota_id)
                 descripcion = request.POST.get("descripcion", "").strip()
+                descripcion = sanitize_string(descripcion)
                 foto = request.FILES.get("foto")
                 if not descripcion:
                     messages.error(request, "Debes escribir una descripción.")
@@ -471,8 +480,6 @@ def principal(request):
                         request, "La imagen es demasiado grande. Máximo 5MB."
                     )
                     return redirect("principal")
-                allowed_types = ["image/jpeg",
-                                 "image/png", "image/gif", "image/webp"]
                 if foto.content_type not in allowed_types:
                     messages.error(
                         request, "Tipo de archivo no válido. Solo se permiten imágenes."
@@ -546,6 +553,7 @@ def principal(request):
         # Guardar comentario
         elif request.user.is_authenticated and "comment_post_id" in request.POST:
             comment_content = request.POST.get("comment_content", "").strip()
+            comment_content = sanitize_string(comment_content)
             # Validación de tipo y contra inyección SQL
             if not comment_content or len(comment_content) < 2:
                 messages.error(
@@ -569,6 +577,7 @@ def principal(request):
                     )
                     return redirect("principal")
             comment_post_id = request.POST.get("comment_post_id")
+            comment_post_id = sanitize_string(comment_post_id)
             if comment_content and comment_post_id:
                 try:
                     post = Post.objects.get(id=comment_post_id)
@@ -623,6 +632,7 @@ def principal(request):
                     request.POST.get("pet_id") or request.POST.get(
                         "mascota_id") or ""
                 ).strip()
+                pet_id = sanitize_string(pet_id)
                 pet = None
                 if pet_id:
                     # intentar por campo idPet (PK nombrado) primero
@@ -736,10 +746,10 @@ def search_with_rank(
         .order_by("-rank")
     )
 
-
+@rate_limit(key='ip', rate='5/m',)
 def search(request):
     querysearch = request.GET.get("search", "").strip()
-
+    querysearch = sanitize_string(querysearch)
     context = {
         "mascots": [],
         "stores": [],
@@ -785,6 +795,7 @@ def search(request):
     def paginate(qs, param, per_page=10):
         paginator = Paginator(qs, per_page)
         page = request.GET.get(param, 1)
+
         try:
             return paginator.page(page)
         except PageNotAnInteger:
