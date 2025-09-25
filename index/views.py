@@ -1,6 +1,5 @@
 # Endpoint para retornar todas las notificaciones mezcladas (AJAX)
 from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .models import Histories
 from .models import Like
@@ -108,7 +107,6 @@ def adoption_notifications_fragment(request):
 
 @login_required
 @require_POST
-@csrf_exempt
 def subir_historia(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "not_authenticated"})
@@ -355,7 +353,6 @@ def notifications_count_stream(request):
 # Marcar notificaciones como leídas
 
 
-@csrf_exempt
 @require_POST
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:

@@ -52,6 +52,10 @@ INSTALLED_APPS = [
     'adopcion',
 ]
 
+# Third-party app settings / integrations
+# OpenRouteService API key (used by salud app). Leave empty locally unless you have a key.
+OPENROUTESERVICE_API_KEY = config('OPENROUTESERVICE_API_KEY', default='')
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

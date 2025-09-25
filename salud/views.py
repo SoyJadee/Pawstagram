@@ -1,6 +1,9 @@
 import requests
+from django.conf import settings
+from django.core.cache import cache
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import ServicesHealth, Reviews
 from .forms import ReviewForm
@@ -9,7 +12,45 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
-@csrf_exempt
+
+# Lightweight rate limiter using Django cache (per-IP, per-view)
+def _client_ip(request):
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    if xff:
+        return xff.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', 'unknown')
+
+def rate_limit(limit=10, period=60):
+    """Allow at most `limit` requests per `period` seconds per client IP.
+    Returns 429 with Retry-After when exceeded.
+    """
+    def decorator(view_func):
+        def _wrapped(request, *args, **kwargs):
+            ip = _client_ip(request)
+            key = f"rl:{view_func.__name__}:{ip}"
+            # Initialize counter with TTL if not present, else increment
+            added = cache.add(key, 1, timeout=period)
+            if not added:
+                try:
+                    current = cache.get(key, 0)
+                    if current >= limit:
+                        resp = JsonResponse({"error": "Demasiadas solicitudes"}, status=429)
+                        resp["Retry-After"] = str(period)
+                        return resp
+                    cache.incr(key)
+                except Exception:
+                    # Fallback if backend doesn't support incr
+                    current = cache.get(key, 0)
+                    if current >= limit:
+                        resp = JsonResponse({"error": "Demasiadas solicitudes"}, status=429)
+                        resp["Retry-After"] = str(period)
+                        return resp
+                    cache.set(key, current + 1, timeout=period)
+            return view_func(request, *args, **kwargs)
+        return _wrapped
+    return decorator
+@csrf_protect
+@rate_limit(limit=10, period=60)
 def obtener_ruta_openrouteservice(request):
     if request.method == "POST":
         import json
@@ -19,7 +60,10 @@ def obtener_ruta_openrouteservice(request):
         destino = data.get("destino")  # [lon, lat]
         if not origen or not destino:
             return JsonResponse({"error": "Faltan coordenadas"}, status=400)
-        api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQyYmI2ZGVmY2U5YzRlNTU5ZGIzMzA1OTgyODVjOTY4IiwiaCI6Im11cm11cjY0In0="
+        api_key = getattr(settings, 'OPENROUTESERVICE_API_KEY', '')
+        if not api_key:
+            # Service temporarily unavailable due to missing configuration.
+            return JsonResponse({"error": "Servicio no disponible"}, status=503)
         url = "https://api.openrouteservice.org/v2/directions/driving-car"
         body = {"coordinates": [origen, destino]}
         headers = {

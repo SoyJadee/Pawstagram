@@ -3,20 +3,7 @@
 <html lang="es">
 
 <head>
-  <!-- Supabase JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script id="my-pet-ids-json"
-    type="application/json">[{% for mascota in mascotas_usuario %}{{ mascota.pk }}{% if not forloop.last %}, {% endif %}{% endfor %}]</script>
-  <script>
-    window.MY_PET_IDS = JSON.parse(document.getElementById('my-pet-ids-json').textContent || "[]");
-  </script>
-  <script>
-    // Inicializa variables globales antes de cargar scripts que las usan
-    window.SUPABASE_URL = "{{ SUPABASE_URL|default:'' }}";
-    window.SUPABASE_KEY = "{{ SUPABASE_KEY|default:'' }}";
-    window.USER_ID = "{{ request.user.id|default:'' }}";
-    window.USER_AUTHENTICATED = {{ user.is_authenticated | yesno: "true,false" }};
-  </script>
+  <!-- No se exponen variables globales con datos del usuario en el cliente -->
   <script src="{% static 'js/security_utils.js' %}"></script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
   <script src="{% static 'js/realtime_notifications_panel.js' %}"></script>
@@ -4059,10 +4046,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     transition: opacity 0.2s;
   }
 </style>
-<script>
-  window.SUPABASE_URL = "{{ SUPABASE_URL }}";
-  window.SUPABASE_KEY = "{{ SUPABASE_KEY }}";
-  window.USER_ID = "{{ request.user.id|default:'' }}";
-</script>
+<!-- Variables sensibles no se exponen en el cliente -->
 
 </html>

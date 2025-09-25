@@ -641,8 +641,11 @@
                         };
                         fetch(url, {
                             method: 'POST',
+                            credentials: 'same-origin',
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
                             },
                             body: JSON.stringify(body)
                         })

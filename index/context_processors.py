@@ -61,8 +61,7 @@ def user_authenticated(request):
             "countPosts": countPosts,
             "countPets": countPets,
             "countUsers": countUsers,
-            "SUPABASE_URL": config('SUPABASE_URL'),
-            "SUPABASE_KEY": config('SUPABASE_KEY'),
+            # No exponer claves de Supabase al cliente
         }
     else:
         return {
@@ -74,6 +73,5 @@ def user_authenticated(request):
             "countPosts": countPosts,
             "countPets": countPets,
             "countUsers": countUsers,
-            "SUPABASE_URL": config('SUPABASE_URL'),
-            "SUPABASE_KEY": config('SUPABASE_KEY'),
+            # No exponer claves de Supabase al cliente
         }
