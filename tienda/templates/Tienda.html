@@ -138,6 +138,7 @@
     }
 
     @keyframes bounce {
+
       0%,
       100% {
         transform: translateY(0);
@@ -434,38 +435,49 @@
                 destino: [parseFloat(lastDestLon), parseFloat(lastDestLat)]
               })
             })
-            .then(response => response.json())
-            .then(data => {
-              if (data.routes && data.routes.length > 0) {
-                var route = data.routes[0];
-                var coords = [];
-                if (route.geometry && route.geometry.coordinates) {
-                  coords = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
-                } else if (typeof route.geometry === 'string' && window.polyline) {
-                  coords = window.polyline.decode(route.geometry);
-                } else if (route.geometry && Array.isArray(route.geometry)) {
-                  coords = route.geometry.map(function (c) { return [c[1], c[0]]; });
-                } else {
-                  alert('La geometría de la ruta no está disponible en el formato esperado.');
-                  return;
-                }
-                showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, {
-                  type: 'Feature',
-                  geometry: {
-                    type: 'LineString',
-                    coordinates: coords.map(function (c) { return [c[1], c[0]]; })
+              .then(response => response.json())
+              .then(data => {
+                if (data.routes && data.routes.length > 0) {
+                  var route = data.routes[0];
+                  var coords = [];
+                  if (route.geometry && route.geometry.coordinates) {
+                    coords = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+                  } else if (typeof route.geometry === 'string' && window.polyline) {
+                    coords = window.polyline.decode(route.geometry);
+                  } else if (route.geometry && Array.isArray(route.geometry)) {
+                    coords = route.geometry.map(function (c) { return [c[1], c[0]]; });
+                  } else {
+                    alert('La geometría de la ruta no está disponible en el formato esperado.');
+                    return;
                   }
-                });
-                // Distancia y duración
-                var km = (route.summary.distance / 1000).toFixed(2);
-                var min = Math.ceil(route.summary.duration / 60);
-                document.querySelectorAll('.modal-distance').forEach(function (el) {
-                  el.textContent = km + ' km';
-                });
-                document.querySelectorAll('.modal-duration').forEach(function (el) {
-                  el.textContent = min + ' minutos';
-                });
-              } else {
+                  showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, {
+                    type: 'Feature',
+                    geometry: {
+                      type: 'LineString',
+                      coordinates: coords.map(function (c) { return [c[1], c[0]]; })
+                    }
+                  });
+                  // Distancia y duración
+                  var km = (route.summary.distance / 1000).toFixed(2);
+                  var min = Math.ceil(route.summary.duration / 60);
+                  document.querySelectorAll('.modal-distance').forEach(function (el) {
+                    el.textContent = km + ' km';
+                  });
+                  document.querySelectorAll('.modal-duration').forEach(function (el) {
+                    el.textContent = min + ' minutos';
+                  });
+                } else {
+                  showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
+                  document.querySelectorAll('.modal-distance').forEach(function (el) {
+                    el.textContent = 'No disponible';
+                  });
+                  document.querySelectorAll('.modal-duration').forEach(function (el) {
+                    el.textContent = 'No disponible';
+                  });
+                  alert('No se pudo calcular la ruta.');
+                }
+              })
+              .catch(() => {
                 showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
                 document.querySelectorAll('.modal-distance').forEach(function (el) {
                   el.textContent = 'No disponible';
@@ -473,19 +485,8 @@
                 document.querySelectorAll('.modal-duration').forEach(function (el) {
                   el.textContent = 'No disponible';
                 });
-                alert('No se pudo calcular la ruta.');
-              }
-            })
-            .catch(() => {
-              showLeafletMap(userLat, userLon, lastDestLat, lastDestLon, null);
-              document.querySelectorAll('.modal-distance').forEach(function (el) {
-                el.textContent = 'No disponible';
+                alert('Error de red al consultar la ruta.');
               });
-              document.querySelectorAll('.modal-duration').forEach(function (el) {
-                el.textContent = 'No disponible';
-              });
-              alert('Error de red al consultar la ruta.');
-            });
           }, function () {
             showLeafletMap(null, null, lastDestLat, lastDestLon, null);
             document.querySelectorAll('.modal-distance').forEach(function (el) {
@@ -540,8 +541,8 @@
       if (routeFeature && routeFeature.geometry && routeFeature.geometry.coordinates) {
         // Leaflet espera [lat, lon], pero GeoJSON es [lon, lat], así que invertimos
         const latLngs = routeFeature.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
-  leafletRoute = L.polyline(latLngs, { color: '#0050b3', weight: 7, opacity: 0.95 }).addTo(leafletMap);
-  leafletMap.fitBounds(leafletRoute.getBounds(), { padding: [40, 40] });
+        leafletRoute = L.polyline(latLngs, { color: '#0050b3', weight: 7, opacity: 0.95 }).addTo(leafletMap);
+        leafletMap.fitBounds(leafletRoute.getBounds(), { padding: [40, 40] });
       }
       // Si solo se muestra el mapa, limpiar distancia/tiempo
       document.querySelectorAll('.modal-distance').forEach(function (el) {

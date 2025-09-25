@@ -5,6 +5,7 @@ from index.models import Post, Notifications as Notification
 from mascota.models import Pet
 from decouple import config
 
+
 def user_authenticated(request):
     countPosts = Post.objects.count()
     countPets = Pet.objects.count()

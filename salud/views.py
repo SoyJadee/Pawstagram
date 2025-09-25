@@ -14,11 +14,14 @@ from django.utils import timezone
 from django.contrib import messages
 
 # Lightweight rate limiter using Django cache (per-IP, per-view)
+
+
 def _client_ip(request):
     xff = request.META.get('HTTP_X_FORWARDED_FOR')
     if xff:
         return xff.split(',')[0].strip()
     return request.META.get('REMOTE_ADDR', 'unknown')
+
 
 def rate_limit(limit=10, period=60):
     """Allow at most `limit` requests per `period` seconds per client IP.
@@ -34,7 +37,8 @@ def rate_limit(limit=10, period=60):
                 try:
                     current = cache.get(key, 0)
                     if current >= limit:
-                        resp = JsonResponse({"error": "Demasiadas solicitudes"}, status=429)
+                        resp = JsonResponse(
+                            {"error": "Demasiadas solicitudes"}, status=429)
                         resp["Retry-After"] = str(period)
                         return resp
                     cache.incr(key)
@@ -42,13 +46,16 @@ def rate_limit(limit=10, period=60):
                     # Fallback if backend doesn't support incr
                     current = cache.get(key, 0)
                     if current >= limit:
-                        resp = JsonResponse({"error": "Demasiadas solicitudes"}, status=429)
+                        resp = JsonResponse(
+                            {"error": "Demasiadas solicitudes"}, status=429)
                         resp["Retry-After"] = str(period)
                         return resp
                     cache.set(key, current + 1, timeout=period)
             return view_func(request, *args, **kwargs)
         return _wrapped
     return decorator
+
+
 @csrf_protect
 @rate_limit(limit=10, period=60)
 def obtener_ruta_openrouteservice(request):
@@ -72,7 +79,8 @@ def obtener_ruta_openrouteservice(request):
             "Accept": "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
         }
         try:
-            response = requests.post(url, json=body, headers=headers, timeout=10)
+            response = requests.post(
+                url, json=body, headers=headers, timeout=10)
             if response.status_code == 200:
                 return JsonResponse(response.json())
             else:
@@ -87,6 +95,7 @@ def obtener_ruta_openrouteservice(request):
             return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
+
 def obtener_comentarios_salud(request):
     service_id = request.GET.get("service_id")
     comentarios = []
@@ -98,7 +107,8 @@ def obtener_comentarios_salud(request):
     except (TypeError, ValueError):
         return JsonResponse({"success": False, "error": "service_id inválido"}, status=400)
 
-    reviews = Reviews.objects.filter(service_id=service_id_int).order_by("-created_at")
+    reviews = Reviews.objects.filter(
+        service_id=service_id_int).order_by("-created_at")
     for r in reviews:
         comentarios.append(
             {
@@ -108,6 +118,7 @@ def obtener_comentarios_salud(request):
             }
         )
     return JsonResponse({"success": True, "comentarios": comentarios})
+
 
 def servicios_salud(request):
     if request.method == "GET":
@@ -141,7 +152,7 @@ def servicios_salud(request):
                 }
             )
         return render(request, "salud.html", {"veterinarias": veterinarias, "form": ReviewForm(initial={
-			"email": request.user.email if request.user.is_authenticated else ""})})
+            "email": request.user.email if request.user.is_authenticated else ""})})
 
     elif request.method == "POST":
         form = ReviewForm(request.POST)
@@ -150,7 +161,8 @@ def servicios_salud(request):
 
         # Validaciones básicas fuera del form (rating/servicio vienen de inputs ocultos)
         if not rating or not service_id:
-            messages.error(request, "Faltan campos obligatorios (calificación o servicio).")
+            messages.error(
+                request, "Faltan campos obligatorios (calificación o servicio).")
             return redirect("servicios_salud")
 
         try:
@@ -179,7 +191,8 @@ def servicios_salud(request):
             email=form.cleaned_data.get("email"), service_id=service_id
         ).exists()
         if registroPasado:
-            messages.warning(request, "Ya has enviado una reseña para este servicio.")
+            messages.warning(
+                request, "Ya has enviado una reseña para este servicio.")
             return redirect("servicios_salud")
 
         try:
