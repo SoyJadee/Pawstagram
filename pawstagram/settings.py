@@ -41,6 +41,10 @@ CSRF_TRUSTED_ORIGINS = config(
     cast=lambda v: [o.strip() for o in v.split(',') if o.strip()]
 ) or []
 
+# Admin URL path (hidden behind a non-standard path). Override via env ADMIN_URL.
+# Examples: 'secure-admin-8a9f3d/' or 'my-admin/'. Do not include a leading slash.
+ADMIN_URL = config('ADMIN_URL', default='secure-admin-8a9f3d/')
+
 # Application definition
 SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_KEY = config("SUPABASE_KEY")

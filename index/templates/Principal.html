@@ -40,10 +40,12 @@
 
             <div class="mb-4">
               <select name="mascota_id" id="mascota-select"
-                class="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300">
-                <option value="">¿Con qué mascota quieres publicar? 🐾</option>
+                class="w-full max-w-[120px] h-6 px-1 py-0 text-[10px] bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300
+                sm:max-w-md sm:h-10 sm:px-4 sm:py-2 sm:text-sm
+                md:max-w-lg md:h-12 md:text-base">
+                <option value="" class="text-[10px] sm:text-xs md:text-sm">¿Con qué mascota quieres publicar? 🐾</option>
                 {% for mascota in mascotas_usuario %}
-                <option value="{{ mascota.pk }}">{{ mascota.name }}</option>
+                <option value="{{ mascota.pk }}" class="text-[10px] sm:text-xs md:text-sm">{{ mascota.name }}</option>
                 {% endfor %}
               </select>
               <span id="mascota-error" class="hidden text-red-500 text-sm mt-1"></span>
@@ -102,7 +104,7 @@
           </div>
           {% if post.pet.status == "available" and post.author.user != request.user %}
           <button onclick="showInterest('{{ post.pet.pk }}')"
-            class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
+            class="bg-mint hover:bg-green-400 text-white px-2 py-2 sm:px-3 sm:py-2 md:px-4 md:py-3 rounded-full font-semibold text-xs sm:text-sm md:text-base transition-all duration-300 transform hover:scale-105 max-w-[180px] sm:max-w-[200px] md:max-w-[220px] w-auto">
             💕 ¡Me interesa adoptar!
           </button>
           {% elif post.author.user == request.user %}

@@ -9,7 +9,7 @@ from django.db.models import Q, QuerySet
 from mascota.models import Pet
 from .models import Post, Comment, Notifications as Notification
 from usuarios.models import UserProfile
-from tienda.models import Store, Product,ProductImage
+from tienda.models import Store, Product, ProductImage
 from salud.models import ServicesHealth
 from adopcion.forms import AdoptionForm
 from adopcion.models import Adoption
@@ -30,6 +30,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import StreamingHttpResponse
+from django.http import HttpResponseNotFound
 from common.security import (
     sanitize_string,
     validate_uploaded_image,
@@ -58,11 +59,14 @@ patrones_sql = [
     r"(--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION|OR|AND)\b)",
     r"(['\";=])",
 ]
+
+
 def contiene_sql_injection(texto):
     for patron in patrones_sql:
         if re.search(patron, texto, re.IGNORECASE):
             return True
     return False
+
 
 @login_required
 @rate_limit(key="user", rate=RL_ALL_NOTIFS)
@@ -73,7 +77,8 @@ def all_notifications_fragment(request):
     from index.models import Notifications as Notification
 
     user_profile = (
-        UserProfile.objects.select_related("user").filter(user=request.user).first()
+        UserProfile.objects.select_related(
+            "user").filter(user=request.user).first()
     )
     mascotas = []
     if user_profile:
@@ -85,7 +90,8 @@ def all_notifications_fragment(request):
         .values("id", "type", "message", "created_at", "is_read", "post_id")
     )
     post_ids = [n["post_id"] for n in notificaciones if n["post_id"]]
-    post_photos = {p.id: p.photo_url for p in Post.objects.filter(id__in=post_ids)}
+    post_photos = {
+        p.id: p.photo_url for p in Post.objects.filter(id__in=post_ids)}
     for n in notificaciones:
         n["notif_type"] = n["type"]
         n["is_adoption"] = False
@@ -123,7 +129,8 @@ def adoption_notifications_fragment(request):
     from usuarios.models import UserProfile
 
     user_profile = (
-        UserProfile.objects.select_related("user").filter(user=request.user).first()
+        UserProfile.objects.select_related(
+            "user").filter(user=request.user).first()
     )
     mascotas = Pet.objects.filter(creator=user_profile)
     notificaciones_adopciones = Adoption.objects.filter(pet__in=mascotas).order_by(
@@ -198,7 +205,8 @@ def subir_historia(request):
             return JsonResponse(
                 {"success": False, "error": upload_error or "upload_failed"}
             )
-    historia = Histories.objects.create(author=request.user, photo_url=url or "")
+    historia = Histories.objects.create(
+        author=request.user, photo_url=url or "")
     return JsonResponse({"success": True, "historia_id": historia.id, "photo_url": url})
 
 
@@ -247,7 +255,8 @@ def notificaciones_count(request):
         from mascota.models import Pet
 
         pets = Pet.objects.filter(creator__user=request.user)
-        unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
+        unread_adop = Adoption.objects.filter(
+            pet__in=pets, is_read=False).count()
     except Exception:
         unread_adop = 0
     total_unread = int(unread_app) + int(unread_adop)
@@ -265,7 +274,8 @@ def notifications_stream(request):
     Estrategia simple con long-polling en memoria (proceso) sobre la base de datos.
     """
     # Headers SSE
-    response = StreamingHttpResponse(content_type="text/event-stream; charset=utf-8")
+    response = StreamingHttpResponse(
+        content_type="text/event-stream; charset=utf-8")
     response["Cache-Control"] = "no-cache, no-transform"
     response["X-Accel-Buffering"] = "no"  # Nginx: desactivar buffering
 
@@ -293,7 +303,8 @@ def notifications_stream(request):
 
                 # Adopciones para mascotas del usuario
                 user_profile = (
-                    UserProfile.objects.select_related("user").filter(user=user).first()
+                    UserProfile.objects.select_related(
+                        "user").filter(user=user).first()
                 )
                 adopciones = []
                 if user_profile:
@@ -356,7 +367,8 @@ def notifications_stream(request):
 @login_required
 @rate_limit(key="user", rate=RL_SSE)
 def notifications_count_stream(request):
-    response = StreamingHttpResponse(content_type="text/event-stream; charset=utf-8")
+    response = StreamingHttpResponse(
+        content_type="text/event-stream; charset=utf-8")
     response["Cache-Control"] = "no-cache, no-transform"
     response["X-Accel-Buffering"] = "no"
 
@@ -364,14 +376,16 @@ def notifications_count_stream(request):
 
     def current_unread():
         try:
-            unread_app = Notification.objects.filter(user=user, is_read=False).count()
+            unread_app = Notification.objects.filter(
+                user=user, is_read=False).count()
         except Exception:
             unread_app = 0
         try:
             from mascota.models import Pet
 
             pets = Pet.objects.filter(creator__user=user)
-            unread_adop = Adoption.objects.filter(pet__in=pets, is_read=False).count()
+            unread_adop = Adoption.objects.filter(
+                pet__in=pets, is_read=False).count()
         except Exception:
             unread_adop = 0
         return int(unread_app) + int(unread_adop)
@@ -399,6 +413,12 @@ def notifications_count_stream(request):
     return response
 
 
+# Custom 404 renderer to ensure our branded 404 template is used.
+def custom_404(request, exception=None):
+    # Render the 404 template from index/templates/404.html
+    return render(request, '404.html', status=404)
+
+
 # Marcar notificaciones como leídas
 
 
@@ -407,17 +427,20 @@ def notifications_count_stream(request):
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "not_authenticated"})
-    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    Notification.objects.filter(
+        user=request.user, is_read=False).update(is_read=True)
     # Marcar adopciones como leídas
     from adopcion.models import Adoption
     from mascota.models import Pet
     from usuarios.models import UserProfile
 
     user_profile = (
-        UserProfile.objects.select_related("user").filter(user=request.user).first()
+        UserProfile.objects.select_related(
+            "user").filter(user=request.user).first()
     )
     mascotas = Pet.objects.filter(creator=user_profile)
-    Adoption.objects.filter(pet__in=mascotas, is_read=False).update(is_read=True)
+    Adoption.objects.filter(
+        pet__in=mascotas, is_read=False).update(is_read=True)
     return JsonResponse({"success": True})
 
 
@@ -484,7 +507,8 @@ def principal(request):
         try:
             from usuarios.models import UserProfile
 
-            user_profile = UserProfile.objects.filter(user=request.user).first()
+            user_profile = UserProfile.objects.filter(
+                user=request.user).first()
             if user_profile:
                 mascotas = Pet.objects.filter(creator=user_profile)
             else:
@@ -525,7 +549,8 @@ def principal(request):
                 if not foto:
                     messages.error(request, "Debes subir una foto.")
                     return redirect("principal")
-                ok, info = validate_uploaded_image(foto, max_bytes=5 * 1024 * 1024)
+                ok, info = validate_uploaded_image(
+                    foto, max_bytes=5 * 1024 * 1024)
                 if not ok:
                     code = str(info)
                     error_msg = {
@@ -592,7 +617,8 @@ def principal(request):
                         )
                         return redirect("principal")
                 else:
-                    messages.error(request, "Servicio de almacenamiento no disponible.")
+                    messages.error(
+                        request, "Servicio de almacenamiento no disponible.")
                     return redirect("principal")
                 post_obj = Post.objects.create(
                     pet=mascota,
@@ -674,7 +700,8 @@ def principal(request):
                         from django.http import JsonResponse
 
                         return JsonResponse({"success": False})
-                    messages.error(request, "No se pudo guardar el comentario.")
+                    messages.error(
+                        request, "No se pudo guardar el comentario.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 from django.http import JsonResponse
 
@@ -688,7 +715,8 @@ def principal(request):
                 adoption.is_read = False  # Siempre nueva solicitud no leída
                 # obtener pet id enviado desde el modal (limpiar y manejar varios casos)
                 pet_id = (
-                    request.POST.get("pet_id") or request.POST.get("mascota_id") or ""
+                    request.POST.get("pet_id") or request.POST.get(
+                        "mascota_id") or ""
                 ).strip()
                 pet_id = sanitize_string(pet_id)
                 pet = None
@@ -766,7 +794,8 @@ def principal(request):
     user_liked_post_ids = set()
     if request.user.is_authenticated:
         user_liked_post_ids = set(
-            Like.objects.filter(user=request.user).values_list("post_id", flat=True)
+            Like.objects.filter(user=request.user).values_list(
+                "post_id", flat=True)
         )
 
     desde = timezone.now() - timezone.timedelta(hours=24)
@@ -779,7 +808,8 @@ def principal(request):
     for h in historias_qs:
         username = h.author.username
         if username not in historias_por_usuario:
-            historias_por_usuario[username] = {"user": h.author, "historias": []}
+            historias_por_usuario[username] = {
+                "user": h.author, "historias": []}
         historias_por_usuario[username]["historias"].append(h)
     context = {
         "mascotas_usuario": mascotas,
@@ -866,10 +896,12 @@ def search(request):
         Pet.objects, ["name", "tipoAnimal__nombre", "breed"], querysearch
     )
     servicios_qs = search_with_rank(
-        ServicesHealth.objects, ["name", "type", "owner", "specialties__name", "services__name"], querysearch
+        ServicesHealth.objects, ["name", "type", "owner",
+                                 "specialties__name", "services__name"], querysearch
     )
     servicios_qs = search_with_rank(
-        ServicesHealth.objects, ["name", "type", "owner", "specialties__name", "services__name"], querysearch
+        ServicesHealth.objects, ["name", "type", "owner",
+                                 "specialties__name", "services__name"], querysearch
     )
     tiendas_qs = search_with_rank(Store.objects, ["name"], querysearch)
     productos_qs = search_with_rank(

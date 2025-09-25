@@ -16,9 +16,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.http import Http404
+from index import views as index_views
+
+
+def _raise_404(request, *args, **kwargs):
+    raise Http404()
+
+
+_clean_admin_url = (settings.ADMIN_URL or '').strip('/') + '/'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # Make /admin return our custom 404 page (even in DEBUG)
+    path('admin', index_views.custom_404, name='admin_404_no_slash'),
+    path('admin/', index_views.custom_404, name='admin_404'),
+    # Mount real admin under secret path from settings.ADMIN_URL
+    path(_clean_admin_url, admin.site.urls),
     path('', include('index.urls')),
     path('mascota/', include('mascota.urls')),
     path('usuario/', include('usuarios.urls')),
@@ -26,3 +40,6 @@ urlpatterns = [
     path('tienda/', include('tienda.urls')),
     path('salud/', include('salud.urls')),
 ]
+
+# Global 404 handler so unmatched routes use our template in production
+handler404 = 'index.views.custom_404'
