@@ -2,376 +2,412 @@
 {% load static %}
 {% load highlight %}
 {% block extra_head %}
-    <title>Resultados de Búsqueda - PetAdopt</title>
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #ffffff 0%, #E8F8F5 50%, #F0FDFA 100%);
-        }
-        .card-shadow {
-            box-shadow: 0 4px 20px rgba(152, 228, 214, 0.1);
-        }
-        .hover-lift {
-            transition: all 0.3s ease;
-        }
-        .hover-lift:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(152, 228, 214, 0.15);
-        }
-        .turquoise-gradient {
-            background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
-        }
-        .input-focus {
-            transition: all 0.3s ease;
-        }
-        .input-focus:focus {
-            border-color: #40E0D0;
-            box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
-        }
-        .filter-active {
-            background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
-            color: white;
-        }
-        .filter-inactive {
-            background: white;
-            color: #6B7280;
-            border: 1px solid #E5E7EB;
-        }
-        .filter-inactive:hover {
-            background: #E8F8F5;
-            color: #40E0D0;
-        }
-        .highlight {
-            background-color: #40E0D0;
-            font-weight: bold;
-        }
-    </style>
+<title>Resultados de Búsqueda - PetAdopt</title>
+<style>
+  .gradient-bg {
+    background: linear-gradient(135deg, #ffffff 0%, #E8F8F5 50%, #F0FDFA 100%);
+  }
+
+  .card-shadow {
+    box-shadow: 0 4px 20px rgba(152, 228, 214, 0.1);
+  }
+
+  .hover-lift {
+    transition: all 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(152, 228, 214, 0.15);
+  }
+
+  .turquoise-gradient {
+    background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
+  }
+
+  .input-focus {
+    transition: all 0.3s ease;
+  }
+
+  .input-focus:focus {
+    border-color: #40E0D0;
+    box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+  }
+
+  .filter-active {
+    background: linear-gradient(135deg, #40E0D0 0%, #98E4D6 100%);
+    color: white;
+  }
+
+  .filter-inactive {
+    background: white;
+    color: #6B7280;
+    border: 1px solid #E5E7EB;
+  }
+
+  .filter-inactive:hover {
+    background: #E8F8F5;
+    color: #40E0D0;
+  }
+
+  .highlight {
+    background-color: #40E0D0;
+    font-weight: bold;
+  }
+</style>
 {% endblock extra_head %}
 {% block content %}
 <div class="gradient-bg min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Search Results Header -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Search Results Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">Resultados de búsqueda</h1>
+          {% if messages %}
+          {% for message in messages %}
+          <div
+            class="mt-2 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+          {% endif %}
+          <p class="text-gray-600 mt-2">Resultados para "<span class="font-semibold">{{ query }}</span>"</p>
+        </div>
+        <!-- Filters -->
         <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Resultados de búsqueda</h1>
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="mt-2 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    <p class="text-gray-600 mt-2">Resultados para "<span class="font-semibold">{{ query }}</span>"</p>
-                </div>
-                <!-- Filters -->
-                <div class="mb-8">
-                    <div class="flex flex-wrap gap-3">
-                    <button
-                        class="filter-active px-4 py-2 rounded-full text-sm font-semibold transition"
-                        onclick="filterResults('all')"
-                    >
-                        Todos ({{ total_count|default:0 }})
-                    </button>
-                    <button
-                        class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
-                        onclick="filterResults('mascotas')"
-                    >
-                        Mascotas ({{ mascotas_count|default:0 }})
-                    </button>
-                    <button
-                        class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
-                        onclick="filterResults('servicios')"
-                    >
-                        Servicios ({{ servicios_count|default:0 }})
-                    </button>
-                    <button
-                        class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
-                        onclick="filterResults('tiendas')"
-                    >
-                        Tiendas ({{ tiendas_count|default:0 }})
-                    </button>
-                    <button
-                        class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
-                        onclick="filterResults('productos')"
-                    >
-                        Productos ({{ productos_count|default:0 }})
-                    </button>
-                    </div>
-                </div>
-
-            </div>
+          <div class="flex flex-wrap gap-3">
+            <button class="filter-active px-4 py-2 rounded-full text-sm font-semibold transition"
+              onclick="filterResults('all')">
+              Todos ({{ total_count|default:0 }})
+            </button>
+            <button class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
+              onclick="filterResults('mascotas')">
+              Mascotas ({{ mascotas_count|default:0 }})
+            </button>
+            <button class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
+              onclick="filterResults('servicios')">
+              Servicios ({{ servicios_count|default:0 }})
+            </button>
+            <button class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
+              onclick="filterResults('tiendas')">
+              Tiendas ({{ tiendas_count|default:0 }})
+            </button>
+            <button class="filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition"
+              onclick="filterResults('productos')">
+              Productos ({{ productos_count|default:0 }})
+            </button>
+          </div>
         </div>
 
-        <!-- Results List -->
-  <div class="w-full">
-    <!-- Masonry layout using CSS columns to avoid vertical gaps -->
-    <div id="resultsGrid" class="columns-1 sm:columns-2 lg:columns-3 gap-6">
-                    <!-- Pet Card -->
-                     {% if mascotas %}
-                     {% for mascota in mascotas %}
-          <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
-                    data-type="mascotas">
-              <div class="relative">
-                <img src="{{ mascota.profile_photo_url }}" alt="{{ mascota.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
-                <div class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                  {% if mascota.status == 'available' %}
-                  En adopción
-                  {% else %}
-                  Adoptado
-                  {% endif %}
-                </div>
-              </div>
-              <div class="p-6">
-                <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ mascota.name|highlight:query }}</h4>
-                <p class="text-gray-600 mb-2">{{ mascota.tipoAnimal|highlight:query }} • {{ mascota.breed|highlight:query }} • {{ mascota.age }} años • {% if mascota.gender == 'male' %}
-                Macho
-                {% elif mascota.gender == 'female' %}
-                Hembra
-                {% else %}
-                Desconocido
-                {% endif %}
-                </p>
-                <p class="text-gray-500 text-sm mb-3">📍 {{ mascota.ubication }}</p>
-                <p class="text-gray-700 mb-4 leading-relaxed">{{ mascota.description|truncatechars:200 }}</p>
-                <a href="{% url 'mascotaDetails' mascota.idPet %}">
-                  <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
-                    <i class="fas fa-eye mr-2"></i>Ver perfil
-                  </button>
-                </a>
-              </div>
+      </div>
+    </div>
+
+    <!-- Results List -->
+    <div class="w-full">
+      <!-- Masonry layout using CSS columns to avoid vertical gaps -->
+      <div id="resultsGrid" class="columns-1 sm:columns-2 lg:columns-3 gap-6">
+        <!-- Pet Card -->
+        {% if mascotas %}
+        {% for mascota in mascotas %}
+        <div
+          class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
+          data-type="mascotas">
+          <div class="relative">
+            <img src="{{ mascota.profile_photo_url }}" alt="{{ mascota.name }}"
+              class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
+            <div class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              {% if mascota.status == 'available' %}
+              En adopción
+              {% else %}
+              Adoptado
+              {% endif %}
+            </div>
           </div>
-                    {% endfor %}
-                    {% endif %}
-                    <!-- Service Card -->
-                     {% if servicios %}
-                     {% for servicio in servicios %}
-                    <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
-                    data-type="servicios">
-                      <div class="relative">
-                        <img src="{{ servicio.photo_url }}" alt="{{ servicio.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
-                        <div class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                          {{ servicio.type|capfirst|highlight:query }}
-                        </div>
-                      </div>
-                      <div class="p-6">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ servicio.name|highlight:query }}</h4>
-                        <h5 class="text-gray-600 mb-2">Dueño: {{ servicio.owner|highlight:query }}</h5>
-                        <p class="text-gray-600 mb-2">{{ servicio.specialties }} • {{ servicio.phone }} • {{ servicio.email }} • {{ servicio.horarioStart }}-{{ servicio.horarioEnd }}</p>
-                        <p class="text-gray-600 mb-2">Precio de la consulta: {{ servicio.consultPrice }}</p>
-                        <p class="text-gray-600 mb-2">Servicios: {{ servicio.services|highlight:query }} </p>
-                        <p class="text-gray-500 text-sm mb-3">📍 {{ servicio.address }}</p>
-                        <a href="{% url 'servicios_salud' %}">
-                          <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
-                            <i class="fas fa-eye mr-2"></i>Ver perfil
-                          </button>
-                        </a>
-                      </div>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-                    <!-- Tiendas -->
-                     <!-- Servicios -->
-                     {% if tiendas %}
-                     {% for tienda in tiendas %}
-                    <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
-                    data-type="tiendas">
-                      <div class="relative">
-                        <img src="{{ tienda.photo_url }}" alt="{{ tienda.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
-                      </div>
-                      <div class="p-6">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ tienda.name|highlight:query }}</h4>
-                        <p class="text-gray-600 mb-2">{{ tienda.owner }}</p>
-                        <p class="text-gray-500 text-sm mb-3">📍 {{ tienda.location }}</p>
-                        <p class="text-gray-700 mb-4 leading-relaxed">{{ tienda.description|truncatechars:200 }}</p>
-                        <a href="{% url 'catalogo' tienda.id %}">
-                          <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
-                            <i class="fas fa-eye mr-2"></i>Ver catalogo
-                          </button>
-                        </a>
-                      </div>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-                    <!-- Productos -->
-                     {% if productos %}
-                     {% for producto in productos %}
-                    <div class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
-                    data-type="productos">
-                      <div class="relative">
-                            <img src="{{ producto.images.first.url }}" alt="{{ producto.images.first.alt_text|default:producto.name }}" class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
-                      </div>
-                      <div class="p-6">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ producto.name|highlight:query }}</h4>
-                        <p class="text-gray-600 mb-2">${{ producto.price }} - Stock: {{ producto.stock }}</p>
-                        <p class="text-gray-500 text-sm mb-3"><i class="fas fa-store mr-2"></i> {{ producto.store.name }}</p>
-                        <p class="text-gray-700 mb-4 leading-relaxed">{{ producto.description|highlight:query|truncatechars:200 }}</p>
-                        <a href="{% url 'catalogo' producto.store.id %}">
-                          <button class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
-                            <i class="fas fa-eye mr-2"></i>Ver stock
-                          </button>
-                        </a>
-                      </div>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
-<!-- Pagination -->
-          <div class="mt-10 grid gap-8">
-            {% if tiendas_page.paginator.num_pages > 1 %}
-            <div>
-              <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Tiendas</h4>
-              <div class="flex flex-wrap items-center gap-2">
-                {% if tiendas_page.has_previous %}
-                  <a href="?search={{ query }}&page_t={{ tiendas_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+          <div class="p-6">
+            <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ mascota.name|highlight:query }}</h4>
+            <p class="text-gray-600 mb-2">{{ mascota.tipoAnimal|highlight:query }} • {{ mascota.breed|highlight:query }}
+              • {{ mascota.age }} años • {% if mascota.gender == 'male' %}
+              Macho
+              {% elif mascota.gender == 'female' %}
+              Hembra
+              {% else %}
+              Desconocido
+              {% endif %}
+            </p>
+
+            <p class="text-gray-700 mb-4 leading-relaxed">{{ mascota.description|truncatechars:200 }}</p>
+            <a href="{% url 'mascotaDetails' mascota.idPet %}">
+              <button
+                class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
+                <i class="fas fa-eye mr-2"></i>Ver perfil
+              </button>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <!-- Service Card -->
+        {% if servicios %}
+        {% for servicio in servicios %}
+        <div
+          class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
+          data-type="servicios">
+          <div class="relative">
+            <img src="{{ servicio.photo_url }}" alt="{{ servicio.name }}"
+              class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
+            <div class="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              {{ servicio.type|capfirst|highlight:query }}
+            </div>
+          </div>
+          <div class="p-6">
+            <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ servicio.name|highlight:query }}</h4>
+            <h5 class="text-gray-600 mb-2">Dueño: {{ servicio.owner|highlight:query }}</h5>
+            <p class="text-gray-600 mb-2">{{ servicio.specialties }} • {{ servicio.phone }} • {{ servicio.email }} • {{
+              servicio.horarioStart }}-{{ servicio.horarioEnd }}</p>
+            <p class="text-gray-600 mb-2">Precio de la consulta: {{ servicio.consultPrice }}</p>
+            <p class="text-gray-600 mb-2">Servicios: {{ servicio.services|highlight:query }} </p>
+            <p class="text-gray-500 text-sm mb-3">📍 {{ servicio.address }}</p>
+            <a href="{% url 'servicios_salud' %}">
+              <button
+                class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
+                <i class="fas fa-eye mr-2"></i>Ver perfil
+              </button>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <!-- Tiendas -->
+        <!-- Servicios -->
+        {% if tiendas %}
+        {% for tienda in tiendas %}
+        <div
+          class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
+          data-type="tiendas">
+          <div class="relative">
+            <img src="{{ tienda.photo_url }}" alt="{{ tienda.name }}"
+              class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
+          </div>
+          <div class="p-6">
+            <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ tienda.name|highlight:query }}</h4>
+            <p class="text-gray-600 mb-2">{{ tienda.owner }}</p>
+            <p class="text-gray-500 text-sm mb-3">📍 {{ tienda.location }}</p>
+            <p class="text-gray-700 mb-4 leading-relaxed">{{ tienda.description|truncatechars:200 }}</p>
+            <a href="{% url 'catalogo' tienda.id %}">
+              <button
+                class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
+                <i class="fas fa-eye mr-2"></i>Ver catalogo
+              </button>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <!-- Productos -->
+        {% if productos %}
+        {% for producto in productos %}
+        <div
+          class="bg-white rounded-2xl card-shadow overflow-hidden hover-lift cursor-pointer break-inside-avoid inline-block w-full mb-6"
+          data-type="productos">
+          <div class="relative">
+            <img src="{{ producto.images.first.url }}" alt="{{ producto.images.first.alt_text|default:producto.name }}"
+              class="h-48 w-full object-cover bg-gradient-to-br from-mint to-turquoise">
+          </div>
+          <div class="p-6">
+            <h4 class="text-2xl font-semibold text-gray-800 mb-2">{{ producto.name|highlight:query }}</h4>
+            <p class="text-gray-600 mb-2">${{ producto.price }} - Stock: {{ producto.stock }}</p>
+            <p class="text-gray-500 text-sm mb-3"><i class="fas fa-store mr-2"></i> {{ producto.store.name }}</p>
+            <p class="text-gray-700 mb-4 leading-relaxed">{{ producto.description|highlight:query|truncatechars:200 }}
+            </p>
+            <a href="{% url 'catalogo' producto.store.id %}">
+              <button
+                class="w-full bg-light-mint text-turquoise px-6 py-3 rounded-xl font-semibold hover:bg-mint hover:text-white transition-all">
+                <i class="fas fa-eye mr-2"></i>Ver stock
+              </button>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <!-- Pagination -->
+        <div class="mt-10 grid gap-8">
+          {% if tiendas_page.paginator.num_pages > 1 %}
+          <div>
+            <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Tiendas</h4>
+            <div class="flex flex-wrap items-center gap-2">
+              {% if tiendas_page.has_previous %}
+              <a href="?search={{ query }}&page_t={{ tiendas_page.previous_page_number }}"
+                class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+              {% endif %}
+              {% for num in tiendas_page.paginator.page_range %}
+              {% if num == tiendas_page.number %}
+              <span
+                class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
+                num }}</span>
+              {% elif num <= tiendas_page.number|add:2 and num>= tiendas_page.number|add:-2 %}
+                <a href="?search={{ query }}&page_t={{ num }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
-                {% for num in tiendas_page.paginator.page_range %}
-                  {% if num == tiendas_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
-                  {% elif num <= tiendas_page.number|add:2 and num >= tiendas_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_t={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
-                  {% endif %}
                 {% endfor %}
                 {% if tiendas_page.has_next %}
-                  <a href="?search={{ query }}&page_t={{ tiendas_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
+                <a href="?search={{ query }}&page_t={{ tiendas_page.next_page_number }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
-              </div>
             </div>
-            {% endif %}
+          </div>
+          {% endif %}
 
-            {% if productos_page.paginator.num_pages > 1 %}
-            <div>
-              <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Productos</h4>
-              <div class="flex flex-wrap items-center gap-2">
-                {% if productos_page.has_previous %}
-                  <a href="?search={{ query }}&page_p={{ productos_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+          {% if productos_page.paginator.num_pages > 1 %}
+          <div>
+            <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Productos</h4>
+            <div class="flex flex-wrap items-center gap-2">
+              {% if productos_page.has_previous %}
+              <a href="?search={{ query }}&page_p={{ productos_page.previous_page_number }}"
+                class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+              {% endif %}
+              {% for num in productos_page.paginator.page_range %}
+              {% if num == productos_page.number %}
+              <span
+                class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
+                num }}</span>
+              {% elif num <= productos_page.number|add:2 and num>= productos_page.number|add:-2 %}
+                <a href="?search={{ query }}&page_p={{ num }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
-                {% for num in productos_page.paginator.page_range %}
-                  {% if num == productos_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
-                  {% elif num <= productos_page.number|add:2 and num >= productos_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_p={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
-                  {% endif %}
                 {% endfor %}
                 {% if productos_page.has_next %}
-                  <a href="?search={{ query }}&page_p={{ productos_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
+                <a href="?search={{ query }}&page_p={{ productos_page.next_page_number }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
-              </div>
             </div>
-            {% endif %}
+          </div>
+          {% endif %}
 
-            {% if mascotas_page.paginator.num_pages > 1 %}
-            <div>
-              <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Mascotas</h4>
-              <div class="flex flex-wrap items-center gap-2">
-                {% if mascotas_page.has_previous %}
-                  <a href="?search={{ query }}&page_m={{ mascotas_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+          {% if mascotas_page.paginator.num_pages > 1 %}
+          <div>
+            <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Mascotas</h4>
+            <div class="flex flex-wrap items-center gap-2">
+              {% if mascotas_page.has_previous %}
+              <a href="?search={{ query }}&page_m={{ mascotas_page.previous_page_number }}"
+                class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+              {% endif %}
+              {% for num in mascotas_page.paginator.page_range %}
+              {% if num == mascotas_page.number %}
+              <span
+                class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
+                num }}</span>
+              {% elif num <= mascotas_page.number|add:2 and num>= mascotas_page.number|add:-2 %}
+                <a href="?search={{ query }}&page_m={{ num }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
-                {% for num in mascotas_page.paginator.page_range %}
-                  {% if num == mascotas_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
-                  {% elif num <= mascotas_page.number|add:2 and num >= mascotas_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_m={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
-                  {% endif %}
                 {% endfor %}
                 {% if mascotas_page.has_next %}
-                  <a href="?search={{ query }}&page_m={{ mascotas_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
+                <a href="?search={{ query }}&page_m={{ mascotas_page.next_page_number }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
-              </div>
             </div>
-            {% endif %}
+          </div>
+          {% endif %}
 
-            {% if servicios_page.paginator.num_pages > 1 %}
-            <div>
-              <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Servicios</h4>
-              <div class="flex flex-wrap items-center gap-2">
-                {% if servicios_page.has_previous %}
-                  <a href="?search={{ query }}&page_s={{ servicios_page.previous_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+          {% if servicios_page.paginator.num_pages > 1 %}
+          <div>
+            <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Servicios</h4>
+            <div class="flex flex-wrap items-center gap-2">
+              {% if servicios_page.has_previous %}
+              <a href="?search={{ query }}&page_s={{ servicios_page.previous_page_number }}"
+                class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">«</a>
+              {% endif %}
+              {% for num in servicios_page.paginator.page_range %}
+              {% if num == servicios_page.number %}
+              <span
+                class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
+                num }}</span>
+              {% elif num <= servicios_page.number|add:2 and num>= servicios_page.number|add:-2 %}
+                <a href="?search={{ query }}&page_s={{ num }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
-                {% for num in servicios_page.paginator.page_range %}
-                  {% if num == servicios_page.number %}
-                    <span class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{ num }}</span>
-                  {% elif num <= servicios_page.number|add:2 and num >= servicios_page.number|add:-2 %}
-                    <a href="?search={{ query }}&page_s={{ num }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
-                  {% endif %}
                 {% endfor %}
                 {% if servicios_page.has_next %}
-                  <a href="?search={{ query }}&page_s={{ servicios_page.next_page_number }}" class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
+                <a href="?search={{ query }}&page_s={{ servicios_page.next_page_number }}"
+                  class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">»</a>
                 {% endif %}
-              </div>
             </div>
-            {% endif %}
           </div>
+          {% endif %}
         </div>
       </div>
-  </div>  
+    </div>
+  </div>
 
-{% endblock content %}
-{% block extra_scripts %}
-    <script>
-      function filterResults(type) {
-        const results = document.querySelectorAll("[data-type]");
-        const buttons = document.querySelectorAll(
-          'button[onclick^="filterResults"]'
-        );
+  {% endblock content %}
+  {% block extra_scripts %}
+  <script>
+    function filterResults(type) {
+      const results = document.querySelectorAll("[data-type]");
+      const buttons = document.querySelectorAll(
+        'button[onclick^="filterResults"]'
+      );
 
-        // Update button styles
-        buttons.forEach((btn) => {
-          btn.className =
-            "filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition";
-        });
+      // Update button styles
+      buttons.forEach((btn) => {
+        btn.className =
+          "filter-inactive px-4 py-2 rounded-full text-sm font-semibold transition";
+      });
 
-        event.target.className =
-          "filter-active px-4 py-2 rounded-full text-sm font-semibold transition";
+      event.target.className =
+        "filter-active px-4 py-2 rounded-full text-sm font-semibold transition";
 
-        // Filter results
-        results.forEach((result) => {
-          if (type === "all" || result.dataset.type === type) {
-            result.style.display = "block";
-          } else {
-            result.style.display = "none";
-          }
-        });
+      // Filter results
+      results.forEach((result) => {
+        if (type === "all" || result.dataset.type === type) {
+          result.style.display = "block";
+        } else {
+          result.style.display = "none";
+        }
+      });
 
-        // Update results count
-        const visibleResults = document.querySelectorAll(
-          '[data-type]:not([style*="display: none"])'
-        ).length;
-        const searchInfo = document.querySelector("section p");
-        searchInfo.textContent = `Se encontraron ${visibleResults} resultados en 0.03 segundos`;
+      // Update results count
+      const visibleResults = document.querySelectorAll(
+        '[data-type]:not([style*="display: none"])'
+      ).length;
+      const searchInfo = document.querySelector("section p");
+      searchInfo.textContent = `Se encontraron ${visibleResults} resultados en 0.03 segundos`;
+    }
+  </script>
+  <script>
+    (function () {
+      function c() {
+        var b = a.contentDocument || a.contentWindow.document;
+        if (b) {
+          var d = b.createElement("script");
+          d.innerHTML =
+            "window.__CF$cv$params={r:'9747bd6e1006e9f0',t:'MTc1NjA4OTc4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+          b.getElementsByTagName("head")[0].appendChild(d);
+        }
       }
-    </script>
-    <script>
-      (function () {
-        function c() {
-          var b = a.contentDocument || a.contentWindow.document;
-          if (b) {
-            var d = b.createElement("script");
-            d.innerHTML =
-              "window.__CF$cv$params={r:'9747bd6e1006e9f0',t:'MTc1NjA4OTc4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
-            b.getElementsByTagName("head")[0].appendChild(d);
-          }
+      if (document.body) {
+        var a = document.createElement("iframe");
+        a.height = 1;
+        a.width = 1;
+        a.style.position = "absolute";
+        a.style.top = 0;
+        a.style.left = 0;
+        a.style.border = "none";
+        a.style.visibility = "hidden";
+        document.body.appendChild(a);
+        if ("loading" !== document.readyState) c();
+        else if (window.addEventListener)
+          document.addEventListener("DOMContentLoaded", c);
+        else {
+          var e = document.onreadystatechange || function () { };
+          document.onreadystatechange = function (b) {
+            e(b);
+            "loading" !== document.readyState &&
+              ((document.onreadystatechange = e), c());
+          };
         }
-        if (document.body) {
-          var a = document.createElement("iframe");
-          a.height = 1;
-          a.width = 1;
-          a.style.position = "absolute";
-          a.style.top = 0;
-          a.style.left = 0;
-          a.style.border = "none";
-          a.style.visibility = "hidden";
-          document.body.appendChild(a);
-          if ("loading" !== document.readyState) c();
-          else if (window.addEventListener)
-            document.addEventListener("DOMContentLoaded", c);
-          else {
-            var e = document.onreadystatechange || function () {};
-            document.onreadystatechange = function (b) {
-              e(b);
-              "loading" !== document.readyState &&
-                ((document.onreadystatechange = e), c());
-            };
-          }
-        }
-      })();
-    </script>
-{% endblock extra_scripts %}
+      }
+    })();
+  </script>
+  {% endblock extra_scripts %}
