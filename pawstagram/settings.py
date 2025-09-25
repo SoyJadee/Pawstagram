@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'adopcion',
 ]
 
+# Third-party app settings / integrations
+# OpenRouteService API key (used by salud app). Leave empty locally unless you have a key.
+OPENROUTESERVICE_API_KEY = config('OPENROUTESERVICE_API_KEY', default='')
 RATELIMIT_BACKEND = 'database'  # Use the database backend for rate limiting
 
 MIDDLEWARE = [

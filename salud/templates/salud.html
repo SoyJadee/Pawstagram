@@ -97,9 +97,10 @@
         {% if messages %}
         <div class="mb-6 space-y-2">
             {% for message in messages %}
-                <div class="px-4 py-3 rounded-xl text-sm font-medium {{ message.tags }} {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-gray-50 text-gray-700 border border-gray-200{% endif %}">
-                    {{ message }}
-                </div>
+            <div
+                class="px-4 py-3 rounded-xl text-sm font-medium {{ message.tags }} {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-gray-50 text-gray-700 border border-gray-200{% endif %}">
+                {{ message }}
+            </div>
             {% endfor %}
         </div>
         {% endif %}
@@ -155,12 +156,12 @@
                                 class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl">
                                 {% if veterinaria.type == 'veterinaria' %}🩺
                                 {% else %}
-                                    {% if veterinaria.type == 'peluqueria' %}✂️
-                                    {% else %}
-                                        {% if veterinaria.type == 'spa' %}🛁
-                                        {% else %}❓
-                                        {% endif %}
-                                    {% endif %}
+                                {% if veterinaria.type == 'peluqueria' %}✂️
+                                {% else %}
+                                {% if veterinaria.type == 'spa' %}🛁
+                                {% else %}❓
+                                {% endif %}
+                                {% endif %}
                                 {% endif %}
                             </div>
                             <div>
@@ -169,12 +170,12 @@
                                 <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-semibold">
                                     {% if veterinaria.type == 'veterinaria' %}Veterinaria
                                     {% else %}
-                                        {% if veterinaria.type == 'peluqueria' %}Peluquería
-                                        {% else %}
-                                            {% if veterinaria.type == 'spa' %}Spa
-                                            {% else %}Otro
-                                            {% endif %}
-                                        {% endif %}
+                                    {% if veterinaria.type == 'peluqueria' %}Peluquería
+                                    {% else %}
+                                    {% if veterinaria.type == 'spa' %}Spa
+                                    {% else %}Otro
+                                    {% endif %}
+                                    {% endif %}
                                     {% endif %}
                                 </span>
                             </div>
@@ -225,7 +226,8 @@
                             class="bg-gradient-to-r from-light-blue to-mint hover:shadow-lg text-white py-3 rounded-xl font-semibold transition-all">
                             💬 Comentarios
                         </button>
-                        <button onclick="showRating(this)" data-service-id="{{ veterinaria.id }}" data-service-name="{{ veterinaria.name|escapejs }}"
+                        <button onclick="showRating(this)" data-service-id="{{ veterinaria.id }}"
+                            data-service-name="{{ veterinaria.name|escapejs }}"
                             class="bg-yellow-400 hover:bg-yellow-500 text-white py-3 rounded-xl font-semibold transition-all hover:shadow-lg">
                             ⭐ Calificar
                         </button>
@@ -289,59 +291,65 @@
                     <p class="text-gray-600 mb-6">¿Cómo calificarías este servicio?</p>
                     <form method="post" id="ratingForm" action="{% url 'servicios_salud' %}">
                         {% csrf_token %}
-                    <!-- Estrellas interactivas -->
-                    <div class="rating-interactive flex justify-center gap-2 mb-6">
-                        <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="1"></i>
-                        <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="2"></i>
-                        <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="3"></i>
-                        <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="4"></i>
-                        <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400" data-rating="5"></i>
-                    </div>
-                    <input type="hidden" name="rating" id="ratingValue" value="">
-                    <input type="hidden" name="servicio" id="serviceIdInput" value="">
-                    <div class="mb-6">
-                        Email*
-                        {{ form.email }}
-                    </div>
+                        <!-- Estrellas interactivas -->
+                        <div class="rating-interactive flex justify-center gap-2 mb-6">
+                            <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400"
+                                data-rating="1"></i>
+                            <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400"
+                                data-rating="2"></i>
+                            <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400"
+                                data-rating="3"></i>
+                            <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400"
+                                data-rating="4"></i>
+                            <i class="star fas fa-star text-3xl text-gray-300 hover:text-yellow-400"
+                                data-rating="5"></i>
+                        </div>
+                        <input type="hidden" name="rating" id="ratingValue" value="">
+                        <input type="hidden" name="servicio" id="serviceIdInput" value="">
+                        <div class="mb-6">
+                            Email*
+                            {{ form.email }}
+                        </div>
 
-                                                            <div class="mb-6">
-                                                                    <label class="block text-gray-700 font-medium mb-2">Comentario (opcional)</label>
-                                                                    {{ form.comment }}
-                                                                    <p class="text-sm text-gray-500 mt-1">Puedes dejarlo vacío si solo deseas enviar una calificación.</p>
-                                                            </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">Comentario (opcional)</label>
+                            {{ form.comment }}
+                            <p class="text-sm text-gray-500 mt-1">Puedes dejarlo vacío si solo deseas enviar una
+                                calificación.</p>
+                        </div>
 
-                    <div class="flex gap-3">
-                        <button type="button" onclick="closeRatingModal()"
-                            class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
-                            Cancelar
-                        </button>
-                        <button type="submit"
-                            class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
-                            Enviar calificación
-                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="closeRatingModal()"
+                                class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                                Enviar calificación
+                            </button>
                     </form>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal de comentarios -->
-        <div id="commentsModal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
-                <div class="text-center mb-6">
-                    <div class="text-6xl mb-4">💬</div>
-                    <h3 id="commentsServiceName" class="text-2xl font-bold text-gray-800 mb-2"></h3>
-                    <p class="text-gray-600">Comentarios y reseñas</p>
-                </div>
+    <!-- Modal de comentarios -->
+    <div id="commentsModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full card-shadow max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">💬</div>
+                <h3 id="commentsServiceName" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                <p class="text-gray-600">Comentarios y reseñas</p>
+            </div>
 
-                <!-- Lista de comentarios -->
-                <div class="space-y-4 mb-6"></div>
-                <form method="post" id="commentForm" action="{% url 'servicios_salud' %}">
-                    {% csrf_token %}
-                    <!-- Hidden necesarios para POST a servicios_salud -->
-                    <input type="hidden" name="rating" id="commentsRatingValue" value="">
-                    <input type="hidden" name="servicio" id="commentsServiceIdInput" value="">
+            <!-- Lista de comentarios -->
+            <div class="space-y-4 mb-6"></div>
+            <form method="post" id="commentForm" action="{% url 'servicios_salud' %}">
+                {% csrf_token %}
+                <!-- Hidden necesarios para POST a servicios_salud -->
+                <input type="hidden" name="rating" id="commentsRatingValue" value="">
+                <input type="hidden" name="servicio" id="commentsServiceIdInput" value="">
                 <!-- Agregar comentario -->
                 <div class="border-t pt-6">
                     <h4 class="font-semibold text-gray-800 mb-3">Agregar comentario</h4>
@@ -350,10 +358,11 @@
                             <span><strong>Email*</strong></span>
                             {{ form.email }}
                         </div>
-                        
+
                         <label class="block text-gray-700 font-medium mb-2">Comentario (opcional)</label>
-                                                                    {{ form.comment }}
-                                                                    <p class="text-sm text-gray-500 mt-1">Puedes dejarlo vacío si solo deseas enviar una calificación.</p>
+                        {{ form.comment }}
+                        <p class="text-sm text-gray-500 mt-1">Puedes dejarlo vacío si solo deseas enviar una
+                            calificación.</p>
                         <div class="flex items-center gap-3">
                             <span class="text-gray-600">Tu calificación:</span>
                             <div class="rating-interactive flex gap-1">
@@ -381,271 +390,274 @@
                         class="flex-1 bg-gradient-to-r from-mint to-light-blue text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
                         Publicar comentario
                     </button>
-                </form>
-                </div>
-            </div>
+            </form>
         </div>
+    </div>
+    </div>
 
-        <script>
-            var currentRating = 0;
+    <script>
+        var currentRating = 0;
 
-            // Helper global: crea una tarjeta de comentario sin usar innerHTML para el texto del comentario
-            function createCommentCard(c, fechaLocal) {
-                const card = document.createElement('div');
-                card.className = 'bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20';
-                const outer = document.createElement('div');
-                outer.className = 'flex items-start gap-3';
-                const body = document.createElement('div');
-                body.className = 'flex-1';
-                const head = document.createElement('div');
-                head.className = 'flex items-center gap-2 mb-1';
-                const stars = document.createElement('div');
-                stars.className = 'flex text-yellow-400 text-sm';
-                const filled = Math.max(0, Math.min(5, Math.round(Number(c.rating) || 0)));
-                for (let i = 0; i < filled; i++) {
-                    const iEl = document.createElement('i');
-                    iEl.className = 'fas fa-star';
-                    stars.appendChild(iEl);
-                }
-                for (let i = filled; i < 5; i++) {
-                    const iEl = document.createElement('i');
-                    iEl.className = 'far fa-star';
-                    stars.appendChild(iEl);
-                }
-                head.appendChild(stars);
-                const p = document.createElement('p');
-                p.className = 'text-gray-700 text-sm';
-                p.textContent = c.comment || '';
-                const footer = document.createElement('div');
-                footer.className = 'text-gray-500 text-xs mt-2';
-                footer.textContent = fechaLocal || '';
-                body.appendChild(head);
-                body.appendChild(p);
-                body.appendChild(footer);
-                outer.appendChild(body);
-                card.appendChild(outer);
-                return card;
+        // Helper global: crea una tarjeta de comentario sin usar innerHTML para el texto del comentario
+        function createCommentCard(c, fechaLocal) {
+            const card = document.createElement('div');
+            card.className = 'bg-gradient-to-r from-mint/5 to-light-blue/5 p-4 rounded-2xl border border-mint/20';
+            const outer = document.createElement('div');
+            outer.className = 'flex items-start gap-3';
+            const body = document.createElement('div');
+            body.className = 'flex-1';
+            const head = document.createElement('div');
+            head.className = 'flex items-center gap-2 mb-1';
+            const stars = document.createElement('div');
+            stars.className = 'flex text-yellow-400 text-sm';
+            const filled = Math.max(0, Math.min(5, Math.round(Number(c.rating) || 0)));
+            for (let i = 0; i < filled; i++) {
+                const iEl = document.createElement('i');
+                iEl.className = 'fas fa-star';
+                stars.appendChild(iEl);
             }
+            for (let i = filled; i < 5; i++) {
+                const iEl = document.createElement('i');
+                iEl.className = 'far fa-star';
+                stars.appendChild(iEl);
+            }
+            head.appendChild(stars);
+            const p = document.createElement('p');
+            p.className = 'text-gray-700 text-sm';
+            p.textContent = c.comment || '';
+            const footer = document.createElement('div');
+            footer.className = 'text-gray-500 text-xs mt-2';
+            footer.textContent = fechaLocal || '';
+            body.appendChild(head);
+            body.appendChild(p);
+            body.appendChild(footer);
+            outer.appendChild(body);
+            card.appendChild(outer);
+            return card;
+        }
 
-            // Helper global para CSRF
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
+        // Helper global para CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
                     }
                 }
-                return cookieValue;
             }
+            return cookieValue;
+        }
 
-            function getUserLocation(callback) {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        callback(position.coords.latitude, position.coords.longitude);
-                    }, function () {
-                        callback(null, null);
-                    });
-                } else {
+        function getUserLocation(callback) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    callback(position.coords.latitude, position.coords.longitude);
+                }, function () {
                     callback(null, null);
-                }
-            }
-
-            function calculateDistance(lat1, lon1, lat2, lon2) {
-                // Haversine formula
-                function toRad(x) { return x * Math.PI / 180; }
-                var R = 6371; // km
-                var dLat = toRad(lat2 - lat1);
-                var dLon = toRad(lon2 - lon1);
-                var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                return R * c;
-            }
-
-            function filterServices(type) {
-                const cards = document.querySelectorAll('.service-card');
-                const buttons = document.querySelectorAll('.filter-btn');
-                const distanceSelect = document.querySelector('select');
-                const maxDistance = distanceSelect.value;
-
-                // Actualizar botones
-                buttons.forEach(btn => {
-                    btn.classList.remove('bg-mint', 'text-white');
-                    btn.classList.add('bg-gray-200', 'text-gray-700');
                 });
-
-                // Activar solo el botón seleccionado
-                buttons.forEach(btn => {
-                    if ((type === 'all' && btn.textContent.includes('Todos')) ||
-                        ((type === 'veterinaria' || type === 'veterinario') && btn.textContent.includes('Veterinarios')) ||
-                        (type === 'peluqueria' && btn.textContent.includes('Peluquerías')) ||
-                        (type === 'spa' && btn.textContent.includes('Spa'))) {
-                        btn.classList.remove('bg-gray-200', 'text-gray-700');
-                        btn.classList.add('bg-mint', 'text-white');
-                    }
-                });
-
-                const userLat = window._userLocation.lat;
-                const userLon = window._userLocation.lon;
-                cards.forEach((card) => {
-                    let cardType = card.dataset.type;
-                    let showType = (type === 'all') || (type === cardType) || (type === 'veterinaria' && cardType === 'veterinaria');
-                    let showDistance = true;
-                    let cardName = card.querySelector('h3') ? card.querySelector('h3').textContent.trim() : null;
-                    let v = null;
-                    if (cardName && window.veterinariasData) {
-                        v = window.veterinariasData.find(obj => obj.name === cardName);
-                    }
-                    if (maxDistance !== 'all') {
-                        if (userLat !== null && userLon !== null && v && v.coords) {
-                            let lat = v.coords.lat;
-                            let lon = v.coords.lon;
-                            let dist = calculateDistance(userLat, userLon, lat, lon);
-                            showDistance = dist <= parseInt(maxDistance);
-                        } else {
-                            showDistance = false; // Si no hay coordenadas, no mostrar en filtro por distancia
-                        }
-                    }
-                    card.style.display = (showType && showDistance) ? 'block' : 'none';
-                });
+            } else {
+                callback(null, null);
             }
+        }
 
-            // Actualizar filtro al cambiar distancia
-            var select = document.querySelector('select');
-            if (select) {
-                select.addEventListener('change', function () {
-                    filterServices('all');
-                });
-            }
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // Haversine formula
+            function toRad(x) { return x * Math.PI / 180; }
+            var R = 6371; // km
+            var dLat = toRad(lat2 - lat1);
+            var dLon = toRad(lon2 - lon1);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
 
-            function showContact(name, phone, email) {
-                document.getElementById('contactName').textContent = name;
-                document.getElementById('contactPhone').innerHTML = phone ? `<span>${phone}</span>` : '<span class="text-gray-400">No disponible</span>';
-                document.getElementById('contactEmail').innerHTML = email ? `<span>${email}</span>` : '<span class="text-gray-400">No disponible</span>';
-                document.getElementById('contactModal').classList.remove('hidden');
-            }
+        function filterServices(type) {
+            const cards = document.querySelectorAll('.service-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            const distanceSelect = document.querySelector('select');
+            const maxDistance = distanceSelect.value;
 
-            function closeContactModal() {
-                document.getElementById('contactModal').classList.add('hidden');
-            }
+            // Actualizar botones
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-mint', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
 
-            function callNow() {
-                const phone = document.getElementById('contactPhone').textContent;
-                alert(`Llamando a ${phone}...`);
-                closeContactModal();
-            }
-
-            function showMap(title, address) {
-                document.getElementById('mapTitle').textContent = title;
-                document.getElementById('mapAddress').textContent = address;
-                document.getElementById('mapModal').classList.remove('hidden');
-
-                // Buscar veterinaria por nombre en el array global (ignorando mayúsculas y espacios)
-                let vet = null;
-                function normalize(str) {
-                    return str.replace(/\s+/g, '').toLowerCase();
+            // Activar solo el botón seleccionado
+            buttons.forEach(btn => {
+                if ((type === 'all' && btn.textContent.includes('Todos')) ||
+                    ((type === 'veterinaria' || type === 'veterinario') && btn.textContent.includes('Veterinarios')) ||
+                    (type === 'peluqueria' && btn.textContent.includes('Peluquerías')) ||
+                    (type === 'spa' && btn.textContent.includes('Spa'))) {
+                    btn.classList.remove('bg-gray-200', 'text-gray-700');
+                    btn.classList.add('bg-mint', 'text-white');
                 }
-                if (window.veterinariasData && window.veterinariasData.length > 0) {
-                    let titleNorm = normalize(title);
-                    for (let i = 0; i < window.veterinariasData.length; i++) {
-                        let v = window.veterinariasData[i];
-                        if (normalize(v.name) === titleNorm) {
-                            vet = v;
-                            break;
-                        }
-                    }
-                    if (!vet) {
-                        vet = window.veterinariasData[0];
+            });
+
+            const userLat = window._userLocation.lat;
+            const userLon = window._userLocation.lon;
+            cards.forEach((card) => {
+                let cardType = card.dataset.type;
+                let showType = (type === 'all') || (type === cardType) || (type === 'veterinaria' && cardType === 'veterinaria');
+                let showDistance = true;
+                let cardName = card.querySelector('h3') ? card.querySelector('h3').textContent.trim() : null;
+                let v = null;
+                if (cardName && window.veterinariasData) {
+                    v = window.veterinariasData.find(obj => obj.name === cardName);
+                }
+                if (maxDistance !== 'all') {
+                    if (userLat !== null && userLon !== null && v && v.coords) {
+                        let lat = v.coords.lat;
+                        let lon = v.coords.lon;
+                        let dist = calculateDistance(userLat, userLon, lat, lon);
+                        showDistance = dist <= parseInt(maxDistance);
+                    } else {
+                        showDistance = false; // Si no hay coordenadas, no mostrar en filtro por distancia
                     }
                 }
-                setTimeout(function () {
-                    const mapDiv = document.getElementById('realMap');
-                    if (mapDiv) {
-                        if (window._leafletMapInstance) {
-                            window._leafletMapInstance.remove();
-                            window._leafletMapInstance = null;
-                        }
-                        mapDiv.innerHTML = "";
-                        let lat = 10.4806, lon = -66.9036;
-                        if (vet && vet.coords && typeof vet.coords.lat === 'number' && typeof vet.coords.lon === 'number') {
-                            lat = vet.coords.lat;
-                            lon = vet.coords.lon;
-                        }
-                        window._leafletMapInstance = L.map('realMap').setView([lat, lon], 15);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '© OpenStreetMap contributors'
-                        }).addTo(window._leafletMapInstance);
-                        L.marker([lat, lon]).addTo(window._leafletMapInstance)
-                            .bindPopup(title)
-                            .openPopup();
-                        // Ocultar distancia y tiempo estimado al abrir el modal
-                        document.querySelectorAll('.modal-distance').forEach(function (el) {
-                            el.textContent = '';
-                        });
-                        document.querySelectorAll('.modal-duration').forEach(function (el) {
-                            el.textContent = '';
-                        });
-                        // Guardar destino para usar en abrir direcciones
-                        window._mapDestino = { lat: lat, lon: lon, title: title };
+                card.style.display = (showType && showDistance) ? 'block' : 'none';
+            });
+        }
+
+        // Actualizar filtro al cambiar distancia
+        var select = document.querySelector('select');
+        if (select) {
+            select.addEventListener('change', function () {
+                filterServices('all');
+            });
+        }
+
+        function showContact(name, phone, email) {
+            document.getElementById('contactName').textContent = name;
+            document.getElementById('contactPhone').innerHTML = phone ? `<span>${phone}</span>` : '<span class="text-gray-400">No disponible</span>';
+            document.getElementById('contactEmail').innerHTML = email ? `<span>${email}</span>` : '<span class="text-gray-400">No disponible</span>';
+            document.getElementById('contactModal').classList.remove('hidden');
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.add('hidden');
+        }
+
+        function callNow() {
+            const phone = document.getElementById('contactPhone').textContent;
+            alert(`Llamando a ${phone}...`);
+            closeContactModal();
+        }
+
+        function showMap(title, address) {
+            document.getElementById('mapTitle').textContent = title;
+            document.getElementById('mapAddress').textContent = address;
+            document.getElementById('mapModal').classList.remove('hidden');
+
+            // Buscar veterinaria por nombre en el array global (ignorando mayúsculas y espacios)
+            let vet = null;
+            function normalize(str) {
+                return str.replace(/\s+/g, '').toLowerCase();
+            }
+            if (window.veterinariasData && window.veterinariasData.length > 0) {
+                let titleNorm = normalize(title);
+                for (let i = 0; i < window.veterinariasData.length; i++) {
+                    let v = window.veterinariasData[i];
+                    if (normalize(v.name) === titleNorm) {
+                        vet = v;
+                        break;
                     }
-                }, 200);
-            }
-
-            function closeMapModal() {
-                document.getElementById('mapModal').classList.add('hidden');
-                // Solución: destruir instancia previa de Leaflet al cerrar el modal
-                if (window._leafletMapInstance) {
-                    window._leafletMapInstance.remove();
-                    window._leafletMapInstance = null;
+                }
+                if (!vet) {
+                    vet = window.veterinariasData[0];
                 }
             }
-
-            function openDirections() {
-                const address = document.getElementById('mapAddress').textContent;
-                // Trazar ruta desde ubicación actual hasta el destino
-                if (!window._mapDestino) {
-                    alert('No se ha seleccionado un destino.');
-                    return;
-                }
-                const lat = window._mapDestino.lat;
-                const lon = window._mapDestino.lon;
-                const title = window._mapDestino.title;
-                // Eliminar rutas previas si existen
-                // Elimina rutas previas dibujadas manualmente
-                if (window._mapRouteLayer && window._leafletMapInstance) {
-                    window._leafletMapInstance.removeLayer(window._mapRouteLayer);
-                    window._mapRouteLayer = null;
-                }
-                if (window._leafletMapInstance) {
-                    window._leafletMapInstance.eachLayer(function (layer) {
-                        if (layer instanceof L.Marker) {
-                            window._leafletMapInstance.removeLayer(layer);
-                        }
+            setTimeout(function () {
+                const mapDiv = document.getElementById('realMap');
+                if (mapDiv) {
+                    if (window._leafletMapInstance) {
+                        window._leafletMapInstance.remove();
+                        window._leafletMapInstance = null;
+                    }
+                    mapDiv.innerHTML = "";
+                    let lat = 10.4806, lon = -66.9036;
+                    if (vet && vet.coords && typeof vet.coords.lat === 'number' && typeof vet.coords.lon === 'number') {
+                        lat = vet.coords.lat;
+                        lon = vet.coords.lon;
+                    }
+                    window._leafletMapInstance = L.map('realMap').setView([lat, lon], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(window._leafletMapInstance);
+                    L.marker([lat, lon]).addTo(window._leafletMapInstance)
+                        .bindPopup(title)
+                        .openPopup();
+                    // Ocultar distancia y tiempo estimado al abrir el modal
+                    document.querySelectorAll('.modal-distance').forEach(function (el) {
+                        el.textContent = '';
                     });
+                    document.querySelectorAll('.modal-duration').forEach(function (el) {
+                        el.textContent = '';
+                    });
+                    // Guardar destino para usar en abrir direcciones
+                    window._mapDestino = { lat: lat, lon: lon, title: title };
                 }
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        var userLat = position.coords.latitude;
-                        var userLon = position.coords.longitude;
-                        // Llamar al endpoint local de Django
-                        var url = '/salud/ruta-direcciones/';
-                        var body = {
-                            origen: [userLon, userLat],
-                            destino: [lon, lat]
-                        };
-                        fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(body)
-                        })
+            }, 200);
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.add('hidden');
+            // Solución: destruir instancia previa de Leaflet al cerrar el modal
+            if (window._leafletMapInstance) {
+                window._leafletMapInstance.remove();
+                window._leafletMapInstance = null;
+            }
+        }
+
+        function openDirections() {
+            const address = document.getElementById('mapAddress').textContent;
+            // Trazar ruta desde ubicación actual hasta el destino
+            if (!window._mapDestino) {
+                alert('No se ha seleccionado un destino.');
+                return;
+            }
+            const lat = window._mapDestino.lat;
+            const lon = window._mapDestino.lon;
+            const title = window._mapDestino.title;
+            // Eliminar rutas previas si existen
+            // Elimina rutas previas dibujadas manualmente
+            if (window._mapRouteLayer && window._leafletMapInstance) {
+                window._leafletMapInstance.removeLayer(window._mapRouteLayer);
+                window._mapRouteLayer = null;
+            }
+            if (window._leafletMapInstance) {
+                window._leafletMapInstance.eachLayer(function (layer) {
+                    if (layer instanceof L.Marker) {
+                        window._leafletMapInstance.removeLayer(layer);
+                    }
+                });
+            }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var userLat = position.coords.latitude;
+                    var userLon = position.coords.longitude;
+                    // Llamar al endpoint local de Django
+                    var url = '/salud/ruta-direcciones/';
+                    var body = {
+                        origen: [userLon, userLat],
+                        destino: [lon, lat]
+                    };
+                    fetch(url, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                        },
+                        body: JSON.stringify(body)
+                    })
                         .then(response => response.json())
                         .then(data => {
                             window._ultimaRutaData = data; // Depuración: guardar respuesta global
@@ -696,249 +708,249 @@
                             });
                             alert('Error de red al consultar la ruta.');
                         });
-                    }, function (error) {
-                        document.querySelectorAll('.modal-distance').forEach(function (el) {
-                            el.textContent = 'No disponible';
-                        });
-                        document.querySelectorAll('.modal-duration').forEach(function (el) {
-                            el.textContent = 'No disponible';
-                        });
-                        alert('No se pudo obtener tu ubicación. Activa los permisos de ubicación en tu navegador.');
-                    });
-                } else {
+                }, function (error) {
                     document.querySelectorAll('.modal-distance').forEach(function (el) {
                         el.textContent = 'No disponible';
                     });
                     document.querySelectorAll('.modal-duration').forEach(function (el) {
                         el.textContent = 'No disponible';
                     });
-                    alert('Tu navegador no soporta geolocalización.');
-                }
-            }
-
-            function showRating(arg1, arg2) {
-                // Permite ser llamado como showRating(this) o showRating(id, name)
-                var serviceId, serviceName;
-                if (arg1 && arg1.dataset) {
-                    serviceId = arg1.getAttribute('data-service-id');
-                    serviceName = arg1.getAttribute('data-service-name');
-                } else {
-                    serviceId = arg1;
-                    serviceName = arg2;
-                }
-                document.getElementById('ratingServiceName').textContent = serviceName || '';
-                document.getElementById('ratingModal').classList.remove('hidden');
-                // Setear el servicio en input hidden
-                var serviceInput = document.getElementById('serviceIdInput');
-                if (serviceInput) serviceInput.value = String(serviceId);
-                // Limpiar rating previo
-                var ratingInput = document.getElementById('ratingValue');
-                if (ratingInput) ratingInput.value = '';
-                resetRatingStars();
-            }
-
-            function closeRatingModal() {
-                document.getElementById('ratingModal').classList.add('hidden');
-            }
-
-            function resetRatingStars() {
-                const stars = document.querySelectorAll('#ratingModal .star');
-                stars.forEach(star => {
-                    star.classList.remove('text-yellow-400');
-                    star.classList.add('text-gray-300');
+                    alert('No se pudo obtener tu ubicación. Activa los permisos de ubicación en tu navegador.');
                 });
+            } else {
+                document.querySelectorAll('.modal-distance').forEach(function (el) {
+                    el.textContent = 'No disponible';
+                });
+                document.querySelectorAll('.modal-duration').forEach(function (el) {
+                    el.textContent = 'No disponible';
+                });
+                alert('Tu navegador no soporta geolocalización.');
             }
+        }
 
-            // submitRating(): no se usa, la validación se realiza en el submit del formulario
+        function showRating(arg1, arg2) {
+            // Permite ser llamado como showRating(this) o showRating(id, name)
+            var serviceId, serviceName;
+            if (arg1 && arg1.dataset) {
+                serviceId = arg1.getAttribute('data-service-id');
+                serviceName = arg1.getAttribute('data-service-name');
+            } else {
+                serviceId = arg1;
+                serviceName = arg2;
+            }
+            document.getElementById('ratingServiceName').textContent = serviceName || '';
+            document.getElementById('ratingModal').classList.remove('hidden');
+            // Setear el servicio en input hidden
+            var serviceInput = document.getElementById('serviceIdInput');
+            if (serviceInput) serviceInput.value = String(serviceId);
+            // Limpiar rating previo
+            var ratingInput = document.getElementById('ratingValue');
+            if (ratingInput) ratingInput.value = '';
+            resetRatingStars();
+        }
 
-            function showComments(button) {
-                const serviceName = button.getAttribute('data-service-name');
-                const serviceId = button.getAttribute('data-service-id');
-                const modal = document.getElementById('commentsModal');
-                // Limpiar antes de abrir
-                modal.setAttribute('data-service-id', '');
-                modal.setAttribute('data-service-name', '');
-                // Asignar nuevos valores
-                modal.setAttribute('data-service-id', serviceId);
-                modal.setAttribute('data-service-name', serviceName);
-                document.getElementById('commentsServiceName').textContent = serviceName;
-                // Setear hidden de servicio y limpiar rating previo
-                const serviceInput = document.getElementById('commentsServiceIdInput');
-                if (serviceInput) serviceInput.value = String(serviceId);
-                const ratingInput = document.getElementById('commentsRatingValue');
-                if (ratingInput) ratingInput.value = '';
-                // Resetear estrellas del bloque de comentarios
-                const commentStars = modal.querySelectorAll('.rating-interactive .star');
-                commentStars.forEach(star => { star.classList.remove('text-yellow-400'); star.classList.add('text-gray-300'); });
-                // Limpiar comentarios previos y mostrar cargando
-                const lista = modal.querySelector('.space-y-4.mb-6');
-                lista.innerHTML = '<div class="text-center text-gray-400">Cargando comentarios...</div>';
-                // Obtener comentarios reales por AJAX
-                fetch(`/salud/obtener-comentarios-salud/?service_id=${encodeURIComponent(serviceId)}`)
-                    .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-                    .then(data => {
-                        if (data.success) {
-                            if (data.comentarios.length === 0) {
-                                lista.innerHTML = '<div class="text-center text-gray-400">No hay comentarios aún.</div>';
-                            } else {
-                                lista.innerHTML = '';
-                                data.comentarios.forEach(c => {
-                                    // Unificar formato de fecha/hora
-                                    let fechaLocal = '';
-                                    try {
-                                        let fechaIso = c.created_at;
-                                        if (fechaIso.endsWith('+00:00')) {
-                                            fechaIso = fechaIso.replace('+00:00', 'Z');
-                                        }
-                                        const d = new Date(fechaIso);
-                                        const ahora = new Date();
-                                        if (
-                                            d.getFullYear() === ahora.getFullYear() &&
-                                            d.getMonth() === ahora.getMonth() &&
-                                            d.getDate() === ahora.getDate()
-                                        ) {
-                                            fechaLocal = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                                        } else {
-                                            fechaLocal = d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
-                                        }
-                                    } catch { fechaLocal = c.created_at; }
-                                    // Agregar tarjeta sin autor con DOM seguro
-                                    lista.appendChild(createCommentCard(c, fechaLocal));
-                                });
-                            }
+        function closeRatingModal() {
+            document.getElementById('ratingModal').classList.add('hidden');
+        }
+
+        function resetRatingStars() {
+            const stars = document.querySelectorAll('#ratingModal .star');
+            stars.forEach(star => {
+                star.classList.remove('text-yellow-400');
+                star.classList.add('text-gray-300');
+            });
+        }
+
+        // submitRating(): no se usa, la validación se realiza en el submit del formulario
+
+        function showComments(button) {
+            const serviceName = button.getAttribute('data-service-name');
+            const serviceId = button.getAttribute('data-service-id');
+            const modal = document.getElementById('commentsModal');
+            // Limpiar antes de abrir
+            modal.setAttribute('data-service-id', '');
+            modal.setAttribute('data-service-name', '');
+            // Asignar nuevos valores
+            modal.setAttribute('data-service-id', serviceId);
+            modal.setAttribute('data-service-name', serviceName);
+            document.getElementById('commentsServiceName').textContent = serviceName;
+            // Setear hidden de servicio y limpiar rating previo
+            const serviceInput = document.getElementById('commentsServiceIdInput');
+            if (serviceInput) serviceInput.value = String(serviceId);
+            const ratingInput = document.getElementById('commentsRatingValue');
+            if (ratingInput) ratingInput.value = '';
+            // Resetear estrellas del bloque de comentarios
+            const commentStars = modal.querySelectorAll('.rating-interactive .star');
+            commentStars.forEach(star => { star.classList.remove('text-yellow-400'); star.classList.add('text-gray-300'); });
+            // Limpiar comentarios previos y mostrar cargando
+            const lista = modal.querySelector('.space-y-4.mb-6');
+            lista.innerHTML = '<div class="text-center text-gray-400">Cargando comentarios...</div>';
+            // Obtener comentarios reales por AJAX
+            fetch(`/salud/obtener-comentarios-salud/?service_id=${encodeURIComponent(serviceId)}`)
+                .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+                .then(data => {
+                    if (data.success) {
+                        if (data.comentarios.length === 0) {
+                            lista.innerHTML = '<div class="text-center text-gray-400">No hay comentarios aún.</div>';
                         } else {
-                            lista.innerHTML = '<div class="text-center text-red-400">Error al cargar comentarios</div>';
+                            lista.innerHTML = '';
+                            data.comentarios.forEach(c => {
+                                // Unificar formato de fecha/hora
+                                let fechaLocal = '';
+                                try {
+                                    let fechaIso = c.created_at;
+                                    if (fechaIso.endsWith('+00:00')) {
+                                        fechaIso = fechaIso.replace('+00:00', 'Z');
+                                    }
+                                    const d = new Date(fechaIso);
+                                    const ahora = new Date();
+                                    if (
+                                        d.getFullYear() === ahora.getFullYear() &&
+                                        d.getMonth() === ahora.getMonth() &&
+                                        d.getDate() === ahora.getDate()
+                                    ) {
+                                        fechaLocal = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                    } else {
+                                        fechaLocal = d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
+                                    }
+                                } catch { fechaLocal = c.created_at; }
+                                // Agregar tarjeta sin autor con DOM seguro
+                                lista.appendChild(createCommentCard(c, fechaLocal));
+                            });
                         }
-                    })
-                    .catch(() => {
-                        lista.innerHTML = '<div class="text-center text-red-400">Error de red al cargar comentarios</div>';
-                    });
-                modal.classList.remove('hidden');
-            }
-
-            function closeCommentsModal() {
-                const modal = document.getElementById('commentsModal');
-                modal.classList.add('hidden');
-                modal.setAttribute('data-service-id', '');
-                modal.setAttribute('data-service-name', '');
-            }
-
-            // submitComment(): ya no se usa; el formulario enviará directo a servicios_salud
-
-            // Manejo de estrellas interactivas
-            document.addEventListener('click', function (e) {
-                if (e.target.classList.contains('star')) {
-                    const rating = parseInt(e.target.dataset.rating);
-                    const container = e.target.closest('.rating-interactive');
-                    const stars = container.querySelectorAll('.star');
-
-                    // Si es el modal de calificación principal
-                    if (container.closest('#ratingModal')) {
-                        currentRating = rating;
-                        var ratingInput = document.getElementById('ratingValue');
-                        if (ratingInput) ratingInput.value = String(rating);
+                    } else {
+                        lista.innerHTML = '<div class="text-center text-red-400">Error al cargar comentarios</div>';
                     }
-                    // Si es el modal de comentarios
-                    if (container.closest('#commentsModal')) {
-                        var commentsRatingInput = document.getElementById('commentsRatingValue');
-                        if (commentsRatingInput) commentsRatingInput.value = String(rating);
-                    }
+                })
+                .catch(() => {
+                    lista.innerHTML = '<div class="text-center text-red-400">Error de red al cargar comentarios</div>';
+                });
+            modal.classList.remove('hidden');
+        }
 
-                    // Actualizar estrellas
-                    stars.forEach((star, index) => {
-                        if (index < rating) {
-                            star.classList.remove('text-gray-300');
-                            star.classList.add('text-yellow-400');
-                        } else {
-                            star.classList.remove('text-yellow-400');
-                            star.classList.add('text-gray-300');
-                        }
-                    });
-                }
-            });
+        function closeCommentsModal() {
+            const modal = document.getElementById('commentsModal');
+            modal.classList.add('hidden');
+            modal.setAttribute('data-service-id', '');
+            modal.setAttribute('data-service-name', '');
+        }
 
-            function toggleMobileSearch() {
-                const mobileSearch = document.getElementById('mobileSearch');
-                mobileSearch.classList.toggle('hidden');
+        // submitComment(): ya no se usa; el formulario enviará directo a servicios_salud
 
-                const mobileMenu = document.getElementById('mobileMenu');
-                if (!mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('hidden');
-                }
+        // Manejo de estrellas interactivas
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('star')) {
+                const rating = parseInt(e.target.dataset.rating);
+                const container = e.target.closest('.rating-interactive');
+                const stars = container.querySelectorAll('.star');
 
-                if (!mobileSearch.classList.contains('hidden')) {
-                    setTimeout(() => {
-                        mobileSearch.querySelector('input').focus();
-                    }, 100);
-                }
-            }
-
-            function toggleMobileMenu() {
-                const mobileMenu = document.getElementById('mobileMenu');
-                mobileMenu.classList.toggle('hidden');
-
-                const mobileSearch = document.getElementById('mobileSearch');
-                if (!mobileSearch.classList.contains('hidden')) {
-                    mobileSearch.classList.add('hidden');
-                }
-            }
-
-            // Cerrar modales al hacer clic fuera
-            document.getElementById('contactModal').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    closeContactModal();
-                }
-            });
-
-            document.getElementById('mapModal').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    closeMapModal();
-                }
-            });
-
-            // Cerrar menús móviles al redimensionar
-            window.addEventListener('resize', function () {
-                if (window.innerWidth >= 768) {
-                    document.getElementById('mobileSearch').classList.add('hidden');
-                    document.getElementById('mobileMenu').classList.add('hidden');
-                }
-            });
-
-            // Envío por Django: dejamos que el form haga POST tradicional; solo validamos visualmente que haya rating
-            (function(){
-                var ratingForm = document.getElementById('ratingForm');
-                if (!ratingForm) return;
-                ratingForm.addEventListener('submit', function(e){
+                // Si es el modal de calificación principal
+                if (container.closest('#ratingModal')) {
+                    currentRating = rating;
                     var ratingInput = document.getElementById('ratingValue');
-                    var serviceInput = document.getElementById('serviceIdInput');
-                    var ratingVal = ratingInput ? ratingInput.value : '';
-                    var serviceVal = serviceInput ? serviceInput.value : '';
-                    if (!ratingVal || !serviceVal) {
-                        e.preventDefault();
-                        alert('Selecciona una calificación antes de enviar.');
-                        return false;
-                    }
-                });
-            })();
+                    if (ratingInput) ratingInput.value = String(rating);
+                }
+                // Si es el modal de comentarios
+                if (container.closest('#commentsModal')) {
+                    var commentsRatingInput = document.getElementById('commentsRatingValue');
+                    if (commentsRatingInput) commentsRatingInput.value = String(rating);
+                }
 
-            // Validación del formulario de comentarios: rating y servicio obligatorios
-            (function(){
-                var commentForm = document.getElementById('commentForm');
-                if (!commentForm) return;
-                commentForm.addEventListener('submit', function(e){
-                    var ratingInput = document.getElementById('commentsRatingValue');
-                    var serviceInput = document.getElementById('commentsServiceIdInput');
-                    var ratingVal = ratingInput ? ratingInput.value : '';
-                    var serviceVal = serviceInput ? serviceInput.value : '';
-                    if (!ratingVal || !serviceVal) {
-                        e.preventDefault();
-                        alert('Selecciona una calificación y un servicio antes de enviar.');
-                        return false;
+                // Actualizar estrellas
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('text-gray-300');
+                        star.classList.add('text-yellow-400');
+                    } else {
+                        star.classList.remove('text-yellow-400');
+                        star.classList.add('text-gray-300');
                     }
                 });
-            })();
-        </script>
-        <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'980b0078d6ada4f2',t:'MTc1ODEzNzI1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+            }
+        });
+
+        function toggleMobileSearch() {
+            const mobileSearch = document.getElementById('mobileSearch');
+            mobileSearch.classList.toggle('hidden');
+
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+
+            if (!mobileSearch.classList.contains('hidden')) {
+                setTimeout(() => {
+                    mobileSearch.querySelector('input').focus();
+                }, 100);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+
+            const mobileSearch = document.getElementById('mobileSearch');
+            if (!mobileSearch.classList.contains('hidden')) {
+                mobileSearch.classList.add('hidden');
+            }
+        }
+
+        // Cerrar modales al hacer clic fuera
+        document.getElementById('contactModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeContactModal();
+            }
+        });
+
+        document.getElementById('mapModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeMapModal();
+            }
+        });
+
+        // Cerrar menús móviles al redimensionar
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 768) {
+                document.getElementById('mobileSearch').classList.add('hidden');
+                document.getElementById('mobileMenu').classList.add('hidden');
+            }
+        });
+
+        // Envío por Django: dejamos que el form haga POST tradicional; solo validamos visualmente que haya rating
+        (function () {
+            var ratingForm = document.getElementById('ratingForm');
+            if (!ratingForm) return;
+            ratingForm.addEventListener('submit', function (e) {
+                var ratingInput = document.getElementById('ratingValue');
+                var serviceInput = document.getElementById('serviceIdInput');
+                var ratingVal = ratingInput ? ratingInput.value : '';
+                var serviceVal = serviceInput ? serviceInput.value : '';
+                if (!ratingVal || !serviceVal) {
+                    e.preventDefault();
+                    alert('Selecciona una calificación antes de enviar.');
+                    return false;
+                }
+            });
+        })();
+
+        // Validación del formulario de comentarios: rating y servicio obligatorios
+        (function () {
+            var commentForm = document.getElementById('commentForm');
+            if (!commentForm) return;
+            commentForm.addEventListener('submit', function (e) {
+                var ratingInput = document.getElementById('commentsRatingValue');
+                var serviceInput = document.getElementById('commentsServiceIdInput');
+                var ratingVal = ratingInput ? ratingInput.value : '';
+                var serviceVal = serviceInput ? serviceInput.value : '';
+                if (!ratingVal || !serviceVal) {
+                    e.preventDefault();
+                    alert('Selecciona una calificación y un servicio antes de enviar.');
+                    return false;
+                }
+            });
+        })();
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'980b0078d6ada4f2',t:'MTc1ODEzNzI1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
 
 </html>

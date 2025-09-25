@@ -1,6 +1,9 @@
 import requests
+from django.conf import settings
+from django.core.cache import cache
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import ServicesHealth, Reviews
 from .forms import ReviewForm
@@ -11,7 +14,8 @@ from django.utils import timezone
 from django.contrib import messages
 from django_smart_ratelimit import rate_limit
 from common.security import sanitize_string
-@csrf_exempt
+
+@csrf_protect
 def obtener_ruta_openrouteservice(request):
     if request.method == "POST":
         import json
@@ -21,7 +25,10 @@ def obtener_ruta_openrouteservice(request):
         destino = data.get("destino")  # [lon, lat]
         if not origen or not destino:
             return JsonResponse({"error": "Faltan coordenadas"}, status=400)
-        api_key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQyYmI2ZGVmY2U5YzRlNTU5ZGIzMzA1OTgyODVjOTY4IiwiaCI6Im11cm11cjY0In0="
+        api_key = getattr(settings, 'OPENROUTESERVICE_API_KEY', '')
+        if not api_key:
+            # Service temporarily unavailable due to missing configuration.
+            return JsonResponse({"error": "Servicio no disponible"}, status=503)
         url = "https://api.openrouteservice.org/v2/directions/driving-car"
         body = {"coordinates": [origen, destino]}
         headers = {
@@ -30,7 +37,8 @@ def obtener_ruta_openrouteservice(request):
             "Accept": "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
         }
         try:
-            response = requests.post(url, json=body, headers=headers, timeout=10)
+            response = requests.post(
+                url, json=body, headers=headers, timeout=10)
             if response.status_code == 200:
                 return JsonResponse(response.json())
             else:
@@ -45,6 +53,7 @@ def obtener_ruta_openrouteservice(request):
             return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
+
 def obtener_comentarios_salud(request):
     service_id = request.GET.get("service_id")
     service_id = sanitize_string(service_id)
@@ -57,7 +66,8 @@ def obtener_comentarios_salud(request):
     except (TypeError, ValueError):
         return JsonResponse({"success": False, "error": "service_id inválido"}, status=400)
 
-    reviews = Reviews.objects.filter(service_id=service_id_int).order_by("-created_at")
+    reviews = Reviews.objects.filter(
+        service_id=service_id_int).order_by("-created_at")
     for r in reviews:
         comentarios.append(
             {
@@ -101,7 +111,7 @@ def servicios_salud(request):
                 }
             )
         return render(request, "salud.html", {"veterinarias": veterinarias, "form": ReviewForm(initial={
-			"email": request.user.email if request.user.is_authenticated else ""})})
+            "email": request.user.email if request.user.is_authenticated else ""})})
 
     elif request.method == "POST":
         form = ReviewForm(request.POST)
@@ -112,7 +122,8 @@ def servicios_salud(request):
 
         # Validaciones básicas fuera del form (rating/servicio vienen de inputs ocultos)
         if not rating or not service_id:
-            messages.error(request, "Faltan campos obligatorios (calificación o servicio).")
+            messages.error(
+                request, "Faltan campos obligatorios (calificación o servicio).")
             return redirect("servicios_salud")
 
         try:
@@ -141,7 +152,8 @@ def servicios_salud(request):
             email=form.cleaned_data.get("email"), service_id=service_id
         ).exists()
         if registroPasado:
-            messages.warning(request, "Ya has enviado una reseña para este servicio.")
+            messages.warning(
+                request, "Ya has enviado una reseña para este servicio.")
             return redirect("servicios_salud")
 
         try:
