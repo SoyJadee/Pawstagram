@@ -232,7 +232,7 @@
         {% endif %}
         <!-- Pagination -->
         <div class="mt-10 grid gap-8">
-          {% if tiendas_page.paginator.num_pages > 1 %}
+          {% if tiendas_page and tiendas_page.paginator.num_pages > 1 %}
           <div>
             <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Tiendas</h4>
             <div class="flex flex-wrap items-center gap-2">
@@ -258,7 +258,7 @@
           </div>
           {% endif %}
 
-          {% if productos_page.paginator.num_pages > 1 %}
+          {% if productos_page and productos_page.paginator.num_pages > 1 %}
           <div>
             <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Productos</h4>
             <div class="flex flex-wrap items-center gap-2">
@@ -284,7 +284,7 @@
           </div>
           {% endif %}
 
-          {% if mascotas_page.paginator.num_pages > 1 %}
+          {% if mascotas_page and mascotas_page.paginator.num_pages > 1 %}
           <div>
             <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Mascotas</h4>
             <div class="flex flex-wrap items-center gap-2">
@@ -310,7 +310,7 @@
           </div>
           {% endif %}
 
-          {% if servicios_page.paginator.num_pages > 1 %}
+          {% if servicios_page and servicios_page.paginator.num_pages > 1 %}
           <div>
             <h4 class="text-sm font-semibold mb-2 text-gray-500">Paginación Servicios</h4>
             <div class="flex flex-wrap items-center gap-2">
