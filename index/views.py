@@ -34,6 +34,9 @@ from django.http import StreamingHttpResponse
 from common.security import sanitize_string
 import json, time
 
+
+allowed_types = ["image/jpeg", "image/png", "image/jpg"]
+
 @login_required
 @rate_limit(key='user', rate='5/m',)
 def all_notifications_fragment(request):
@@ -117,9 +120,8 @@ def subir_historia(request):
     foto = request.FILES.get("foto_historia")
     if not foto:
         return JsonResponse({"success": False, "error": "no_file"})
-    if foto.size > 10 * 1024 * 1024:
+    if foto.size > 5 * 1024 * 1024:
         return JsonResponse({"success": False, "error": "file_too_large"})
-    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     if foto.content_type not in allowed_types:
         return JsonResponse({"success": False, "error": "invalid_type"})
     url = None
@@ -467,7 +469,6 @@ def principal(request):
                         request, "La imagen es demasiado grande. Máximo 5MB."
                     )
                     return redirect("principal")
-                allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
                 if foto.content_type not in allowed_types:
                     messages.error(
                         request, "Tipo de archivo no válido. Solo se permiten imágenes."
@@ -776,7 +777,7 @@ def search(request):
     def paginate(qs, param, per_page=10):
         paginator = Paginator(qs, per_page)
         page = request.GET.get(param, 1)
-        
+
         try:
             return paginator.page(page)
         except PageNotAnInteger:

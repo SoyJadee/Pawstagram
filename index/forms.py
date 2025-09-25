@@ -25,10 +25,10 @@ class PostForm(XSSCleanMixin, forms.ModelForm):
         widget=forms.ClearableFileInput(
             attrs={
                 'class': 'w-full text-gray-500 file:bg-paw-teal file:text-white file:px-4 file:py-2 file:rounded-lg file:border-0 file:cursor-pointer hover:file:bg-dark-mint transition-all',
-                'accept': 'image/jpeg,image/png,image/gif,image/webp',
+                'accept': 'image/jpeg,image/png,image/jpg',
             }
         ),
-        help_text='Sube una imagen (JPG, PNG, GIF o WEBP).',
+        help_text='Sube una imagen (JPG, PNG, JPEG).',
     )
 
     class Meta:

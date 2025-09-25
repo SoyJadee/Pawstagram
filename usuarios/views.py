@@ -22,7 +22,7 @@ from django.http import JsonResponse
 from supabase import create_client
 from django.conf import settings
 
-allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+allowed_types = ["image/jpeg", "image/png", "image/jpg"]
 logger = logging.getLogger(__name__)
 
 try:

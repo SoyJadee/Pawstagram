@@ -500,9 +500,9 @@
       }
 
       // Validar tipo de archivo
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Tipo de archivo no válido. Solo se permiten imágenes (JPEG, PNG, GIF, WebP).');
+        alert('Tipo de archivo no válido. Solo se permiten imágenes (JPEG, PNG, JPG).');
         input.value = '';
         return;
       }
