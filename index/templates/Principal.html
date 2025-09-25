@@ -83,14 +83,14 @@
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 instagram-card">
         <div class="flex items-center px-6 py-4">
           <a href="{% url 'mascotaDetails' post.pet.pk %}">
-          {% if post.pet.profile_photo_url %}
-          <img src="{{ post.pet.profile_photo_url }}" alt="{{ post.pet.name }}"
-            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+            {% if post.pet.profile_photo_url %}
+            <img src="{{ post.pet.profile_photo_url }}" alt="{{ post.pet.name }}"
+              class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
           </a>
           {% else %}
           <a href="{% url 'mascotaDetails' post.pet.pk %}">
-          <img src="{% static 'img/logo1.png' %}" alt="Patita azul"
-            class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
+            <img src="{% static 'img/logo1.png' %}" alt="Patita azul"
+              class="w-12 h-12 rounded-full border-2 border-[#00F5D4] object-cover mr-4">
           </a>
           {% endif %}
           <div class="flex-1">
@@ -101,29 +101,24 @@
             <div class="text-gray-500 text-sm">{{ post.created_at|date:"d M H:i" }}</div>
           </div>
           {% if post.pet.is_available_for_adoption and post.author.user != request.user %}
-    <button
-      onclick="showInterest('{{ post.pet.pk }}')"
-      class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
-    >
-      💕 ¡Me interesa adoptar!
-    </button>
-    {% elif post.author.user == request.user %}
-    <a href="{% url 'editar_post' post.pk %}">
-        <button
-            class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
-        >
-            <i class="fas fa-edit" title="Editar publicación" style="color: #222; font-size: 1.25rem;"></i>
-        </button>
-    </a>
-  <a href="{% url 'eliminar_post' post.pk %}" onclick="return confirm('¿Estás seguro de que deseas eliminar esta publicación?')">
-    <button
-      class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
-      style="background: none;"
-    >
-      <i class="fas fa-trash" title="Eliminar publicación" style="color: #222; font-size: 1.25rem;"></i>
-    </button>
-  </a>
-  {% endif %}
+          <button onclick="showInterest('{{ post.pet.pk }}')"
+            class="bg-mint hover:bg-green-400 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
+            💕 ¡Me interesa adoptar!
+          </button>
+          {% elif post.author.user == request.user %}
+          <a href="{% url 'editar_post' post.pk %}">
+            <button class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none">
+              <i class="fas fa-edit" title="Editar publicación" style="color: #222; font-size: 1.25rem;"></i>
+            </button>
+          </a>
+          <a href="{% url 'eliminar_post' post.pk %}"
+            onclick="return confirm('¿Estás seguro de que deseas eliminar esta publicación?')">
+            <button class="p-2 rounded-full border-none bg-transparent shadow-none focus:outline-none"
+              style="background: none;">
+              <i class="fas fa-trash" title="Eliminar publicación" style="color: #222; font-size: 1.25rem;"></i>
+            </button>
+          </a>
+          {% endif %}
         </div>
         <div class="w-full bg-gray-100">
           <img src="{{ post.photo_url }}" alt="Post" class="object-cover w-full h-auto">
@@ -303,7 +298,7 @@
 <div id="interestModal"
   class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 animate-fadein">
   <div
-    class="bg-white rounded-2xl shadow-lg max-w-md w-full overflow-hidden relative animate-slideup border border-gray-100">
+    class="bg-white rounded-2xl shadow-lg max-w-md w-full max-h-[85vh] overflow-auto relative animate-slideup border border-gray-100">
     {% if adoption_success %}
     <div class="px-6 pt-7 pb-3 text-center border-b border-gray-100 bg-gray-50">
       <div class="flex justify-center mb-2">
@@ -329,11 +324,6 @@
     <div class="p-6">
       <form method="post" class="space-y-5">
         {% csrf_token %}
-        {% if form.errors %}
-        <div class="text-red-600 text-sm mb-2 text-left">
-          {{ form.errors }}
-        </div>
-        {% endif %}
         <div class="space-y-4">
           {% for field in form.visible_fields %}
           <div>
@@ -364,6 +354,10 @@
                 {{ field }}
               </div>
             </div>
+            {% if field.name == 'message' %}
+            <p class="mt-1 text-xs text-gray-500">Sugerencia: comparte un poco sobre tu hogar, tiempo disponible y por
+              qué esta mascota te enamoró.</p>
+            {% endif %}
             {% if field.errors %}
             <span class="text-xs text-red-500 mt-1 block">{{ field.errors|striptags }}</span>
             {% endif %}

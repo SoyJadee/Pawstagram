@@ -1,3 +1,4 @@
+import logging
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -8,14 +9,22 @@ from django.shortcuts import render, redirect
 from .models import ServicesHealth, Reviews
 from .forms import ReviewForm
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
 from django_smart_ratelimit import rate_limit
 from common.security import sanitize_string
 
+logger = logging.getLogger(__name__)
+
+# Centralized rate limits with safe fallbacks
+RL = getattr(settings, 'RATE_LIMITS', {})
+RL_ORS_IP = RL.get('ors_ip', '60/m')
+RL_SALUD_IP = RL.get('salud_ip', '120/m')
+
+
 @csrf_protect
+@rate_limit(key='ip', rate=RL_ORS_IP)
 def obtener_ruta_openrouteservice(request):
     if request.method == "POST":
         import json
@@ -50,7 +59,8 @@ def obtener_ruta_openrouteservice(request):
                     status=500,
                 )
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            logger.exception(f"Error solicitando ruta a ORS: {e}")
+            return JsonResponse({"error": "internal_error"}, status=500)
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
@@ -78,7 +88,8 @@ def obtener_comentarios_salud(request):
         )
     return JsonResponse({"success": True, "comentarios": comentarios})
 
-@rate_limit(key='ip', rate='5/m',)
+
+@rate_limit(key='ip', rate=RL_SALUD_IP)
 def servicios_salud(request):
     if request.method == "GET":
         servicios = ServicesHealth.objects.all()
@@ -166,5 +177,7 @@ def servicios_salud(request):
             )
             messages.success(request, "¡Gracias por tu reseña!")
         except Exception as e:
-            messages.error(request, f"No se pudo guardar tu reseña: {str(e)}")
+            logger.exception(f"Error guardando reseña: {e}")
+            messages.error(
+                request, "No se pudo guardar tu reseña por un error interno.")
         return redirect("servicios_salud")

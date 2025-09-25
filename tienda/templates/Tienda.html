@@ -323,6 +323,9 @@
     // Modal de mapa
     const mapModal = document.getElementById('mapModal');
     const leafletMapDiv = document.getElementById('leafletMap');
+    // Referencias a botones del modal
+    const closeMapModal = document.getElementById('closeMapModal');
+    const openMapAddress = document.getElementById('openMapAddress');
     let leafletMap = null;
     let leafletMarkers = [];
     let leafletRoute = null;
@@ -421,21 +424,24 @@
           navigator.geolocation.getCurrentPosition(function (position) {
             const userLat = position.coords.latitude;
             const userLon = position.coords.longitude;
-            // Consultar ruta al backend
+            // Consultar ruta al backend (corrige IIFE no invocada y paréntesis extra)
+            const getCSRF = (window.SecurityUtils && window.SecurityUtils.getCSRF) ? window.SecurityUtils.getCSRF : null;
+            const csrfToken = (getCSRF ? getCSRF() : ((document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''));
             fetch('/salud/ruta-direcciones/', {
               method: 'POST',
               credentials: 'same-origin',
               headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {})
               },
               body: JSON.stringify({
                 origen: [userLon, userLat],
                 destino: [parseFloat(lastDestLon), parseFloat(lastDestLat)]
               })
             })
-              .then(response => response.json())
+              .then(response => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
               .then(data => {
                 if (data.routes && data.routes.length > 0) {
                   var route = data.routes[0];

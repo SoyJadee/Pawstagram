@@ -14,7 +14,7 @@ from adopcion.forms import AdoptionForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django_smart_ratelimit import rate_limit
-from common.security import sanitize_string, validate_uploaded_image, normalize_image_name
+from common.security import sanitize_string, validate_uploaded_image, normalize_image_name, safe_path_segment
 import re
 import logging
 import uuid
@@ -25,6 +25,13 @@ from django.conf import settings
 # Image validation is centralized in common.security
 logger = logging.getLogger(__name__)
 
+RL = getattr(settings, 'RATE_LIMITS', {})
+# Safe module-level fallbacks so decorators don't crash if keys are missing
+RL_REGISTER_IP = RL.get('register_ip', '60/m')
+RL_LOGIN_IP = RL.get('login_ip', '60/m')
+RL_USER_GENERIC = RL.get('comment_user', '300/m')
+RL_POST_VIEW_IP = RL.get('like_ip', '120/m')
+
 try:
     supabase = create_client(settings.SUPABASE_URL,
                              settings.SUPABASE_SERVICE_ROLE_KEY)
@@ -33,7 +40,7 @@ except Exception as e:
     supabase = None
 
 
-@rate_limit(key='ip', rate='5/m',)
+@rate_limit(key='ip', rate=RL_REGISTER_IP)
 def register_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
@@ -87,7 +94,7 @@ def register_view(request):
     return render(request, "Registro.html", {"form": form})
 
 
-@rate_limit(key='ip', rate='10/m',)
+@rate_limit(key='ip', rate=RL_LOGIN_IP)
 def login_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
@@ -158,7 +165,7 @@ def petAvailable(request):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def perfil_view(request):
     user_profile = (
         UserProfile.objects.select_related(
@@ -179,7 +186,7 @@ def perfil_view(request):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def editProfileView(request):
     user_profile = (
         UserProfile.objects.select_related(
@@ -210,7 +217,7 @@ def editProfileView(request):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def configuracion_view(request):
     def is_injection_attempt(value):
         for pattern in INJECTION_PATTERNS:
@@ -256,7 +263,7 @@ def configuracion_view(request):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def petsUserView(request):
     user_profile = (
         UserProfile.objects.select_related(
@@ -328,7 +335,8 @@ def petsUserView(request):
                                 ):
                                     supabase.storage.from_(
                                         bucket_name).remove([ruta])
-                            usuario_name = request.user.username
+                            usuario_name = safe_path_segment(
+                                request.user.username)
                             detected_fmt = info.get("format") if isinstance(
                                 info, dict) else None
                             detected_mime = info.get(
@@ -337,7 +345,7 @@ def petsUserView(request):
                                 image.name, detected_fmt)
                             image_name = f"{uuid.uuid4()}_{normalized}"
                             ruta_supabase = (
-                                f"{usuario_name}/{edited_pet.name}/profile/{image_name}"
+                                f"{usuario_name}/{safe_path_segment(edited_pet.name)}/profile/{image_name}"
                             )
                             edited_pet.profile_photo_storage_path = ruta_supabase
                             image_data = image.read()
@@ -401,7 +409,8 @@ def petsUserView(request):
                         form.add_error("profile_photo_url", error_msg)
                     elif supabase:
                         try:
-                            usuario_name = request.user.username
+                            usuario_name = safe_path_segment(
+                                request.user.username)
                             detected_fmt = info.get("format") if isinstance(
                                 info, dict) else None
                             detected_mime = info.get(
@@ -410,7 +419,7 @@ def petsUserView(request):
                                 image.name, detected_fmt)
                             image_name = f"{uuid.uuid4()}_{normalized}"
                             ruta_supabase = (
-                                f"{usuario_name}/{new_pet.name}/profile/{image_name}"
+                                f"{usuario_name}/{safe_path_segment(new_pet.name)}/profile/{image_name}"
                             )
                             new_pet.profile_photo_storage_path = ruta_supabase
                             image_data = image.read()
@@ -467,7 +476,7 @@ def petsUserView(request):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def publicacionesUserView(request):
     user_profile = (
         UserProfile.objects.select_related(
@@ -479,7 +488,6 @@ def publicacionesUserView(request):
 
     posts = Post.objects.filter(
         author=user_profile).order_by("created_at").all()
-    print("posts:", posts)
     return render(
         request,
         "publicaciones.html",
@@ -492,7 +500,7 @@ def publicacionesUserView(request):
     )
 
 
-@rate_limit(key='ip', rate='20/m',)
+@rate_limit(key='ip', rate=RL_POST_VIEW_IP)
 def postView(request, post_id):
     user_profile = (
         UserProfile.objects.select_related(
@@ -648,7 +656,7 @@ def postView(request, post_id):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def deletePostView(request, post_id):
     post = Post.objects.filter(id=post_id).first()
     if not post:
@@ -693,7 +701,7 @@ def deletePostView(request, post_id):
 
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def editPostView(request, post_id):
     post = Post.objects.filter(id=post_id).first()
     if not post:
@@ -754,7 +762,8 @@ def editPostView(request, post_id):
                                     supabase.storage.from_(
                                         bucket_name).remove([ruta])
                             # Subir nueva imagen
-                            usuario_name = request.user.username
+                            usuario_name = safe_path_segment(
+                                request.user.username)
                             detected_fmt = info.get("format") if isinstance(
                                 info, dict) else None
                             detected_mime = info.get(
@@ -763,7 +772,7 @@ def editPostView(request, post_id):
                                 image.name, detected_fmt)
                             image_name = f"{uuid.uuid4()}_{normalized}"
                             ruta_supabase = (
-                                f"{usuario_name}/{edited_post.pet.name}/{image_name}"
+                                f"{usuario_name}/{safe_path_segment(edited_post.pet.name)}/{image_name}"
                             )
                             edited_post.photo_storage_path = ruta_supabase
 

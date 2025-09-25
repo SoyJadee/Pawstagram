@@ -4,10 +4,16 @@ from mascota.models import Pet
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django_smart_ratelimit import rate_limit
+from django.conf import settings
+
+RL = getattr(settings, 'RATE_LIMITS', {})
+RL_USER_GENERIC = RL.get('comment_user', '30/m')
 
 # Create your views here.
+
+
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_USER_GENERIC)
 def solicitudes_adopcion(request):
     if request.user.is_authenticated and not request.user.is_superuser:
         # Filtrar solo mascotas del usuario que tengan al menos una solicitud

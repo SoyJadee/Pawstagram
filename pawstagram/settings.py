@@ -24,9 +24,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# For local development, default to True; override to False in production via env
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+# Hosts and CSRF trusted origins configured via env (comma-separated)
+# Provide localhost-friendly defaults for development.
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1,[::1]',
+    cast=lambda v: [h.strip() for h in v.split(',') if h.strip()]
+) or []
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:8000,http://127.0.0.1:8000',
+    cast=lambda v: [o.strip() for o in v.split(',') if o.strip()]
+) or []
 
 # Application definition
 SUPABASE_URL = config("SUPABASE_URL")
@@ -34,7 +47,7 @@ SUPABASE_KEY = config("SUPABASE_KEY")
 SUPABASE_SERVICE_ROLE_KEY = config("SUPABASE_SERVICE_ROLE_KEY")
 INSTALLED_APPS = [
     'hide_admin.apps.HideAdminConfig',
-    #'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -152,10 +165,96 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'perfil'
 
-#email configuration
+# email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+# Security headers and cookie settings (enabled when DEBUG is False)
+if not DEBUG:
+    # Enforce HTTPS
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Help mitigate CSRF token theft via JS (ensure forms include {% csrf_token %})
+    CSRF_COOKIE_HTTPONLY = True
+    # SameSite to reduce CSRF surface while allowing standard navigation
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+
+    # HSTS
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Security headers
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_REFERRER_POLICY = 'same-origin'
+
+# Centralized rate limit settings (per-endpoint)
+# Values are strings understood by django-smart-ratelimit
+if DEBUG:
+    RATE_LIMITS = {
+        'login_ip': '60/m',
+        'register_ip': '30/m',
+        'reset_password_ip': '30/m',
+        'salud_ip': '120/m',
+        'subir_historia_user': '60/m',
+        'all_notifs_user': '120/m',
+        'adoption_notifs_user': '120/m',
+        'notifs_json_user': '120/m',
+        'notifs_count_user': '180/m',
+        'sse_user': '600/m',
+        'mark_read_ip': '300/m',
+        'like_ip': '300/m',
+        'comment_user': '300/m',
+        'adoption_form_user': '30/h',
+        'ors_ip': '60/m',
+        'principal_ip': '60/m',
+        'mascota_like_ip': '120/m',
+        'tienda_ip': '120/m',
+    }
+else:
+    RATE_LIMITS = {
+        'login_ip': '10/m',
+        'register_ip': '5/m',
+        'reset_password_ip': '5/m',
+        'salud_ip': '30/m',
+        'subir_historia_user': '6/m',
+        'all_notifs_user': '12/m',
+        'adoption_notifs_user': '12/m',
+        'notifs_json_user': '30/m',
+        'notifs_count_user': '60/m',
+        'sse_user': '30/m',
+        'mark_read_ip': '60/m',
+        'like_ip': '120/m',
+        'comment_user': '30/m',
+        'adoption_form_user': '5/h',
+        'ors_ip': '10/m',
+        'principal_ip': '5/m',
+        'mascota_like_ip': '60/m',
+        'tienda_ip': '30/m',
+    }
+
+# Reduce ruido de logs 4xx (especialmente 429) en desarrollo
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            # En DEBUG solo registrar 5xx (ERROR); suprime warnings 4xx como 429/404
+            'level': 'ERROR' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+    },
+}

@@ -8,12 +8,18 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib import messages
 from django_smart_ratelimit import rate_limit
+from django.conf import settings
 import logging
 import re
 
+RL = getattr(settings, 'RATE_LIMITS', {})
+RL_LIKE_IP = RL.get('mascota_like_ip', '120/m')
+RL_MASCOTA_DETAILS_IP = RL.get('principal_ip', '60/m')
+
 # Create your views here.
 
-@rate_limit(key='ip', rate='5/m',)
+
+@rate_limit(key='ip', rate=RL_LIKE_IP)
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
@@ -38,7 +44,8 @@ def like_post(request):
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-@rate_limit(key='ip', rate='5/m',)
+
+@rate_limit(key='ip', rate=RL_MASCOTA_DETAILS_IP)
 def mascotaDetailsView(request, idPet):
     mascota = get_object_or_404(Pet, idPet=idPet)
     # Obtener posts relacionados a la mascota (por instancia)
@@ -84,9 +91,10 @@ def mascotaDetailsView(request, idPet):
             ]
             for patron in patrones_sql:
                 if re.search(patron, comment_content, re.IGNORECASE):
-                    messages.error(request, "El comentario contiene caracteres o palabras no permitidas.")
+                    messages.error(
+                        request, "El comentario contiene caracteres o palabras no permitidas.")
                     return redirect("mascotaDetails", idPet=mascota.idPet)
-    
+
             comment_post_id = request.POST.get("comment_post_id")
             if comment_content and comment_post_id:
                 try:
@@ -112,7 +120,8 @@ def mascotaDetailsView(request, idPet):
                         from django.http import JsonResponse
 
                         return JsonResponse({"success": False})
-                    messages.error(request, "No se pudo guardar el comentario.")
+                    messages.error(
+                        request, "No se pudo guardar el comentario.")
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 from django.http import JsonResponse
 
@@ -130,7 +139,8 @@ def mascotaDetailsView(request, idPet):
                     pet_obj = Pet.objects.filter(idPet=pet_id).first()
                     if not pet_obj:
                         try:
-                            pet_obj = Pet.objects.filter(pk=int(pet_id)).first()
+                            pet_obj = Pet.objects.filter(
+                                pk=int(pet_id)).first()
                         except Exception:
                             pet_obj = None
                 if pet_id and not pet_obj:
@@ -163,8 +173,10 @@ def mascotaDetailsView(request, idPet):
                         request, "Solicitud de adopción enviada correctamente."
                     )
             except Exception as e:
-                logger.error(f"Error al guardar adopción en vista mascota: {e}")
-                messages.error(request, "Error al procesar la solicitud de adopción.")
+                logger.error(
+                    f"Error al guardar adopción en vista mascota: {e}")
+                messages.error(
+                    request, "Error al procesar la solicitud de adopción.")
 
     return render(
         request,

@@ -34,6 +34,7 @@ from common.security import (
     sanitize_string,
     validate_uploaded_image,
     normalize_image_name,
+    safe_path_segment,
 )
 import json
 import time
@@ -41,8 +42,21 @@ import time
 
 # Image validation is handled via common.security.validate_uploaded_image
 
+RL = getattr(settings, 'RATE_LIMITS', {})
+RL_ALL_NOTIFS = RL.get('all_notifs_user', '120/m')
+RL_ADOPTION_NOTIFS = RL.get('adoption_notifs_user', '120/m')
+RL_SUBIR_HISTORIA = RL.get('subir_historia_user', '60/m')
+RL_NOTIFS_JSON = RL.get('notifs_json_user', '120/m')
+RL_NOTIFS_COUNT = RL.get('notifs_count_user', '180/m')
+RL_SSE = RL.get('sse_user', '600/m')
+RL_MARK_READ = RL.get('mark_read_ip', '300/m')
+RL_LIKE_POST = RL.get('like_ip', '300/m')
+RL_PRINCIPAL = RL.get('principal_ip', '60/m')
+RL_SEARCH = RL.get('principal_ip', '60/m')
+
+
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_ALL_NOTIFS)
 def all_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
@@ -94,7 +108,7 @@ def all_notifications_fragment(request):
 # Endpoint para retornar solo el fragmento de solicitudes de adopción (para AJAX)
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate=RL_ADOPTION_NOTIFS)
 def adoption_notifications_fragment(request):
     from adopcion.models import Adoption
     from mascota.models import Pet
@@ -118,7 +132,7 @@ def adoption_notifications_fragment(request):
 # Endpoint para subir historias tipo Instagram
 
 @login_required
-@rate_limit(key='user', rate='3/m',)
+@rate_limit(key='user', rate=RL_SUBIR_HISTORIA)
 @require_POST
 def subir_historia(request):
     if not request.user.is_authenticated:
@@ -133,7 +147,7 @@ def subir_historia(request):
     upload_error = None
     if supabase:
         try:
-            usuario = request.user.username
+            usuario = safe_path_segment(request.user.username)
             detected_fmt = None
             detected_mime = None
             if isinstance(info, dict):
@@ -181,7 +195,7 @@ def subir_historia(request):
 # Endpoint AJAX para obtener notificaciones del usuario autenticado
 
 @login_required
-@rate_limit(key='user', rate='10/m',)
+@rate_limit(key='user', rate=RL_NOTIFS_JSON)
 @require_GET
 def notificaciones_json(request):
     notificaciones = Notification.objects.filter(user=request.user).order_by(
@@ -208,7 +222,7 @@ def notificaciones_json(request):
 
 # Conteo rápido de notificaciones no leídas (para polling)
 @login_required
-@rate_limit(key='user', rate='12/m',)
+@rate_limit(key='user', rate=RL_NOTIFS_COUNT)
 @require_GET
 def notificaciones_count(request):
     try:
@@ -234,7 +248,7 @@ def notificaciones_count(request):
 
 # SSE: stream de notificaciones del usuario autenticado
 @login_required
-@rate_limit(key='user', rate='30/m',)
+@rate_limit(key='user', rate=RL_SSE)
 def notifications_stream(request):
     """
     Devuelve un stream SSE con eventos cuando haya nuevas notificaciones para el usuario.
@@ -332,7 +346,7 @@ def notifications_stream(request):
 
 # SSE de conteo de notificaciones no leídas
 @login_required
-@rate_limit(key='user', rate='30/m',)
+@rate_limit(key='user', rate=RL_SSE)
 def notifications_count_stream(request):
     response = StreamingHttpResponse(
         content_type="text/event-stream; charset=utf-8")
@@ -382,7 +396,7 @@ def notifications_count_stream(request):
 
 # Marcar notificaciones como leídas
 
-@rate_limit(key='ip', rate='20/m',)
+@rate_limit(key='ip', rate=RL_MARK_READ)
 @require_POST
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:
@@ -404,7 +418,7 @@ def marcar_notificaciones_leidas(request):
     return JsonResponse({"success": True})
 
 
-@rate_limit(key='ip', rate='30/m',)
+@rate_limit(key='ip', rate=RL_LIKE_POST)
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
@@ -448,13 +462,19 @@ except Exception as e:
     supabase = None
 
 
-@rate_limit(key='ip', rate='5/m',)
+@rate_limit(key='ip', rate=RL_PRINCIPAL)
 def principal(request):
     # Eliminar comentarios con '{{' en el contenido (limpieza de datos)
     from .models import Comment
 
-    # Limpieza de comentarios con '{{' (solo una vez, no en cada request en producción)
-    if request.method == "GET":
+    # Limpieza opcional de comentarios con '{{' (solo bajo DEBUG, superusuario y parámetro explícito)
+    if (
+        request.method == "GET"
+        and settings.DEBUG
+        and request.user.is_authenticated
+        and request.user.is_superuser
+        and request.GET.get("cleanup") == "comments"
+    ):
         Comment.objects.filter(content__contains="{{").delete()
     mascotas = []
     if request.user.is_authenticated:
@@ -519,8 +539,8 @@ def principal(request):
                 url = None
                 if supabase:
                     try:
-                        usuario = request.user.username
-                        nombre_mascota = mascota.name
+                        usuario = safe_path_segment(request.user.username)
+                        nombre_mascota = safe_path_segment(mascota.name)
                         detected_fmt = None
                         detected_mime = None
                         if isinstance(info, dict):
@@ -773,7 +793,7 @@ def search_with_rank(
     )
 
 
-@rate_limit(key='ip', rate='5/m',)
+@rate_limit(key='ip', rate=RL_SEARCH)
 def search(request):
     querysearch = request.GET.get("search", "").strip()
     querysearch = sanitize_string(querysearch)

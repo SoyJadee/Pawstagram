@@ -47,7 +47,8 @@ class AdoptionForm(XSSCleanMixin, forms.ModelForm):
     def clean_adopterName(self):
         name = self.cleaned_data.get("adopterName")
         if not name or len(name.strip()) < 3:
-            raise forms.ValidationError("El nombre debe tener al menos 3 caracteres.")
+            raise forms.ValidationError(
+                "El nombre debe tener al menos 3 caracteres.")
         if not re.match(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", name):
             raise forms.ValidationError(
                 "El nombre solo puede contener letras y espacios."
@@ -67,5 +68,7 @@ class AdoptionForm(XSSCleanMixin, forms.ModelForm):
     def clean_message(self):
         message = self.cleaned_data.get("message")
         if not message or len(message.strip()) < 10:
-            raise forms.ValidationError("El mensaje debe tener al menos 10 caracteres.")
+            raise forms.ValidationError(
+                "Cuéntanos un poco más de por qué quieres adoptar; escribe al menos 10 caracteres."
+            )
         return message

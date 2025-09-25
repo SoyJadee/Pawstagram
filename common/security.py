@@ -69,6 +69,23 @@ def normalize_image_name(original_name: str, detected_format: str | None) -> str
     return f"{safe_base}{ext}"
 
 
+def safe_path_segment(segment: str) -> str:
+    """Sanitize a single path segment for storage keys.
+
+    - Removes path separators and dot-dot sequences
+    - Restricts to alphanumerics, dash and underscore; replaces others with '_'
+    - Ensures non-empty by falling back to 'item'
+    """
+    if not isinstance(segment, str):
+        return "item"
+    # Remove slashes and backslashes entirely to avoid subpath injection
+    s = segment.replace('/', '').replace('\\', '')
+    # Remove dot-dot and dot-only segments
+    s = s.replace('..', '').replace('.', ' ')
+    s = re.sub(r"[^A-Za-z0-9_\-]+", "_", s).strip("_")
+    return s or "item"
+
+
 def validate_uploaded_image(
     uploaded_file,
     *,
