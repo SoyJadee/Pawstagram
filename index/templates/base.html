@@ -15,7 +15,7 @@
     window.SUPABASE_URL = "{{ SUPABASE_URL|default:'' }}";
     window.SUPABASE_KEY = "{{ SUPABASE_KEY|default:'' }}";
     window.USER_ID = "{{ request.user.id|default:'' }}";
-    window.USER_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
+    window.USER_AUTHENTICATED = {{ user.is_authenticated | yesno: "true,false" }};
   </script>
   <script src="{% static 'js/security_utils.js' %}"></script>
   <script src="{% static 'js/realtime_notifications.js' %}"></script>
@@ -3504,7 +3504,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
                 {{ adop_solicitudes|default:0 }}</span>
             </button>
           </a>
-          
+
 
           <div class="relative group">
             <button class="flex items-center space-x-3 p-2 rounded-full hover:bg-gray-100 transition-all duration-300">
@@ -3819,18 +3819,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     const sidebarToggle = document.querySelector('.sidebar-toggle')
     const sidebar = document.querySelector('.sidebar')
     const sidebarOverlay = document.querySelector('.sidebar-overlay')
-    sidebarToggle.addEventListener('click', function (e) {
-      e.preventDefault()
-      sidebar.classList.add('active')
-      sidebarOverlay.classList.add('active')
-      document.body.classList.add('overflow-hidden')
-    })
-    sidebarOverlay.addEventListener('click', function (e) {
-      e.preventDefault()
-      sidebar.classList.remove('active')
-      sidebarOverlay.classList.remove('active')
-      document.body.classList.remove('overflow-hidden')
-    })
+    if (sidebarToggle && sidebar && sidebarOverlay) {
+      sidebarToggle.addEventListener('click', function (e) {
+        e.preventDefault()
+        sidebar.classList.add('active')
+        sidebarOverlay.classList.add('active')
+        document.body.classList.add('overflow-hidden')
+      })
+      sidebarOverlay.addEventListener('click', function (e) {
+        e.preventDefault()
+        sidebar.classList.remove('active')
+        sidebarOverlay.classList.remove('active')
+        document.body.classList.remove('overflow-hidden')
+      })
+    }
     // end: Sidebar
 
   </script>
@@ -3869,13 +3871,13 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
       const searchButton = document.querySelector('[onclick="toggleMobileSearch()"]');
 
       if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-        if (!mobileMenu.contains(e.target) && !menuButton.contains(e.target)) {
+        if (!mobileMenu.contains(e.target) && !(menuButton && menuButton.contains(e.target))) {
           mobileMenu.classList.add('hidden');
         }
       }
 
       if (mobileSearch && !mobileSearch.classList.contains('hidden')) {
-        if (!mobileSearch.contains(e.target) && !searchButton.contains(e.target)) {
+        if (!mobileSearch.contains(e.target) && !(searchButton && searchButton.contains(e.target))) {
           mobileSearch.classList.add('hidden');
         }
       }
@@ -3949,16 +3951,17 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
     }
 
     const footer = document.querySelector('.footer');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animateCounters();
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.3 });
-
-    observer.observe(footer);
+    if (footer) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.3 });
+      observer.observe(footer);
+    }
 
     window.addEventListener('scroll', () => {
       const scrolled = window.pageYOffset;

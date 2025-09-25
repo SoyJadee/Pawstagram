@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('¡Cuenta creada exitosamente! Bienvenido a Pawly 🐾');
             
             // Log de datos 
-            console.log('Datos completos del registro:', completeData);
+            
             
             // Redireccionar al login
             setTimeout(() => {

@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function () {
       pauseArea.ontouchcancel = null;
       // Pausar
       pauseArea.addEventListener('mousedown', function(e) {
-        console.log('mousedown: PAUSA');
         if (!historiasActuales.length || historiaPausada) return;
         historiaPausada = true;
         clearTimeout(historiaTimer);
@@ -185,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       // Reanudar
       pauseArea.addEventListener('mouseup', function(e) {
-        console.log('mouseup: REANUDAR');
         if (!historiasActuales.length || !historiaPausada) return;
         historiaPausada = false;
         historiaStartTime = Date.now();
@@ -207,7 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3500 - historiaElapsed);
       });
       pauseArea.addEventListener('mouseleave', function(e) {
-        console.log('mouseleave: REANUDAR');
         if (!historiasActuales.length || !historiaPausada) return;
         historiaPausada = false;
         historiaStartTime = Date.now();
@@ -231,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function () {
       // Touch
       pauseArea.addEventListener('touchstart', function(e) {
         e.preventDefault();
-        console.log('touchstart: PAUSA');
         if (!historiasActuales.length || historiaPausada) return;
         historiaPausada = true;
         clearTimeout(historiaTimer);
@@ -245,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       pauseArea.addEventListener('touchend', function(e) {
         e.preventDefault();
-        console.log('touchend: REANUDAR');
         if (!historiasActuales.length || !historiaPausada) return;
         historiaPausada = false;
         historiaStartTime = Date.now();
@@ -268,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       pauseArea.addEventListener('touchcancel', function(e) {
         e.preventDefault();
-        console.log('touchcancel: REANUDAR');
         if (!historiasActuales.length || !historiaPausada) return;
         historiaPausada = false;
         historiaStartTime = Date.now();

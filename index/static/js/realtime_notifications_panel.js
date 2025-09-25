@@ -30,7 +30,6 @@
         window.reloadAllNotifications();
       }
     } catch (e) {
-      console.error('Error recargando notificaciones:', e);
     }
   }, 1500);
 
@@ -56,9 +55,7 @@
           { event: 'INSERT', schema: 'public', table: 'index_notifications', filter: `user_id=eq.${userId}` },
           onPayload
         )
-        .subscribe((status) => {
-          if (status !== 'SUBSCRIBED') console.warn('Canal index_notifications estado:', status);
-        });
+        .subscribe(() => {});
       channels.push(ch1);
 
       // Adopciones (ajusta el filtro a tu esquema real)
@@ -69,25 +66,19 @@
           { event: 'INSERT', schema: 'public', table: 'adopcion_adoption' },
           onPayload
         )
-        .subscribe((status) => {
-          if (status !== 'SUBSCRIBED') console.warn('Canal adopcion_adoption estado:', status);
-        });
+        .subscribe(() => {});
       channels.push(ch2);
     } catch (e) {
-      console.error('Error creando canales Realtime:', e);
     }
   } else if ('EventSource' in window) {
     try {
       const es = new EventSource('/notificaciones/stream/');
       es.addEventListener('update', () => onPayload());
-      es.addEventListener('error', (e) => {
-        console.warn('SSE error:', e);
-      });
+      es.addEventListener('error', () => {});
       // limpiar SSE en unload
       window.addEventListener('beforeunload', () => es.close());
       document.addEventListener('visibilitychange', () => { if (document.hidden) es.close(); });
     } catch (e) {
-      console.warn('No se pudo iniciar SSE fallback:', e);
     }
   }
 
@@ -95,7 +86,6 @@
     try {
       channels.forEach((ch) => supabase.removeChannel(ch));
     } catch (e) {
-      console.warn('Error limpiando canales:', e);
     }
   };
 

@@ -24,7 +24,6 @@
     if (!el) {
       const btn = document.getElementById('notifBtn');
       if (!btn) {
-        console.warn('[Notif Debug] No se encontró notifBtn en el DOM');
         return null;
       }
       el = document.createElement('span');
@@ -32,7 +31,6 @@
       el.className = 'absolute -top-1 -right-1 min-w-[1.2em] px-1 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center';
       el.textContent = '0';
       btn.appendChild(el);
-      console.log('[Notif Debug] Badge creado');
     }
     return el;
   };
@@ -136,7 +134,6 @@
             () => safeIncrement(1)
           )
           .subscribe((status) => {
-            if (status !== 'SUBSCRIBED') console.warn('Canal index_notifications estado:', status);
             if (status === 'CLOSED' || status === 'CHANNEL_ERROR') { startSSECount(); }
           });
         channels.push(ch1);
@@ -161,7 +158,6 @@
             }
           )
           .subscribe((status) => {
-            if (status !== 'SUBSCRIBED') console.warn('Canal adopcion_adoption estado:', status);
             if (status === 'CLOSED' || status === 'CHANNEL_ERROR') { startSSECount(); }
           });
         channels.push(ch2);
@@ -174,7 +170,6 @@
       window.addEventListener('beforeunload', cleanup);
       document.addEventListener('visibilitychange', () => { if (document.hidden) cleanup(); });
     } catch (e) {
-      console.error('Error creando canales Realtime:', e);
       startSSECount();
     }
   } else if ('EventSource' in window && validUser) {
@@ -197,7 +192,6 @@
       window.addEventListener('beforeunload', () => esCount.close());
       document.addEventListener('visibilitychange', () => { if (document.hidden) esCount.close(); });
     } catch (e) {
-      console.warn('No se pudo iniciar SSE fallback:', e);
     }
     // Fallback final: polling periódico al backend
     try {
