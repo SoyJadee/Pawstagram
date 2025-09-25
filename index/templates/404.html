@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página no encontrada - 404</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+
+        @keyframes wiggle {
+
+            0%,
+            100% {
+                transform: rotate(-3deg);
+            }
+
+            50% {
+                transform: rotate(3deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pawPrint {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2) rotate(180deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) rotate(360deg);
+                opacity: 0.7;
+            }
+        }
+
+        .wiggle {
+            animation: wiggle 2s ease-in-out infinite;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .paw-print {
+            animation: pawPrint 3s ease-in-out infinite;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 50%, #81d4fa 100%);
+        }
+
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl card-shadow max-w-lg mx-auto p-8 text-center fade-in">
+        <!-- Ilustración del gato -->
+        <div class="mb-6 wiggle">
+            <svg class="w-32 h-32 mx-auto" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Cuerpo del gato -->
+                <ellipse cx="60" cy="80" rx="25" ry="20" fill="#FF6B6B" />
+
+                <!-- Cabeza -->
+                <circle cx="60" cy="50" r="22" fill="#FF6B6B" />
+
+                <!-- Orejas -->
+                <path d="M45 35 L40 20 L55 30 Z" fill="#FF6B6B" />
+                <path d="M75 35 L80 20 L65 30 Z" fill="#FF6B6B" />
+                <path d="M45 32 L42 22 L52 28 Z" fill="#FFB6C1" />
+                <path d="M75 32 L78 22 L68 28 Z" fill="#FFB6C1" />
+
+                <!-- Ojos -->
+                <ellipse cx="52" cy="45" rx="4" ry="6" fill="#2D3748" />
+                <ellipse cx="68" cy="45" rx="4" ry="6" fill="#2D3748" />
+                <ellipse cx="52" cy="43" rx="1" ry="2" fill="white" />
+                <ellipse cx="68" cy="43" rx="1" ry="2" fill="white" />
+
+                <!-- Nariz -->
+                <path d="M60 52 L57 55 L63 55 Z" fill="#FF1493" />
+
+                <!-- Boca -->
+                <path d="M60 55 Q55 58 50 56" stroke="#2D3748" stroke-width="2" fill="none" />
+                <path d="M60 55 Q65 58 70 56" stroke="#2D3748" stroke-width="2" fill="none" />
+
+                <!-- Bigotes -->
+                <line x1="35" y1="48" x2="48" y2="50" stroke="#2D3748" stroke-width="1" />
+                <line x1="35" y1="53" x2="48" y2="53" stroke="#2D3748" stroke-width="1" />
+                <line x1="72" y1="50" x2="85" y2="48" stroke="#2D3748" stroke-width="1" />
+                <line x1="72" y1="53" x2="85" y2="53" stroke="#2D3748" stroke-width="1" />
+
+                <!-- Cola -->
+                <path d="M85 75 Q95 65 90 50 Q85 60 80 70" stroke="#FF6B6B" stroke-width="8" fill="none" />
+
+                <!-- Patas -->
+                <ellipse cx="45" cy="95" rx="6" ry="8" fill="#FF6B6B" />
+                <ellipse cx="60" cy="95" rx="6" ry="8" fill="#FF6B6B" />
+                <ellipse cx="75" cy="95" rx="6" ry="8" fill="#FF6B6B" />
+            </svg>
+        </div>
+
+        <!-- Número 404 -->
+        <div class="mb-6">
+            <h1 class="text-6xl font-bold text-gray-800 mb-2">404</h1>
+            <div class="w-16 h-1 bg-pink-400 mx-auto rounded-full"></div>
+        </div>
+
+        <!-- Mensaje -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-3">
+                ¡Miau! Página perdida
+            </h2>
+            <p class="text-gray-600 leading-relaxed">
+                Nuestro gatito explorador no pudo encontrar esta página.
+                Parece que se fue a perseguir mariposas.
+            </p>
+        </div>
+
+
+    </div>
+
+    <!-- Huellas decorativas -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-20 left-10 text-pink-300 text-2xl paw-print">🐾</div>
+        <div class="absolute top-40 right-20 text-pink-200 text-xl paw-print" style="animation-delay: -1s;">🐾</div>
+        <div class="absolute bottom-32 left-20 text-pink-300 text-lg paw-print" style="animation-delay: -2s;">🐾</div>
+        <div class="absolute bottom-20 right-10 text-pink-200 text-2xl paw-print" style="animation-delay: -0.5s;">🐾
+        </div>
+    </div>
+</body>
+
+</html>
