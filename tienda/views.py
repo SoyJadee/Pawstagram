@@ -13,7 +13,15 @@ RL_TIENDA_IP = RL.get('tienda_ip', '120/m')
 def catalogo(request, store_id):
     store = get_object_or_404(Store, id=store_id)
     products = Product.objects.filter(store_id=store_id).order_by('-id')
-    return render(request, 'catalogo.html', {'products': products, 'store': store})
+    # Adjuntar imágenes a cada producto
+    products_data = []
+    for product in products:
+        images = list(product.images.all())
+        products_data.append({
+            'product': product,
+            'images': images
+        })
+    return render(request, 'catalogo.html', {'products_data': products_data, 'store': store})
 
 
 @rate_limit(key='ip', rate=RL_TIENDA_IP)

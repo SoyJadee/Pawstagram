@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Store,Product
+from .models import Store, Product, ProductImage
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'product', 'url', 'alt_text')
+    search_fields = ('product__name', 'url')
 # Register your models here.
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):

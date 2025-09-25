@@ -38,8 +38,16 @@ class Product(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre del producto")
     description = models.TextField(null=True, blank=True, verbose_name="Descripción")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio",validators=[MinValueValidator(Decimal('0.01'))])
+
     stock = models.IntegerField(default=0, verbose_name="Stock")
-    photo_url = models.URLField(null=True, blank=True, verbose_name="URL de foto")
 
     def __str__(self):
         return f'{self.name}, de {self.store.name}' or str(self.id)
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    url = models.URLField(verbose_name="URL de imagen")
+    alt_text = models.CharField(max_length=255, null=True, blank=True, verbose_name="Texto alternativo")
+
+    def __str__(self):
+        return self.url

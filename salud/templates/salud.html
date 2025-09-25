@@ -528,7 +528,8 @@
                     v = window.veterinariasData.find(obj => obj.name === cardName);
                 }
                 if (maxDistance !== 'all') {
-                    if (userLat !== null && userLon !== null && v && v.coords) {
+                    // Solo mostrar si tiene coordenadas válidas
+                    if (userLat !== null && userLon !== null && v && v.coords && v.coords.lat !== null && v.coords.lon !== null) {
                         let lat = v.coords.lat;
                         let lon = v.coords.lon;
                         let dist = calculateDistance(userLat, userLon, lat, lon);
