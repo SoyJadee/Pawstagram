@@ -12,6 +12,7 @@ from decouple import config
 urlpatterns = [
     path("iniciar_sesion/", views.login_view, name="login"),
     path("register/", views.register_view, name="register"),
+    path("activate/<uidb64>/<token>/", views.activate, name="activate"),
     path("logout/", LogoutView.as_view(template_name="logout.html"), name="logout"),
     path(
         "change_password/",

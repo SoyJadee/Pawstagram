@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import UserProfile
 from django.db import IntegrityError, transaction
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from index.models import Post, Comment, Like, Notifications
 from mascota.models import Pet
 from adopcion.models import Adoption
@@ -26,7 +26,13 @@ import uuid
 from django.http import JsonResponse
 from supabase import create_client
 from django.conf import settings
-
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+from .decorators import user_not_authenticated
+from .tokens import account_activation_token
 # Image validation is centralized in common.security
 logger = logging.getLogger(__name__)
 
@@ -55,8 +61,45 @@ def is_injection_attempt(value):
             return True
     return False
 
+def activate(request, uidb64, token):
+    User = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Gracias por confirmar tu correo electrónico. Ahora puedes iniciar sesión.")
+        return redirect("login")
+    else:
+        messages.error(request, "El enlace de activación es inválido.")
+    return redirect("principal")
+
+def activateEmail (request, user, to_email):
+    current_site = get_current_site(request)
+    mail_subject = "Activa tu cuenta en Pawly"
+    message = render_to_string(
+        "template_activate_account.html",
+        {
+            "user": user,
+            "domain": get_current_site(request).domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": account_activation_token.make_token(user),
+            "protocol": "https" if request.is_secure() else "http",
+        },
+    )
+
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    if email.send():
+        messages.success(request, f"Correo de activación enviado a {to_email}. Por favor revisa tu bandeja de entrada.<br>Si no ves el correo, revisa la carpeta de spam.")
+        return True
+    else:
+        messages.error(request, f"Error al enviar el correo de activación a {to_email}. Revisa la dirección de correo e inténtalo de nuevo.")
 
 @rate_limit(key="ip", rate=RL_REGISTER_IP)
+@user_not_authenticated
 def register_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff and request.user.is_superuser:
@@ -86,6 +129,8 @@ def register_view(request):
                 messages.error(request, "El número de teléfono ya está registrado")
             for field_name in form.fields:
                 value = form.cleaned_data.get(field_name)
+                if field_name == "email" and field_name == "password1" and field_name == "password2":
+                    continue
                 if isinstance(value, str) and is_injection_attempt(value):
                     messages.error(
                         request,
@@ -96,6 +141,8 @@ def register_view(request):
                 try:
                     with transaction.atomic():
                         user = form.save(commit=True)
+                        user.save()
+                        user.is_active = False
                         UserProfile.objects.create(
                             user=user,
                             phone=form.cleaned_data.get("phone"),
@@ -105,6 +152,7 @@ def register_view(request):
                         request,
                         "Usuario registrado correctamente. Ahora puedes iniciar sesión.",
                     )
+                    #activateEmail(request, user, form.cleaned_data.get("email"))
                     return redirect("login")
                 except IntegrityError:
                     messages.error(
