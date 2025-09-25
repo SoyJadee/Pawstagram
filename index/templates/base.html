@@ -3444,6 +3444,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
         <!-- Acciones del usuario -->
         <div class="flex items-center space-x-3">
+          <!-- Botón búsqueda móvil -->
+            <button onclick="toggleMobileSearch()" class="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300" title="Buscar">
+              <i class="fas fa-search text-lg"></i>
+            </button>
           <!-- Inicio  -->
           <a href="{% url 'principal' %}">
             <button
@@ -3524,21 +3528,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
           </a>
           {% endif %}
 
-          <button onclick="toggleMobileMenu()"
-            class="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300">
-            <i class="fas fa-bars text-lg"></i>
-          </button>
+          
         </div>
       </div>
 
       <div id="mobileSearch" class="hidden md:hidden pb-4">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <i class="fas fa-search text-gray-400"></i>
+        <form method="get" action="{% url 'search' %}">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Buscar mascotas, refugios..."
+              class="w-full bg-gray-50 border-0 rounded-full py-3 pl-12 pr-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300">
           </div>
-          <input type="text" placeholder="Buscar mascotas, refugios..."
-            class="w-full bg-gray-50 border-0 rounded-full py-3 pl-12 pr-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00F5D4] focus:bg-white transition-all duration-300">
-        </div>
+        </form>
       </div>
 
       <div id="mobileMenu"

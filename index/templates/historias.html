@@ -75,20 +75,20 @@
     </div>
     <!-- Modal para subir historia -->
     <div id="modal-subir-historia" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
-        <form id="form-subir-historia" class="bg-white rounded-xl p-6 flex flex-col gap-4 w-80"
+        <form id="form-subir-historia" class="bg-white rounded-xl p-4 sm:p-6 flex flex-col gap-4 w-full max-w-xs sm:max-w-md md:max-w-lg shadow-lg"
             enctype="multipart/form-data">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Subir historia</h3>
-            <input type="file" name="foto_historia" accept="image/*" required class="border rounded p-2"
+            <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-2 text-center">Subir historia</h3>
+            <input type="file" name="foto_historia" accept="image/*" required class="border rounded-lg p-2 text-xs sm:text-sm focus:ring-2 focus:ring-mint focus:outline-none transition-all duration-200"
                 onchange="previewHistoria(this)">
             <div id="preview-historia"
-                class="w-full h-36 flex items-center justify-center bg-gray-50 rounded border border-dashed border-gray-300 overflow-hidden hidden">
-                <img src="#" alt="Preview" class="max-h-32 max-w-full object-contain" />
+                class="w-full h-28 sm:h-36 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-300 overflow-hidden hidden">
+                <img src="#" alt="Preview" class="max-h-24 sm:max-h-32 max-w-full object-contain" />
             </div>
-            <div class="flex gap-2 mt-2">
+            <div class="flex flex-col sm:flex-row gap-2 mt-2">
                 <button type="button" onclick="cerrarModalSubirHistoria()"
-                    class="flex-1 bg-gray-100 text-gray-700 py-2 rounded font-semibold">Cancelar</button>
+                    class="w-full sm:w-auto flex-1 bg-gray-100 text-gray-700 py-2 sm:py-3 md:py-4 rounded-lg font-semibold text-xs sm:text-sm md:text-base hover:bg-gray-200 transition">Cancelar</button>
                 <button type="submit" id="btn-subir-historia"
-                    class="flex-1 bg-mint text-white py-2 rounded font-semibold">Subir</button>
+                    class="w-full sm:w-auto flex-1 bg-mint text-white py-2 sm:py-3 md:py-4 rounded-lg font-semibold text-xs sm:text-sm md:text-base hover:bg-mint/90 transition">Subir</button>
             </div>
         </form>
     </div>
