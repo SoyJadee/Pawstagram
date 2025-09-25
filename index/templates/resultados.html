@@ -245,7 +245,7 @@
               <span
                 class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
                 num }}</span>
-              {% elif num <= tiendas_page.number|add:2 and num>= tiendas_page.number|add:-2 %}
+              {% elif num <= tiendas_page.number|add:"2" and num >= tiendas_page.number|add:"-2" %}
                 <a href="?search={{ query }}&page_t={{ num }}"
                   class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
@@ -271,7 +271,7 @@
               <span
                 class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
                 num }}</span>
-              {% elif num <= productos_page.number|add:2 and num>= productos_page.number|add:-2 %}
+              {% elif num <= productos_page.number|add:"2" and num >= productos_page.number|add:"-2" %}
                 <a href="?search={{ query }}&page_p={{ num }}"
                   class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
@@ -297,7 +297,7 @@
               <span
                 class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
                 num }}</span>
-              {% elif num <= mascotas_page.number|add:2 and num>= mascotas_page.number|add:-2 %}
+              {% elif num <= mascotas_page.number|add:"2" and num >= mascotas_page.number|add:"-2" %}
                 <a href="?search={{ query }}&page_m={{ num }}"
                   class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
@@ -323,7 +323,7 @@
               <span
                 class="px-3 py-1 text-xs rounded bg-gradient-to-r from-blue-500 to-orange-400 text-white font-semibold">{{
                 num }}</span>
-              {% elif num <= servicios_page.number|add:2 and num>= servicios_page.number|add:-2 %}
+              {% elif num <= servicios_page.number|add:"2" and num >= servicios_page.number|add:"-2" %}
                 <a href="?search={{ query }}&page_s={{ num }}"
                   class="px-3 py-1 text-xs rounded bg-white border hover:border-blue-400">{{ num }}</a>
                 {% endif %}
