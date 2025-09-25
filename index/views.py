@@ -30,11 +30,16 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import StreamingHttpResponse
-from common.security import sanitize_string
-import json, time
+from common.security import (
+    sanitize_string,
+    validate_uploaded_image,
+    normalize_image_name,
+)
+import json
+import time
 
 
-allowed_types = ["image/jpeg", "image/png", "image/jpg"]
+# Image validation is handled via common.security.validate_uploaded_image
 
 @login_required
 @rate_limit(key='user', rate='5/m',)
@@ -113,7 +118,7 @@ def adoption_notifications_fragment(request):
 # Endpoint para subir historias tipo Instagram
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate='3/m',)
 @require_POST
 def subir_historia(request):
     if not request.user.is_authenticated:
@@ -121,21 +126,29 @@ def subir_historia(request):
     foto = request.FILES.get("foto_historia")
     if not foto:
         return JsonResponse({"success": False, "error": "no_file"})
-    if foto.size > 5 * 1024 * 1024:
-        return JsonResponse({"success": False, "error": "file_too_large"})
-    if foto.content_type not in allowed_types:
-        return JsonResponse({"success": False, "error": "invalid_type"})
+    ok, info = validate_uploaded_image(foto, max_bytes=5 * 1024 * 1024)
+    if not ok:
+        return JsonResponse({"success": False, "error": str(info)})
     url = None
     upload_error = None
     if supabase:
         try:
             usuario = request.user.username
-            nombre_archivo = f"{uuid.uuid4()}_{foto.name}"
+            detected_fmt = None
+            detected_mime = None
+            if isinstance(info, dict):
+                detected_fmt = info.get("format")
+                detected_mime = info.get("mime")
+            nombre_normalizado = normalize_image_name(foto.name, detected_fmt)
+            nombre_archivo = f"{uuid.uuid4()}_{nombre_normalizado}"
             ruta_supabase = f"Usuarios/{usuario}/histories/{nombre_archivo}"
             foto_data = foto.read()
             foto.seek(0)
             res = supabase.storage.from_("Usuarios").upload(
-                ruta_supabase, foto_data, {"content-type": foto.content_type}
+                ruta_supabase,
+                foto_data,
+                {"content-type": detected_mime or getattr(
+                    foto, "content_type", None) or "application/octet-stream"},
             )
             # Si la respuesta indica error, lanzar excepción
             if hasattr(res, "error") and res.error:
@@ -168,7 +181,7 @@ def subir_historia(request):
 # Endpoint AJAX para obtener notificaciones del usuario autenticado
 
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate='10/m',)
 @require_GET
 def notificaciones_json(request):
     notificaciones = Notification.objects.filter(user=request.user).order_by(
@@ -195,7 +208,7 @@ def notificaciones_json(request):
 
 # Conteo rápido de notificaciones no leídas (para polling)
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate='12/m',)
 @require_GET
 def notificaciones_count(request):
     try:
@@ -221,7 +234,7 @@ def notificaciones_count(request):
 
 # SSE: stream de notificaciones del usuario autenticado
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate='30/m',)
 def notifications_stream(request):
     """
     Devuelve un stream SSE con eventos cuando haya nuevas notificaciones para el usuario.
@@ -319,7 +332,7 @@ def notifications_stream(request):
 
 # SSE de conteo de notificaciones no leídas
 @login_required
-@rate_limit(key='user', rate='5/m',)
+@rate_limit(key='user', rate='30/m',)
 def notifications_count_stream(request):
     response = StreamingHttpResponse(
         content_type="text/event-stream; charset=utf-8")
@@ -369,7 +382,7 @@ def notifications_count_stream(request):
 
 # Marcar notificaciones como leídas
 
-@rate_limit(key='ip', rate='5/m',)
+@rate_limit(key='ip', rate='20/m',)
 @require_POST
 def marcar_notificaciones_leidas(request):
     if not request.user.is_authenticated:
@@ -390,7 +403,8 @@ def marcar_notificaciones_leidas(request):
         pet__in=mascotas, is_read=False).update(is_read=True)
     return JsonResponse({"success": True})
 
-@rate_limit(key='ip', rate='5/m',)
+
+@rate_limit(key='ip', rate='30/m',)
 @require_POST
 def like_post(request):
     if not request.user.is_authenticated:
@@ -432,6 +446,7 @@ try:
 except Exception as e:
     logger.error(f"Error al inicializar Supabase: {e}")
     supabase = None
+
 
 @rate_limit(key='ip', rate='5/m',)
 def principal(request):
@@ -475,15 +490,18 @@ def principal(request):
                 if not foto:
                     messages.error(request, "Debes subir una foto.")
                     return redirect("principal")
-                if foto.size > 5 * 1024 * 1024:
-                    messages.error(
-                        request, "La imagen es demasiado grande. Máximo 5MB."
-                    )
-                    return redirect("principal")
-                if foto.content_type not in allowed_types:
-                    messages.error(
-                        request, "Tipo de archivo no válido. Solo se permiten imágenes."
-                    )
+                ok, info = validate_uploaded_image(
+                    foto, max_bytes=5 * 1024 * 1024)
+                if not ok:
+                    code = str(info)
+                    error_msg = {
+                        "file_too_large": "La imagen es demasiado grande. Máximo 5MB.",
+                        "invalid_type": "Tipo de archivo no válido. Solo se permiten imágenes.",
+                        "invalid_image": "Archivo de imagen inválido o corrupto.",
+                        "image_too_large_dimensions": "La imagen supera el tamaño máximo permitido.",
+                        "image_too_many_pixels": "La imagen tiene demasiados píxeles.",
+                    }.get(code, "La imagen no es válida.")
+                    messages.error(request, error_msg)
                     return redirect("principal")
                 user_profile = getattr(request.user, "userprofile", None)
                 if not user_profile:
@@ -503,7 +521,14 @@ def principal(request):
                     try:
                         usuario = request.user.username
                         nombre_mascota = mascota.name
-                        nombre_archivo = f"{uuid.uuid4()}_{foto.name}"
+                        detected_fmt = None
+                        detected_mime = None
+                        if isinstance(info, dict):
+                            detected_fmt = info.get("format")
+                            detected_mime = info.get("mime")
+                        nombre_normalizado = normalize_image_name(
+                            foto.name, detected_fmt)
+                        nombre_archivo = f"{uuid.uuid4()}_{nombre_normalizado}"
                         ruta_supabase = f"{usuario}/{nombre_mascota}/{nombre_archivo}"
                         rutaStorage = ruta_supabase
                         logger.info(
@@ -513,7 +538,8 @@ def principal(request):
                         res = supabase.storage.from_("Usuarios").upload(
                             ruta_supabase,
                             foto_data,
-                            {"content-type": foto.content_type},
+                            {"content-type": detected_mime or getattr(
+                                foto, "content_type", None) or "application/octet-stream"},
                         )
                         url_result = supabase.storage.from_("Usuarios").get_public_url(
                             ruta_supabase
@@ -745,6 +771,7 @@ def search_with_rank(
         .filter(rank__gte=threshold)
         .order_by("-rank")
     )
+
 
 @rate_limit(key='ip', rate='5/m',)
 def search(request):
