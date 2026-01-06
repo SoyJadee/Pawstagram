@@ -244,7 +244,7 @@ web: gunicorn pawstagram.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --tim
 4. Configura `CSRF_TRUSTED_ORIGINS` con tu URL completa (https://)
 5. Utiliza una base de datos PostgreSQL (Supabase recomendado)
 
-**Nota de seguridad:** Nunca commitees el archivo `.env` con credenciales reales.
+**Nota de seguridad:** Nunca hagas commit del archivo `.env` con credenciales reales.
 
 ---
 
