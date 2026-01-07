@@ -265,26 +265,6 @@ coverage report
 
 ---
 
-## 🤝 Contribuir
-
-¡Las contribuciones son bienvenidas! Este proyecto está construido con amor por la comunidad animalista.
-
-### Cómo contribuir
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Guidelines
-
-- Sigue las convenciones de código de Django y PEP 8
-- Escribe tests para nuevas funcionalidades
-- Actualiza la documentación cuando sea necesario
-- Sé respetuoso y constructivo en las discusiones
-
----
 
 ## 🐛 Troubleshooting
 
@@ -339,7 +319,6 @@ Este proyecto está bajo la Licencia MIT. Esto significa que puedes usar, modifi
 ## 📞 Contacto y Comunidad
 
 - **GitHub Issues:** Para reportar bugs o solicitar features
-- **Pull Requests:** Para contribuir con código
 - **Discussions:** Para ideas y discusiones generales
 
 ---
